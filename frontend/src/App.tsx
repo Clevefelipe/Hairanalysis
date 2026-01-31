@@ -1,11 +1,47 @@
-import AppRoutes from "./routes/AppRoutes";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
+
+import Login from "./pages/Login";
+import Dashboard from "./pages/Dashboard";
+import Layout from "./components/layout/Layout";
+import PrivateRoute from "./routes/PrivateRoute";
+import AuditLogs from "./pages/AuditLogs";
 
 export default function App() {
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900">
-      <div className="mx-auto max-w-7xl px-4 py-6">
-        <AppRoutes />
-      </div>
-    </div>
+    <AuthProvider>
+      <Routes>
+        {/* Login */}
+        <Route path="/login" element={<Login />} />
+
+        {/* Área protegida */}
+        <Route
+          path="/"
+          element={
+            <PrivateRoute>
+              <Layout />
+            </PrivateRoute>
+          }
+        >
+          <Route path="dashboard" element={<Dashboard />} />
+
+          {/* ADMIN */}
+          <Route
+            path="administracao/audit"
+            element={
+              <PrivateRoute requiredRole="ADMIN">
+                <AuditLogs />
+              </PrivateRoute>
+            }
+          />
+        </Route>
+
+        {/* Fallback */}
+        <Route
+          path="*"
+          element={<Navigate to="/login" replace />}
+        />
+      </Routes>
+    </AuthProvider>
   );
 }

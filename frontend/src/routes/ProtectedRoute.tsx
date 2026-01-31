@@ -1,21 +1,16 @@
-import { ReactNode } from "react";
 import { Navigate } from "react-router-dom";
-import { useAuth, UserRole } from "../context/AuthContext";
-
-interface Props {
-  children: ReactNode;
-  allowedRoles: UserRole[];
-}
+import { useAuth } from "../context/AuthContext";
 
 export default function ProtectedRoute({
   children,
-  allowedRoles,
-}: Props) {
-  const { role } = useAuth();
+}: {
+  children: JSX.Element;
+}) {
+  const { token } = useAuth();
 
-  if (!allowedRoles.includes(role)) {
-    return <Navigate to="/" replace />;
+  if (!token) {
+    return <Navigate to="/login" replace />;
   }
 
-  return <>{children}</>;
+  return children;
 }

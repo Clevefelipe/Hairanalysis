@@ -5,23 +5,36 @@ export type AnalysisType = "tricologica" | "capilar";
 export interface AnalysisHistory {
   id: string;
   clientId: string;
-  analysisType: AnalysisType;
-  signals: Record<string, string>;
-  score: number;
-  flags: string[];
-  interpretation: string;
+  domain: AnalysisType;
+  baseResult: {
+    score?: number;
+    signals?: Record<string, string>;
+  };
+  ragResult: any;
   createdAt: string;
 }
 
 /**
- * Retorna o histórico completo de análises de um cliente
+ * Retorna o histórico de análises de um cliente
+ * com filtros opcionais
  */
 export async function getHistoryByClient(
-  clientId: string
+  clientId: string,
+  filters?: {
+    domain?: AnalysisType;
+    q?: string;
+  }
 ): Promise<AnalysisHistory[]> {
   const response = await api.get<AnalysisHistory[]>(
-    `/history/client/${clientId}`
+    `/history/client/${clientId}`,
+    {
+      params: {
+        domain: filters?.domain,
+        q: filters?.q,
+      },
+    }
   );
+
   return response.data;
 }
 

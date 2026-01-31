@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
@@ -8,7 +8,11 @@ import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
+
+  const from =
+    (location.state as any)?.from?.pathname || "/dashboard";
 
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
@@ -16,9 +20,9 @@ export default function Login() {
 
   async function handleLogin() {
     try {
-      const data = await loginSalon(email, senha);
-      login(data);
-      navigate("/dashboard");
+      const token = await loginSalon(email, senha);
+      login(token);
+      navigate(from, { replace: true });
     } catch {
       setError("Email ou senha inválidos");
     }
@@ -26,7 +30,7 @@ export default function Login() {
 
   return (
     <div style={{ maxWidth: "400px", margin: "80px auto" }}>
-      <Card title="Acesso do Salão">
+      <Card title="Acesso do Sistema">
         <input
           placeholder="Email"
           value={email}
@@ -42,7 +46,11 @@ export default function Login() {
           style={{ width: "100%", marginBottom: "8px" }}
         />
 
-        {error && <p style={{ color: "red" }}>{error}</p>}
+        {error && (
+          <p style={{ color: "red", marginBottom: 8 }}>
+            {error}
+          </p>
+        )}
 
         <Button variant="primary" onClick={handleLogin}>
           Entrar

@@ -3,85 +3,73 @@ import {
   useContext,
   useEffect,
   useState,
-  ReactNode,
 } from "react";
-import api from "../services/api";
 
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  salonId: string;
-}
+type UserRole = "ADMIN" | "PROFESSIONAL";
 
 interface AuthContextData {
-  user: User | null;
-  loading: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
-  signOut: () => void;
+  token: string | null;
+  role: UserRole | null;
+  isReady: boolean;
+  login(token: string): void;
+  logout(): void;
 }
 
-const AuthContext = createContext<AuthContextData>({} as AuthContextData);
+const AuthContext = createContext<AuthContextData>(
+  {} as AuthContextData
+);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+function parseJwt(token: string): any {
+  try {
+    const payload = atob(token.split(".")[1]);
+    return JSON.parse(payload);
+  } catch {
+    return null;
+  }
+}
+
+export function AuthProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const [token, setToken] = useState<string | null>(null);
+  const [role, setRole] = useState<UserRole | null>(null);
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("@HAS:user");
-    const token = localStorage.getItem("@HAS:token");
+    const storedToken = localStorage.getItem("token");
 
-    if (storedUser && token) {
-      const parsedUser = JSON.parse(storedUser);
-      setUser(parsedUser);
-
-      api.defaults.headers.Authorization = `Bearer ${token}`;
-      api.defaults.params = {
-        ...api.defaults.params,
-        salonId: parsedUser.salonId,
-      };
+    if (storedToken && storedToken.split(".").length === 3) {
+      const parsed = parseJwt(storedToken);
+      setToken(storedToken);
+      setRole(parsed?.role ?? null);
     }
 
-    setLoading(false);
+    setIsReady(true);
   }, []);
 
-  async function signIn(email: string, password: string) {
-    const response = await api.post("/auth/login", {
-      email,
-      password,
-    });
-
-    const { token, user } = response.data;
-
-    localStorage.setItem("@HAS:user", JSON.stringify(user));
-    localStorage.setItem("@HAS:token", token);
-
-    api.defaults.headers.Authorization = `Bearer ${token}`;
-    api.defaults.params = {
-      ...api.defaults.params,
-      salonId: user.salonId,
-    };
-
-    setUser(user);
+  function login(token: string) {
+    const parsed = parseJwt(token);
+    localStorage.setItem("token", token);
+    setToken(token);
+    setRole(parsed?.role ?? null);
   }
 
-  function signOut() {
-    localStorage.removeItem("@HAS:user");
-    localStorage.removeItem("@HAS:token");
-
-    delete api.defaults.headers.Authorization;
-    delete api.defaults.params?.salonId;
-
-    setUser(null);
+  function logout() {
+    localStorage.clear();
+    setToken(null);
+    setRole(null);
   }
 
   return (
     <AuthContext.Provider
       value={{
-        user,
-        loading,
-        signIn,
-        signOut,
+        token,
+        role,
+        isReady,
+        login,
+        logout,
       }}
     >
       {children}
@@ -89,6 +77,4 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function useAuth() {
-  return useContext(AuthContext);
-}
+export const useAuth = () => useContext(AuthContext);

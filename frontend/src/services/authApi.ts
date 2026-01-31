@@ -1,15 +1,13 @@
-const API_URL = "http://localhost:3001";
+import api from "./api";
 
-export async function loginSalon(email: string, senha: string) {
-  const res = await fetch(`${API_URL}/auth/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, senha }),
+export async function loginSalon(
+  email: string,
+  password: string
+): Promise<string> {
+  const response = await api.post("/auth/login", {
+    email,
+    password,
   });
 
-  if (!res.ok) {
-    throw new Error("Login inválido");
-  }
-
-  return res.json();
+  return response.data.access_token;
 }

@@ -7,21 +7,20 @@ import Dashboard from "../pages/Dashboard";
 import AnaliseTricologica from "../pages/AnaliseTricologica";
 import AnaliseCapilar from "../pages/AnaliseCapilar";
 import HistoryPage from "../pages/HistoryPage";
+import AuditLogs from "../pages/AuditLogs";
 
 export default function AppRoutes() {
-  const { isAuthenticated } = useAuth();
+  const { token, isReady } = useAuth();
+
+  // ⛔ NÃO renderiza rotas até o auth estar pronto
+  if (!isReady) {
+    return null; // ou loading
+  }
 
   return (
     <Routes>
-      {/* Login */}
-      <Route
-        path="/login"
-        element={
-          isAuthenticated ? <Navigate to="/dashboard" replace /> : <Login />
-        }
-      />
+      <Route path="/login" element={<Login />} />
 
-      {/* Dashboard */}
       <Route
         path="/dashboard"
         element={
@@ -31,7 +30,6 @@ export default function AppRoutes() {
         }
       />
 
-      {/* Análise Tricológica */}
       <Route
         path="/analise-tricologica"
         element={
@@ -41,7 +39,6 @@ export default function AppRoutes() {
         }
       />
 
-      {/* Análise Capilar */}
       <Route
         path="/analise-capilar"
         element={
@@ -51,7 +48,6 @@ export default function AppRoutes() {
         }
       />
 
-      {/* Histórico de Análises */}
       <Route
         path="/historico"
         element={
@@ -61,19 +57,32 @@ export default function AppRoutes() {
         }
       />
 
-      {/* Rota raiz */}
       <Route
-        path="/"
+        path="/administracao/audit"
         element={
-          <Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />
+          <PrivateRoute requiredRole="ADMIN">
+            <AuditLogs />
+          </PrivateRoute>
         }
       />
 
-      {/* Fallback */}
+      <Route
+        path="/"
+        element={
+          <Navigate
+            to={token ? "/dashboard" : "/login"}
+            replace
+          />
+        }
+      />
+
       <Route
         path="*"
         element={
-          <Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />
+          <Navigate
+            to={token ? "/dashboard" : "/login"}
+            replace
+          />
         }
       />
     </Routes>

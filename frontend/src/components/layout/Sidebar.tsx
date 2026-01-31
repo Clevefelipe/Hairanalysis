@@ -1,4 +1,5 @@
 import { NavLink } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import "../../styles/system.css";
 
 type SectionProps = {
@@ -34,6 +35,8 @@ function Item({ to, label }: ItemProps) {
 }
 
 export default function Sidebar() {
+  const { role } = useAuth();
+
   return (
     <aside className="sidebar">
       <nav className="sidebar-nav">
@@ -41,18 +44,24 @@ export default function Sidebar() {
           <Item to="/dashboard" label="Dashboard" />
         </Section>
 
-        <Section title="Clientes">
-          <Item to="/clientes" label="Listagem" />
-        </Section>
-
         <Section title="Análises">
           <Item to="/analise-capilar" label="Análise Capilar" />
           <Item to="/analise-tricologica" label="Análise Tricológica" />
         </Section>
 
-         <Section title="Configurações">
-          <Item to="/sistema" label="Sistema" />
+        <Section title="Histórico">
+          <Item to="/historico" label="Histórico" />
         </Section>
+
+        {/* 🔐 ADMIN ONLY */}
+        {role === "ADMIN" && (
+          <Section title="Administração">
+            <Item
+              to="/administracao/audit"
+              label="Audit Logs"
+            />
+          </Section>
+        )}
       </nav>
     </aside>
   );
