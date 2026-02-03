@@ -1,8 +1,9 @@
-import { useNavigate } from "react-router-dom";
+﻿import { useNavigate } from "react-router-dom";
 
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import NivelBadge from "../components/ui/NivelBadge";
+import { gerarResumoIntegrado } from "../engine/analiseIntegradaHeuristica";
 
 export default function ResumoExecutivo() {
   const navigate = useNavigate();
@@ -15,37 +16,43 @@ export default function ResumoExecutivo() {
     sessionStorage.getItem("resultadoAnaliseTricologica") || "{}"
   );
 
-  const nivelGeral =
-    resultadoCapilar.nivel === "elevado" ||
-    resultadoTricologico.nivel === "elevado"
-      ? "elevado"
-      : resultadoCapilar.nivel === "moderado" ||
-        resultadoTricologico.nivel === "moderado"
-      ? "moderado"
-      : "baixo";
-
-  const recomendacaoFinal =
-    nivelGeral === "baixo"
-      ? "Condições favoráveis para procedimentos, respeitando avaliação técnica."
-      : nivelGeral === "moderado"
-      ? "Indicado preparo técnico antes de procedimentos químicos."
-      : "Procedimentos químicos não recomendados no momento. Priorizar recuperação.";
+  const resumoIntegrado = gerarResumoIntegrado({
+    capilar: resultadoCapilar,
+    tricologica: resultadoTricologico,
+    uvFlags: resultadoTricologico?.uvFlags ?? [],
+  });
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-      <h1 style={{ fontSize: "32px", fontWeight: 700 }}>
-        Resumo Executivo
-      </h1>
+      <h1 style={{ fontSize: "32px", fontWeight: 700 }}>Resumo Executivo</h1>
 
-      {/* Nível geral */}
       <Card title="Nível técnico geral do atendimento">
         <div style={{ marginBottom: "12px" }}>
-          <NivelBadge nivel={nivelGeral} />
+          <NivelBadge nivel={resumoIntegrado.nivelGeral} />
         </div>
-        <p>{recomendacaoFinal}</p>
+        <p>{resumoIntegrado.recomendacoes[0]}</p>
       </Card>
 
-      {/* Capilar */}
+      <Card title="Pontos de atenção">
+        {resumoIntegrado.pontosAtencao.length === 0 ? (
+          <p>Nenhum ponto crítico aparente no momento da análise.</p>
+        ) : (
+          <ul style={{ marginLeft: "18px", listStyle: "disc" }}>
+            {resumoIntegrado.pontosAtencao.map((item: string) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        )}
+      </Card>
+
+      <Card title="Recomendações estéticas">
+        <ul style={{ marginLeft: "18px", listStyle: "disc" }}>
+          {resumoIntegrado.recomendacoes.map((item: string) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
+      </Card>
+
       <Card title="Análise Capilar">
         <NivelBadge nivel={resultadoCapilar.nivel || "baixo"} />
         <p style={{ marginTop: "8px" }}>
@@ -53,7 +60,6 @@ export default function ResumoExecutivo() {
         </p>
       </Card>
 
-      {/* Tricológica */}
       <Card title="Análise Tricológica">
         <NivelBadge nivel={resultadoTricologico.nivel || "baixo"} />
         <p style={{ marginTop: "8px" }}>
@@ -62,20 +68,15 @@ export default function ResumoExecutivo() {
         </p>
       </Card>
 
-      {/* Aviso */}
       <Card title="Observação importante" variant="attention">
-        Este resumo consolida análises técnicas estéticas. A decisão final
-        sobre procedimentos é sempre do profissional responsável.
+        {resumoIntegrado.aviso}
       </Card>
 
-      {/* Ações */}
       <div style={{ display: "flex", gap: "12px" }}>
         <Button variant="secondary" onClick={() => navigate("/dashboard")}>
           Voltar ao Dashboard
         </Button>
-        <Button variant="primary">
-          Registrar Decisão do Atendimento
-        </Button>
+        <Button variant="primary">Registrar decisão do atendimento</Button>
       </div>
     </div>
   );

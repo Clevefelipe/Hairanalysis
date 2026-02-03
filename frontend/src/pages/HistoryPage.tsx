@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getHistoryByClient, AnalysisHistory } from "../services/history.service";
+import "../styles/system.css";
 
 function getScoreStyle(score: number) {
   if (score >= 80) {
@@ -44,26 +45,24 @@ export default function HistoryPage() {
   }, []);
 
   if (loading) {
-    return (
-      <div className="p-6 text-gray-500">
-        Carregando histórico...
-      </div>
-    );
+    return <div className="p-6 text-gray-500">Carregando histórico...</div>;
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-semibold">
-        Histórico de Análises
-      </h1>
+    <section className="page-shell">
+      <div className="page-hero">
+        <div>
+          <h1 className="page-hero-title">Histórico de Análises</h1>
+          <p className="page-hero-subtitle">
+            Acompanhe o desempenho das análises e consulte alertas.
+          </p>
+        </div>
 
-      <div className="flex flex-wrap gap-3">
-        <Link
-          to="/historico/evolucao"
-          className="px-3 py-2 rounded bg-slate-900 text-white text-sm"
-        >
-          Ver evolucao
-        </Link>
+        <div className="page-actions">
+          <Link to="/historico/evolucao" className="btn-primary">
+            Ver evolução
+          </Link>
+        </div>
       </div>
 
       {history.length === 0 && (
@@ -76,33 +75,26 @@ export default function HistoryPage() {
         const scoreStyle = getScoreStyle(item.score);
 
         return (
-          <div
-            key={item.id}
-            className={`border rounded-lg p-4 shadow-sm space-y-3 ${scoreStyle.className}`}
-          >
-            <div className="flex justify-between items-center">
+          <div key={item.id} className="panel panel-muted space-y-3">
+            <div className="flex justify-between items-center flex-wrap gap-2">
               <span className="text-sm opacity-70">
                 {new Date(item.createdAt).toLocaleDateString()}
               </span>
 
-              <div className="flex gap-2">
-                <span className="text-xs px-2 py-1 rounded border">
+              <div className="flex gap-2 flex-wrap">
+                <span className="chip">
                   {item.analysisType === "tricologica"
                     ? "Tricológica"
                     : "Capilar"}
                 </span>
-
-                <span className="text-xs px-2 py-1 rounded font-medium border">
+                <span className={`chip ${scoreStyle.className}`}>
                   {scoreStyle.label}
                 </span>
               </div>
             </div>
 
             <div className="text-sm font-medium">
-              Score:{" "}
-              <span className="text-lg font-semibold">
-                {item.score}
-              </span>
+              Score: <span className="text-lg font-semibold">{item.score}</span>
             </div>
 
             <div className="text-sm whitespace-pre-line">
@@ -110,10 +102,7 @@ export default function HistoryPage() {
             </div>
 
             <div>
-              <Link
-                to={`/historico/${item.id}`}
-                className="text-sm text-blue-700 hover:underline"
-              >
+              <Link to={`/historico/${item.id}`} className="page-link">
                 Ver detalhes
               </Link>
             </div>
@@ -121,10 +110,7 @@ export default function HistoryPage() {
             {item.flags.length > 0 && (
               <div className="flex flex-wrap gap-2 pt-2">
                 {item.flags.map((flag) => (
-                  <span
-                    key={flag}
-                    className="text-xs px-2 py-1 rounded bg-white bg-opacity-60 border"
-                  >
+                  <span key={flag} className="chip chip-flag">
                     {flag}
                   </span>
                 ))}
@@ -133,6 +119,6 @@ export default function HistoryPage() {
           </div>
         );
       })}
-    </div>
+    </section>
   );
 }

@@ -7,8 +7,9 @@ export default function Sidebar() {
   const menu = [
     { label: "Dashboard", path: "/dashboard" },
     { label: "Clientes", path: "/clientes" },
-    { label: "Historico", path: "/historico" },
-    { label: "Evolucao", path: "/historico/evolucao" },
+    { label: "Histórico", path: "/historico" },
+    { label: "Evolução", path: "/historico/evolucao" },
+    { label: "Alisamentos", path: "/alisamentos" },
     ...(role === "ADMIN"
       ? [
           { label: "Audit Logs", path: "/administracao/audit" },

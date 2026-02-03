@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -10,6 +10,7 @@ import {
   Legend,
 } from "chart.js";
 import { getHistoryByClient, AnalysisHistory } from "../services/history.service";
+import "../styles/system.css";
 
 ChartJS.register(
   CategoryScale,
@@ -30,7 +31,6 @@ export default function HistoryEvolutionPage() {
   useEffect(() => {
     getHistoryByClient(clientId)
       .then((data) => {
-        // ordena do mais antigo para o mais recente
         const ordered = [...data].reverse();
         setHistory(ordered);
       })
@@ -38,11 +38,7 @@ export default function HistoryEvolutionPage() {
   }, []);
 
   if (loading) {
-    return (
-      <div className="p-6 text-gray-500">
-        Carregando evolução...
-      </div>
-    );
+    return <div className="p-6 text-gray-500">Carregando evolução...</div>;
   }
 
   if (history.length === 0) {
@@ -65,8 +61,8 @@ export default function HistoryEvolutionPage() {
       {
         label: "Score de Evolução",
         data: scores,
-        borderColor: "#2563eb", // blue-600
-        backgroundColor: "rgba(37, 99, 235, 0.2)",
+        borderColor: "#d7a45c",
+        backgroundColor: "rgba(215, 164, 92, 0.2)",
         tension: 0.3,
         fill: true,
         pointRadius: 4,
@@ -82,8 +78,7 @@ export default function HistoryEvolutionPage() {
       },
       tooltip: {
         callbacks: {
-          label: (context: any) =>
-            `Score: ${context.parsed.y}`,
+          label: (context: any) => `Score: ${context.parsed.y}`,
         },
       },
     },
@@ -106,14 +101,19 @@ export default function HistoryEvolutionPage() {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-semibold">
-        Evolução do Cliente
-      </h1>
+    <section className="page-shell">
+      <div className="page-hero">
+        <div>
+          <h1 className="page-hero-title">Evolução do Cliente</h1>
+          <p className="page-hero-subtitle">
+            Visualize a evolução de score e a consistência dos resultados.
+          </p>
+        </div>
+      </div>
 
-      <div className="bg-white border rounded-lg p-4 shadow-sm">
+      <div className="panel">
         <Line data={data} options={options} />
       </div>
-    </div>
+    </section>
   );
 }

@@ -1,6 +1,8 @@
 import {
   Controller,
   Get,
+  Post,
+  Param,
   UseGuards,
   Req,
 } from "@nestjs/common";
@@ -17,6 +19,16 @@ export class HistoryController {
   @Get("dashboard")
   async dashboard(@Req() req: any) {
     const salonId = req.user.salonId;
-    return this.historyService.dashboard(salonId);
+    return this.historyService.getDashboard(salonId);
+  }
+
+  @Post("share/:id")
+  async share(@Req() req: any, @Param("id") id: string) {
+    const salonId = req.user.salonId;
+    const token = await this.historyService.createShareToken(id, salonId);
+    return {
+      token,
+      url: `/history/public/${token}`,
+    };
   }
 }

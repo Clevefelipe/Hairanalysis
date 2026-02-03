@@ -13,6 +13,11 @@ export type DashboardResponse = {
   }[];
 };
 
+export type HistoryShareResponse = {
+  token: string;
+  url: string;
+};
+
 export interface AnalysisHistory {
   id: string;
   createdAt: string;
@@ -105,5 +110,10 @@ export const historyService = {
       }
     );
     return response.data as Blob;
+  },
+
+  async share(historyId: string): Promise<HistoryShareResponse> {
+    const response = await api.post(`/history/share/${historyId}`);
+    return response.data;
   },
 };

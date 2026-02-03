@@ -5,16 +5,15 @@ type Props = {
 
 export default function ClientesBusca({ value, onChange }: Props) {
   return (
-    <input
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder="Buscar por nome, telefone ou CPF"
-      style={{
-        width: "100%",
-        padding: "12px 16px",
-        borderRadius: 8,
-        border: "1px solid #e5e7eb",
-      }}
-    />
+    <div className="clientes-toolbar">
+      <div className="clientes-search">
+        <input
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="Buscar por nome, telefone ou CPF"
+        />
+        <span>Filtro rápido</span>
+      </div>
+    </div>
   );
 }

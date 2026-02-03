@@ -4,25 +4,14 @@ type Props = {
 
 export default function ClientesHeader({ onNovoCliente }: Props) {
   return (
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+    <div className="clientes-hero">
       <div>
+        <span className="clientes-hero-badge">Gestão ativa</span>
         <h1>Clientes</h1>
-        <p style={{ color: "#6b7280" }}>
-          Gerencie seus clientes e acompanhe históricos de atendimento
-        </p>
+        <p>Gerencie seus clientes e acompanhe históricos de atendimento.</p>
       </div>
 
-      <button
-        onClick={onNovoCliente}
-        style={{
-          padding: "10px 16px",
-          borderRadius: 8,
-          background: "#111827",
-          color: "#fff",
-          border: "none",
-          cursor: "pointer",
-        }}
-      >
+      <button className="btn-primary" onClick={onNovoCliente}>
         Cadastrar cliente
       </button>
     </div>

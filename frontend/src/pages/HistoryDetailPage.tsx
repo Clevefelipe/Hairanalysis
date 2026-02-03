@@ -1,7 +1,9 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { QRCodeCanvas } from "qrcode.react";
 import api from "../services/api";
-import { AnalysisHistory } from "../services/history.service";
+import { AnalysisHistory, historyService } from "../services/history.service";
+import "../styles/system.css";
 
 function getScoreStyle(score: number) {
   if (score >= 80) {
@@ -20,13 +22,13 @@ function getScoreStyle(score: number) {
 
   if (score >= 40) {
     return {
-      label: "Atencao",
+      label: "Atenção",
       className: "bg-yellow-100 text-yellow-800 border-yellow-300",
     };
   }
 
   return {
-    label: "Critico",
+    label: "Crítico",
     className: "bg-red-100 text-red-800 border-red-300",
   };
 }
@@ -38,6 +40,8 @@ export default function HistoryDetailPage() {
   const [data, setData] = useState<AnalysisHistory | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingPdf, setLoadingPdf] = useState(false);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [shareLoading, setShareLoading] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -69,51 +73,61 @@ export default function HistoryDetailPage() {
     }
   };
 
+  const handleShare = async () => {
+    if (!id) return;
+
+    try {
+      setShareLoading(true);
+      const response = await historyService.share(id);
+      const url = `${window.location.origin}/publico/${response.token}`;
+      setShareUrl(url);
+      await navigator.clipboard.writeText(url);
+    } finally {
+      setShareLoading(false);
+    }
+  };
+
   if (loading) {
-    return (
-      <div className="p-6 text-gray-500">
-        Carregando analise...
-      </div>
-    );
+    return <div className="p-6 text-gray-500">Carregando análise...</div>;
   }
 
   if (!data) {
-    return (
-      <div className="p-6 text-red-600">
-        Analise nao encontrada.
-      </div>
-    );
+    return <div className="p-6 text-red-600">Análise não encontrada.</div>;
   }
 
   const scoreStyle = getScoreStyle(data.score ?? 0);
 
   return (
-    <div className="p-6 space-y-6 max-w-5xl mx-auto">
-      <div className="flex items-center justify-between">
-        <button
-          onClick={() => navigate(-1)}
-          className="text-sm text-blue-600 hover:underline"
-        >
-          Voltar para o historico
+    <section className="page-shell">
+      <div className="page-actions">
+        <button onClick={() => navigate(-1)} className="page-link">
+          Voltar para o histórico
         </button>
 
-        <button
-          onClick={handleGeneratePdf}
-          disabled={loadingPdf}
-          className="px-4 py-2 rounded bg-slate-900 text-white text-sm hover:bg-slate-800 disabled:opacity-50"
-        >
-          {loadingPdf ? "Gerando PDF..." : "Baixar laudo"}
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={handleShare}
+            disabled={shareLoading}
+            className="btn-secondary"
+          >
+            {shareLoading ? "Gerando link..." : "Gerar link da cliente"}
+          </button>
+          <button
+            onClick={handleGeneratePdf}
+            disabled={loadingPdf}
+            className="page-cta"
+          >
+            {loadingPdf ? "Gerando PDF..." : "Baixar laudo"}
+          </button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 border rounded-lg p-6 shadow-sm bg-white">
-          <div className="flex justify-between items-center">
-            <h1 className="text-xl font-semibold">
-              Detalhe da Analise
-            </h1>
+      <div className="grid-2-1">
+        <div className="panel">
+          <div className="flex justify-between items-center flex-wrap gap-2">
+            <h1 className="page-hero-title">Detalhe da análise</h1>
 
-            <span className={`text-xs px-3 py-1 rounded border font-medium ${scoreStyle.className}`}>
+            <span className={`chip ${scoreStyle.className}`}>
               {scoreStyle.label}
             </span>
           </div>
@@ -123,39 +137,34 @@ export default function HistoryDetailPage() {
           </p>
 
           <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="border rounded-lg p-4">
+            <div className="panel panel-muted">
               <div className="text-xs text-slate-500">Tipo</div>
               <div className="text-sm font-medium">
                 {data.analysisType === "tricologica"
-                  ? "Analise Tricologica"
-                  : "Analise Capilar"}
+                  ? "Análise Tricológica"
+                  : "Análise Capilar"}
               </div>
             </div>
-            <div className="border rounded-lg p-4">
+            <div className="panel panel-muted">
               <div className="text-xs text-slate-500">Score</div>
               <div className="text-sm font-medium">{data.score}</div>
             </div>
           </div>
 
           <div className="mt-6">
-            <h2 className="font-medium mb-2">Interpretacao Tecnica</h2>
+            <h2 className="font-medium mb-2">Interpretação Técnica</h2>
             <div className="text-sm whitespace-pre-line">
-              {data.interpretation || "Sem interpretacao registrada."}
+              {data.interpretation || "Sem interpretação registrada."}
             </div>
           </div>
 
           {data.flags && data.flags.length > 0 && (
             <div className="mt-6">
-              <h2 className="font-medium mb-2">
-                Pontos de Atencao
-              </h2>
+              <h2 className="font-medium mb-2">Pontos de Atenção</h2>
 
               <div className="flex flex-wrap gap-2">
                 {data.flags.map((flag) => (
-                  <span
-                    key={flag}
-                    className="text-xs px-2 py-1 rounded bg-slate-100 border"
-                  >
+                  <span key={flag} className="chip chip-flag">
                     {flag}
                   </span>
                 ))}
@@ -164,7 +173,7 @@ export default function HistoryDetailPage() {
           )}
         </div>
 
-        <aside className="border rounded-lg p-6 shadow-sm bg-white space-y-4">
+        <aside className="panel panel-muted space-y-4">
           <div>
             <div className="text-xs text-slate-500">Cliente</div>
             <div className="text-sm font-medium">
@@ -173,25 +182,33 @@ export default function HistoryDetailPage() {
           </div>
 
           <div>
-            <div className="text-xs text-slate-500">Dominio</div>
+            <div className="text-xs text-slate-500">Domínio</div>
             <div className="text-sm font-medium">
-              {data.analysisType === "tricologica"
-                ? "Tricologica"
-                : "Capilar"}
+              {data.analysisType === "tricologica" ? "Tricológica" : "Capilar"}
             </div>
           </div>
 
           <div>
             <div className="text-xs text-slate-500">Status</div>
-            <div className="text-sm font-medium">Concluida</div>
+            <div className="text-sm font-medium">Concluída</div>
           </div>
 
           <div className="text-xs text-slate-500 border-t pt-4">
-            Relatorio tecnico-estetico.
-            Nao substitui avaliacao profissional nem diagnostico clinico.
+            Relatório técnico-estético.
+            Não substitui avaliação profissional nem diagnóstico clínico.
           </div>
+
+          {shareUrl && (
+            <div className="space-y-2 border-t pt-4">
+              <div className="text-xs text-slate-500">Link para a cliente</div>
+              <div className="text-xs break-all">{shareUrl}</div>
+              <div>
+                <QRCodeCanvas value={shareUrl} size={120} />
+              </div>
+            </div>
+          )}
         </aside>
       </div>
-    </div>
+    </section>
   );
 }

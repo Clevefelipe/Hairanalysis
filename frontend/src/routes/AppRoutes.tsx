@@ -12,6 +12,8 @@ import HistoryDetailPage from "../pages/HistoryDetailPage";
 import HistoryEvolutionPage from "../pages/HistoryEvolutionPage";
 import AuditLogs from "../pages/AuditLogs";
 import ListagemClientes from "../pages/cliente/Listagem";
+import PublicHistoryReport from "../pages/PublicHistoryReport";
+import Alisamentos from "../pages/Alisamentos";
 
 export default function AppRoutes() {
   const { token, isReady } = useAuth();
@@ -24,6 +26,7 @@ export default function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/publico/:token" element={<PublicHistoryReport />} />
 
       <Route
         element={
@@ -39,6 +42,7 @@ export default function AppRoutes() {
         <Route path="/historico" element={<HistoryPage />} />
         <Route path="/historico/:id" element={<HistoryDetailPage />} />
         <Route path="/historico/evolucao" element={<HistoryEvolutionPage />} />
+        <Route path="/alisamentos" element={<Alisamentos />} />
       </Route>
 
       <Route

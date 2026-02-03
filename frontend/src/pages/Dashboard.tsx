@@ -6,6 +6,7 @@ import {
   historyService,
   DashboardResponse,
 } from "../services/history.service";
+import "../styles/system.css";
 
 function isRecent(dateIso: string) {
   const date = new Date(dateIso).getTime();
@@ -25,18 +26,11 @@ function trendBadge(value: number) {
   return "bg-rose-100 text-rose-800 border-rose-200";
 }
 
-const periods = [
-  { label: "7 dias", value: 7 },
-  { label: "30 dias", value: 30 },
-  { label: "90 dias", value: 90 },
-];
-
 export default function Dashboard() {
   const { user } = useAuth();
   const [data, setData] = useState<DashboardResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [period, setPeriod] = useState(30);
 
   useEffect(() => {
     setLoading(true);
@@ -49,7 +43,7 @@ export default function Dashboard() {
         )
       )
       .finally(() => setLoading(false));
-  }, [user?.salonId, period]);
+  }, [user?.salonId]);
 
   if (loading) {
     return (
@@ -70,6 +64,7 @@ export default function Dashboard() {
   const total = data?.total ?? 0;
   const capilar = data?.capilar ?? 0;
   const tricologia = data?.tricologia ?? 0;
+  const latest = data?.latest ?? [];
 
   return (
     <div className="space-y-8">
@@ -79,57 +74,41 @@ export default function Dashboard() {
             Dashboard
           </h2>
           <p className="text-slate-600">
-            Visao geral do salao
+            Visão geral do salão
           </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {periods.map((p) => (
-            <button
-              key={p.value}
-              onClick={() => setPeriod(p.value)}
-              className={`text-xs px-3 py-1.5 rounded border ${
-                period === p.value
-                  ? "bg-slate-900 text-white border-slate-900"
-                  : "bg-white text-slate-600 border-slate-200"
-              }`}
-            >
-              {p.label}
-            </button>
-          ))}
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <StatCard
-          title="Total de Analises"
+          title="Total de Análises"
           value={total}
-          subtitle="Periodo selecionado"
+          subtitle="Período atual"
         />
         <StatCard
           title="Capilar"
           value={capilar}
-          subtitle="Analises capilares"
+          subtitle="Análises capilares"
         />
         <StatCard
-          title="Tricologica"
+          title="Tricológica"
           value={tricologia}
-          subtitle="Analises tricologicas"
+          subtitle="Análises tricológicas"
         />
       </div>
 
       <div>
         <h3 className="text-lg font-semibold mb-3">
-          Ultimas Analises
+          Últimas Análises
         </h3>
 
-        {!data || data.latest.length === 0 ? (
+        {latest.length === 0 ? (
           <p className="text-slate-500">
-            Nenhuma analise registrada ainda.
+            Nenhuma análise registrada ainda.
           </p>
         ) : (
           <div className="space-y-3">
-            {data.latest.slice(0, 5).map((item) => (
+            {latest.slice(0, 5).map((item) => (
               <div
                 key={item.id}
                 className="bg-white border border-slate-200 rounded-lg p-4 flex justify-between items-center"
@@ -137,7 +116,7 @@ export default function Dashboard() {
                 <div>
                   <div className="text-sm font-medium">
                     {item.domain === "tricologica"
-                      ? "TRICOLOGICA"
+                      ? "TRICOLÓGICA"
                       : "CAPILAR"}
                   </div>
                   <div className="text-xs text-slate-500">
@@ -153,7 +132,7 @@ export default function Dashboard() {
                       )}`}
                     >
                       {item.domain === "tricologica"
-                        ? "Tricologica"
+                        ? "Tricológica"
                         : "Capilar"}
                     </span>
                     {isRecent(item.createdAt) && (
@@ -166,7 +145,7 @@ export default function Dashboard() {
 
                 <div className="flex items-center gap-2">
                   <span className={`text-xs px-2 py-1 rounded border ${trendBadge(70)}`}>
-                    Concluida
+                    Concluída
                   </span>
                   <Link
                     to={`/historico/${item.id}`}
@@ -182,8 +161,8 @@ export default function Dashboard() {
       </div>
 
       <div className="text-xs text-slate-500 border-t pt-4">
-        Sistema de apoio tecnico-estetico.
-        Nao substitui avaliacao profissional nem diagnostico clinico.
+        Sistema de apoio técnico-estético.
+        Não substitui avaliação profissional nem diagnóstico clínico.
       </div>
     </div>
   );

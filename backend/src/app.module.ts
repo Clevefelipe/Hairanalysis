@@ -9,6 +9,7 @@ import { HistoryModule } from "./modules/history/history.module";
 import { VisionModule } from "./modules/vision/vision.module";
 import { KnowledgeModule } from "./modules/knowledge/knowledge.module";
 import { AuditModule } from "./modules/audit/audit.module";
+import { StraighteningModule } from "./modules/straightening/straightening.module";
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { AuditModule } from "./modules/audit/audit.module";
     HistoryModule,
     VisionModule,
     KnowledgeModule,
+    StraighteningModule,
   ],
 })
 export class AppModule {}
