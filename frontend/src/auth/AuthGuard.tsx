@@ -1,19 +1,15 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-export default function ProtectedRoute({
+export default function AuthGuard({
   children,
 }: {
   children: JSX.Element;
 }) {
   const { token, isReady } = useAuth();
 
-  // ⏳ Aguarda o AuthContext carregar
-  if (!isReady) {
-    return null;
-  }
+  if (!isReady) return null;
 
-  // 🔒 Sem token → login
   if (!token) {
     return <Navigate to="/login" replace />;
   }

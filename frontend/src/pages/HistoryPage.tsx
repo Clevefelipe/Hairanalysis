@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { getHistoryByClient, AnalysisHistory } from "../services/history.service";
 
 function getScoreStyle(score: number) {
@@ -56,6 +57,15 @@ export default function HistoryPage() {
         Histórico de Análises
       </h1>
 
+      <div className="flex flex-wrap gap-3">
+        <Link
+          to="/historico/evolucao"
+          className="px-3 py-2 rounded bg-slate-900 text-white text-sm"
+        >
+          Ver evolucao
+        </Link>
+      </div>
+
       {history.length === 0 && (
         <p className="text-gray-500">
           Nenhuma análise encontrada para este cliente.
@@ -97,6 +107,15 @@ export default function HistoryPage() {
 
             <div className="text-sm whitespace-pre-line">
               {item.interpretation}
+            </div>
+
+            <div>
+              <Link
+                to={`/historico/${item.id}`}
+                className="text-sm text-blue-700 hover:underline"
+              >
+                Ver detalhes
+              </Link>
             </div>
 
             {item.flags.length > 0 && (

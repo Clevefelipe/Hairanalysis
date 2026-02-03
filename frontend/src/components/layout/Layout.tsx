@@ -1,30 +1,16 @@
-// Layout.tsx (com CSS inline)
 import { Outlet } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import TopBar from "./TopBar";
 
 export default function Layout() {
   return (
-    <div style={{
-      display: "flex",
-      minHeight: "100vh",
-      backgroundColor: "#ffffff"
-    }}>
+    <div className="min-h-screen flex bg-slate-50">
       <Sidebar />
-      <div style={{
-        flex: 1,
-        display: "flex",
-        flexDirection: "column",
-        minWidth: 0
-      }}>
+
+      <div className="flex-1 flex flex-col">
         <TopBar />
-        <main style={{
-          flex: 1,
-          padding: "24px",
-          background: "#f7f7f8",
-          overflowY: "auto",
-          position: "relative"
-        }}>
+
+        <main className="flex-1 p-6">
           <Outlet />
         </main>
       </div>

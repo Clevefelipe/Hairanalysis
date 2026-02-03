@@ -1,6 +1,3 @@
-import axios from "axios";
+import api from "../services/api";
 
-export const api = axios.create({
-  baseURL: "http://localhost:3000/api",
-  withCredentials: false
-});
+export { api };

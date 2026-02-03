@@ -1,67 +1,37 @@
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import "../../styles/system.css";
-
-type SectionProps = {
-  title: string;
-  children: React.ReactNode;
-};
-
-function Section({ title, children }: SectionProps) {
-  return (
-    <div className="sidebar-section">
-      <span className="sidebar-section-title">{title}</span>
-      <div className="sidebar-items">{children}</div>
-    </div>
-  );
-}
-
-type ItemProps = {
-  to: string;
-  label: string;
-};
-
-function Item({ to, label }: ItemProps) {
-  return (
-    <NavLink
-      to={to}
-      className={({ isActive }) =>
-        isActive ? "sidebar-link active" : "sidebar-link"
-      }
-    >
-      {label}
-    </NavLink>
-  );
-}
 
 export default function Sidebar() {
   const { role } = useAuth();
 
+  const menu = [
+    { label: "Dashboard", path: "/dashboard" },
+    { label: "Clientes", path: "/clientes" },
+    { label: "Historico", path: "/historico" },
+    { label: "Evolucao", path: "/historico/evolucao" },
+    ...(role === "ADMIN"
+      ? [
+          { label: "Audit Logs", path: "/administracao/audit" },
+        ]
+      : []),
+  ];
+
   return (
-    <aside className="sidebar">
-      <nav className="sidebar-nav">
-        <Section title="Painel">
-          <Item to="/dashboard" label="Dashboard" />
-        </Section>
+    <aside className="w-64 bg-slate-900 text-white p-4">
+      <h2 className="text-lg font-semibold mb-4">
+        Hair Analysis
+      </h2>
 
-        <Section title="Análises">
-          <Item to="/analise-capilar" label="Análise Capilar" />
-          <Item to="/analise-tricologica" label="Análise Tricológica" />
-        </Section>
-
-        <Section title="Histórico">
-          <Item to="/historico" label="Histórico" />
-        </Section>
-
-        {/* 🔐 ADMIN ONLY */}
-        {role === "ADMIN" && (
-          <Section title="Administração">
-            <Item
-              to="/administracao/audit"
-              label="Audit Logs"
-            />
-          </Section>
-        )}
+      <nav className="space-y-2">
+        {menu.map((item) => (
+          <NavLink
+            key={item.path}
+            to={item.path}
+            className="block px-3 py-2 rounded hover:bg-slate-800"
+          >
+            {item.label}
+          </NavLink>
+        ))}
       </nav>
     </aside>
   );

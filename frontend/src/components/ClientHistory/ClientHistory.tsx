@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { fetchClientHistory } from "../../api/history.api";
+import { getHistoryByClient } from "../../services/history.service";
 
 interface HistoryItem {
   id: string;
@@ -18,7 +18,7 @@ export default function ClientHistory({ clientId }: Props) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchClientHistory(clientId)
+    getHistoryByClient(clientId)
       .then(setItems)
       .finally(() => setLoading(false));
   }, [clientId]);

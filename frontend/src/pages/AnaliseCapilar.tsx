@@ -15,7 +15,7 @@ interface AnalysisResult {
 }
 
 export default function AnaliseCapilar() {
-  const { auth } = useAuth();
+  const { token } = useAuth();
 
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [status, setStatus] = useState("Iniciando sessão...");
@@ -38,7 +38,7 @@ export default function AnaliseCapilar() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${auth?.token}`,
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
             clientId: "cliente_demo",
@@ -54,8 +54,8 @@ export default function AnaliseCapilar() {
       }
     }
 
-    if (auth?.token) startSession();
-  }, [auth]);
+    if (token) startSession();
+  }, [token]);
 
   async function handleCapture(file: File) {
     if (!sessionId) return;
@@ -71,7 +71,7 @@ export default function AnaliseCapilar() {
     const response = await fetch(`${API}/vision/upload`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${auth?.token}`,
+        Authorization: `Bearer ${token}`,
       },
       body: formData,
     });

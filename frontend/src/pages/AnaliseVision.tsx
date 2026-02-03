@@ -13,7 +13,7 @@ import { salvarVisionBackend } from "../services/visionApi";
 import { useAuth } from "../context/AuthContext";
 
 export default function AnaliseVision() {
-  const { auth } = useAuth(); // 🔐 salonId REAL vem daqui
+  const { token, user } = useAuth(); // 🔐 salonId REAL vem daqui
   const sessionRef = useRef(new VisionSession());
 
   const [frames, setFrames] = useState<VisionFrame[]>([]);
@@ -34,7 +34,7 @@ export default function AnaliseVision() {
   }
 
   async function handleSaveAnnotation(annotationBase64: string) {
-    if (!selectedFrame || !auth) return;
+    if (!selectedFrame || !token || !user?.salonId) return;
 
     setSaving(true);
 
@@ -55,7 +55,7 @@ export default function AnaliseVision() {
 
     // 3️⃣ Salva no backend com salonId REAL
     try {
-      await salvarVisionBackend(auth.salonId, {
+      await salvarVisionBackend(user.salonId, {
         imageBase64: selectedFrame.imageBase64,
         annotationBase64,
         findings,

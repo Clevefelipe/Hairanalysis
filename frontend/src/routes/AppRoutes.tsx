@@ -1,13 +1,17 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import PrivateRoute from "./PrivateRoute";
+import Layout from "../components/layout/Layout";
 
 import Login from "../pages/Login";
 import Dashboard from "../pages/Dashboard";
 import AnaliseTricologica from "../pages/AnaliseTricologica";
 import AnaliseCapilar from "../pages/AnaliseCapilar";
 import HistoryPage from "../pages/HistoryPage";
+import HistoryDetailPage from "../pages/HistoryDetailPage";
+import HistoryEvolutionPage from "../pages/HistoryEvolutionPage";
 import AuditLogs from "../pages/AuditLogs";
+import ListagemClientes from "../pages/cliente/Listagem";
 
 export default function AppRoutes() {
   const { token, isReady } = useAuth();
@@ -22,40 +26,20 @@ export default function AppRoutes() {
       <Route path="/login" element={<Login />} />
 
       <Route
-        path="/dashboard"
         element={
           <PrivateRoute>
-            <Dashboard />
+            <Layout />
           </PrivateRoute>
         }
-      />
-
-      <Route
-        path="/analise-tricologica"
-        element={
-          <PrivateRoute>
-            <AnaliseTricologica />
-          </PrivateRoute>
-        }
-      />
-
-      <Route
-        path="/analise-capilar"
-        element={
-          <PrivateRoute>
-            <AnaliseCapilar />
-          </PrivateRoute>
-        }
-      />
-
-      <Route
-        path="/historico"
-        element={
-          <PrivateRoute>
-            <HistoryPage />
-          </PrivateRoute>
-        }
-      />
+      >
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/analise-tricologica" element={<AnaliseTricologica />} />
+        <Route path="/analise-capilar" element={<AnaliseCapilar />} />
+        <Route path="/clientes" element={<ListagemClientes />} />
+        <Route path="/historico" element={<HistoryPage />} />
+        <Route path="/historico/:id" element={<HistoryDetailPage />} />
+        <Route path="/historico/evolucao" element={<HistoryEvolutionPage />} />
+      </Route>
 
       <Route
         path="/administracao/audit"
@@ -70,7 +54,7 @@ export default function AppRoutes() {
         path="/"
         element={
           <Navigate
-            to={token ? "/dashboard" : "/login"}
+            to={token ? "/clientes" : "/login"}
             replace
           />
         }
@@ -80,7 +64,7 @@ export default function AppRoutes() {
         path="*"
         element={
           <Navigate
-            to={token ? "/dashboard" : "/login"}
+            to={token ? "/clientes" : "/login"}
             replace
           />
         }

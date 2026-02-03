@@ -1,51 +1,109 @@
 import api from "./api";
 
-export type AnalysisType = "tricologica" | "capilar";
+export type AnalysisType = "capilar" | "tricologica";
+
+export type DashboardResponse = {
+  total: number;
+  capilar: number;
+  tricologia: number;
+  latest: {
+    id: string;
+    domain: AnalysisType;
+    createdAt: string;
+  }[];
+};
 
 export interface AnalysisHistory {
   id: string;
-  clientId: string;
-  domain: AnalysisType;
-  baseResult: {
-    score?: number;
-    signals?: Record<string, string>;
-  };
-  ragResult: any;
   createdAt: string;
+  // Legacy/alternate fields used across screens
+  domain?: AnalysisType;
+  analysisType?: AnalysisType;
+  score?: number;
+  flags?: string[];
+  interpretation?: string;
+  signals?: Record<string, string>;
 }
 
-/**
- * Retorna o histórico de análises de um cliente
- * com filtros opcionais
- */
+export type HistoryFilters = {
+  domain?: AnalysisType;
+  q?: string;
+};
+
+async function fetchHistoryFromPrimary(
+  clientId: string,
+  filters?: HistoryFilters
+): Promise<AnalysisHistory[]> {
+  const res = await api.get(
+    `/clients/${clientId}/history`,
+    { params: filters }
+  );
+  return res.data;
+}
+
+async function fetchHistoryFromFallback(
+  clientId: string,
+  filters?: HistoryFilters
+): Promise<AnalysisHistory[]> {
+  const res = await api.get(`/history/${clientId}`, {
+    params: filters,
+  });
+  return res.data;
+}
+
 export async function getHistoryByClient(
   clientId: string,
-  filters?: {
-    domain?: AnalysisType;
-    q?: string;
-  }
+  filters?: HistoryFilters
 ): Promise<AnalysisHistory[]> {
-  const response = await api.get<AnalysisHistory[]>(
-    `/history/client/${clientId}`,
-    {
-      params: {
-        domain: filters?.domain,
-        q: filters?.q,
-      },
+  try {
+    return await fetchHistoryFromPrimary(
+      clientId,
+      filters
+    );
+  } catch {
+    try {
+      return await fetchHistoryFromFallback(
+        clientId,
+        filters
+      );
+    } catch {
+      return [];
     }
-  );
-
-  return response.data;
+  }
 }
 
-/**
- * Retorna uma análise específica pelo ID
- */
-export async function getHistoryById(
-  historyId: string
-): Promise<AnalysisHistory> {
-  const response = await api.get<AnalysisHistory>(
-    `/history/${historyId}`
-  );
-  return response.data;
-}
+export const historyService = {
+  async getDashboard(salonId?: string): Promise<DashboardResponse> {
+    const res = await api.get("/history/dashboard", {
+      params: salonId ? { salonId } : undefined,
+    });
+    return res.data;
+  },
+
+  async list(): Promise<AnalysisHistory[]> {
+    // Sem rota global estavel ainda.
+    return [];
+  },
+
+  
+  async getByClient(
+    clientId: string,
+    filters?: HistoryFilters
+  ): Promise<AnalysisHistory[]> {
+    return getHistoryByClient(clientId, filters);
+  },
+
+  async downloadPdf(
+    historyId: string,
+    domain: AnalysisType = "capilar"
+  ): Promise<Blob> {
+    const response = await api.get(
+      `/history/${historyId}/pdf`,
+      {
+        params: { domain },
+        responseType: "blob",
+      }
+    );
+    return response.data as Blob;
+  },
+};

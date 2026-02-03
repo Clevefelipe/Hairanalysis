@@ -13,7 +13,7 @@ interface AnalysisResult {
 }
 
 export default function AnaliseTricologica() {
-  const { auth } = useAuth();
+  const { token } = useAuth();
 
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [status, setStatus] = useState("Iniciando sessão...");
@@ -27,7 +27,7 @@ export default function AnaliseTricologica() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${auth?.token}`,
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
             clientId: "cliente_demo",
@@ -43,8 +43,8 @@ export default function AnaliseTricologica() {
       }
     }
 
-    if (auth?.token) startSession();
-  }, [auth]);
+    if (token) startSession();
+  }, [token]);
 
   async function handleCapture(file: File) {
     if (!sessionId) return;
@@ -60,7 +60,7 @@ export default function AnaliseTricologica() {
     const response = await fetch(`${API}/vision/upload`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${auth?.token}`,
+        Authorization: `Bearer ${token}`,
       },
       body: formData,
     });
