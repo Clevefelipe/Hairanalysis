@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
-import {
-  getClinicalReports,
-  ClinicalReport
-} from "@/services/clinicalReportService";
+import { getClinicalReports, ClinicalReport } from "@/services/clinicalReportService";
+import { formatDateBr } from "@/utils/date";
 
 export default function ClinicalReportHistoryPage() {
   const [reports, setReports] = useState<ClinicalReport[]>([]);
@@ -34,7 +32,7 @@ export default function ClinicalReportHistoryPage() {
         <tbody>
           {reports.map(r => (
             <tr key={r.id}>
-              <td>{new Date(r.createdAt).toLocaleDateString()}</td>
+              <td>{formatDateBr(r.createdAt)}</td>
               <td>—</td>
               <td>—</td>
               <td>—</td>

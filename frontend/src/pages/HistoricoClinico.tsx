@@ -1,5 +1,6 @@
 // frontend/src/pages/HistoricoClinico.tsx
 import { useEffect, useState } from "react";
+import { formatDateBr } from "@/utils/date";
 import { useTheme } from "@/context/ThemeContext";
 import PageHero from "@/components/ui/PageHero";
 import SectionToolbar from "@/components/ui/SectionToolbar";
@@ -95,7 +96,7 @@ export default function HistoricoClinico() {
                   <div>
                     <h3 className="text-lg font-semibold text-slate-900">{report.clientName}</h3>
                     <p className="text-sm text-slate-500 mt-1">
-                      {new Date(report.createdAt).toLocaleDateString()}
+                      {formatDateBr(report.createdAt)}
                     </p>
                   </div>
                   <span className="rounded-full bg-[color:var(--color-success-100)] px-3 py-1 text-xs font-semibold text-[color:var(--color-success-700)]">

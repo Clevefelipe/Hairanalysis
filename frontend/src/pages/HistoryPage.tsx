@@ -35,6 +35,11 @@ import {
 } from "../core/cliente/cliente.service";
 import { useClientSession } from "../context/ClientSessionContext";
 
+function safeDate(value: unknown): Date | null {
+  const d = new Date(value as any);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
 function formatClientCode(value?: string | null) {
   const clean = (value || "").replace(/[^a-zA-Z0-9]/g, "").slice(0, 8);
   if (!clean) return "—";
@@ -96,7 +101,10 @@ export default function HistoryPage() {
       try {
         const data = await listHistoryByClient(resolvedClientId!);
         const ordered = Array.isArray(data)
-          ? [...data].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          ? [...data]
+              .map((item) => ({ ...item, createdAt: safeDate(item.createdAt)?.toISOString() || item.createdAt }))
+              .filter((item) => Boolean(safeDate(item.createdAt)))
+              .sort((a, b) => (safeDate(b.createdAt)?.getTime() || 0) - (safeDate(a.createdAt)?.getTime() || 0))
           : [];
         setHistory(ordered);
       } catch (e: any) {
@@ -226,18 +234,23 @@ export default function HistoryPage() {
     const avgScore = Math.round(
       history.reduce((sum, item) => sum + (item.score ?? 0), 0) / total,
     );
-    const lastAnalysisLabel = dateFormatter.format(new Date(history[0].createdAt));
+    const lastDate = safeDate(history[0].createdAt);
+    const lastAnalysisLabel = lastDate ? dateFormatter.format(lastDate) : "--";
     const capilar = history.filter((item) => item.analysisType === "capilar").length;
     const tricologica = history.filter((item) => item.analysisType === "tricologica").length;
     const integrada = history.filter((item) => item.analysisType === "geral").length;
     const flagged = history.filter((item) => (item.flags?.length ?? 0) > 0).length;
 
     const now = Date.now();
-    const last30 = history.filter(
-      (item) => now - new Date(item.createdAt).getTime() <= 30 * MILLI_DAY,
-    ).length;
+    const last30 = history.filter((item) => {
+      const d = safeDate(item.createdAt);
+      if (!d) return false;
+      return now - d.getTime() <= 30 * MILLI_DAY;
+    }).length;
     const prev30 = history.filter((item) => {
-      const diff = now - new Date(item.createdAt).getTime();
+      const d = safeDate(item.createdAt);
+      if (!d) return false;
+      const diff = now - d.getTime();
       return diff > 30 * MILLI_DAY && diff <= 60 * MILLI_DAY;
     }).length;
     const growthLabel = prev30 === 0
@@ -267,7 +280,9 @@ export default function HistoryPage() {
         id: item.id,
         score: item.score as number,
         alerts: item.flags?.length ?? 0,
-        date: shortDateFormatter.format(new Date(item.createdAt)),
+        date: safeDate(item.createdAt)
+          ? shortDateFormatter.format(safeDate(item.createdAt) as Date)
+          : "--",
         type:
           item.analysisType === "tricologica"
             ? "Tricológica"
@@ -304,7 +319,9 @@ export default function HistoryPage() {
       latestAnalysis.recommendations?.maintenanceIntervalDays ||
       latestAnalysis.recommendations?.nextVisitDays;
     if (!interval) return null;
-    const nextDate = new Date(latestAnalysis.createdAt);
+    const baseDate = safeDate(latestAnalysis.createdAt);
+    if (!baseDate) return null;
+    const nextDate = new Date(baseDate);
     nextDate.setDate(nextDate.getDate() + interval);
     return dateFormatter.format(nextDate);
   }, [latestAnalysis, dateFormatter]);
@@ -588,7 +605,9 @@ export default function HistoryPage() {
                                     : "Tricológica"}
                               </p>
                               <p className="mt-1 text-lg font-semibold" style={{ color: "var(--color-text)" }}>
-                                {shortDateFormatter.format(new Date(item.createdAt))}
+                                {safeDate(item.createdAt)
+                                  ? shortDateFormatter.format(safeDate(item.createdAt) as Date)
+                                  : "--"}
                               </p>
                               <p className="text-sm max-w-xl" style={{ color: "var(--color-text-muted)" }}>
                                 {item.interpretation || "Sem resumo da IA disponível."}
@@ -815,9 +834,11 @@ export default function HistoryPage() {
               Resumo IA mais recente
             </p>
             <p className="text-2xl font-semibold" style={{ color: "var(--color-text)" }}>
-              {latestAnalysis ?
-                shortDateFormatter.format(new Date(latestAnalysis.createdAt)) :
-                "Nenhuma análise selecionada"}
+              {latestAnalysis && safeDate(latestAnalysis.createdAt)
+                ? shortDateFormatter.format(safeDate(latestAnalysis.createdAt) as Date)
+                : latestAnalysis
+                  ? "--"
+                  : "Nenhuma análise selecionada"}
             </p>
             <p className="max-w-3xl text-sm" style={{ color: "var(--color-text-muted)" }}>
               {latestSimpleSummary ||

@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import Section from "@/components/ui/Section";
+import { formatDateBr } from "@/utils/date";
 
 import { listarVisionHistory } from "@/vision/VisionHistoryStorage";
 import { VisionHistoryItem } from "@/vision/VisionHistory.types";
@@ -51,7 +52,7 @@ export default function RelatorioVisionCliente() {
       <Section className="space-y-4">
         <div className="flex items-center justify-between flex-wrap gap-3 text-sm" style={{ color: "var(--color-text-muted)" }}>
           <span>
-            <strong>Data do atendimento:</strong> {new Date(item.createdAt).toLocaleDateString()}
+            <strong>Data do atendimento:</strong> {formatDateBr(item.createdAt)}
           </span>
           <span className="rounded-full bg-[color:var(--color-success-50)] px-3 py-1 text-xs font-semibold text-[color:var(--color-success-700)]">
             Relatório cliente

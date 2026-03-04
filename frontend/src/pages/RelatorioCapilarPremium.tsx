@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { formatDateBr } from "@/utils/date";
 
 interface CapilarResult {
   score: number;
@@ -25,7 +26,7 @@ export default function RelatorioCapilarPremium() {
     sessionStorage.getItem("resultadoAnaliseCapilar") || JSON.stringify({
       score: 0,
       interpretation: "Análise em andamento",
-      date: new Date().toLocaleDateString("pt-BR"),
+      date: formatDateBr(new Date()),
       tipoFio: "Indeterminado",
       volumeCapilar: "Indeterminado",
       estruturaFio: "Indeterminada",

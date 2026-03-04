@@ -11,6 +11,7 @@ import {
   updateNextVisit,
 } from "@/services/history.service";
 import { trackDashboardAction } from "@/utils/telemetry";
+import { formatDateShortBr } from "@/utils/date";
 import {
   Activity,
   AlertTriangle,
@@ -740,7 +741,7 @@ export default function Dashboard() {
       .filter((item) => typeof item?.score === "number")
       .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
     return sorted.slice(-8).map((item, idx) => ({
-      label: new Date(item.createdAt).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" }),
+      label: formatDateShortBr(item.createdAt),
       value: item.score ?? 0,
       key: item.id ?? idx,
     }));

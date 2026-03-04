@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from "react-router-dom";
+import { formatDateBr } from "@/utils/date";
 
 interface TricologicaResult {
   score: number;
@@ -25,7 +26,7 @@ export default function AnaliseTricologicaRelatorio() {
       hairLoss: "Indeterminado",
       inflammation: "Não detectada",
       interpretation: "Análise em andamento",
-      date: new Date().toLocaleDateString("pt-BR"),
+      date: formatDateBr(new Date()),
       recomendacoes: []
     })
   );

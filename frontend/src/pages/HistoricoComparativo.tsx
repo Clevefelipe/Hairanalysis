@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+import { formatDateShortBr } from "@/utils/date";
 import PageHero from "@/components/ui/PageHero";
 import SectionToolbar from "@/components/ui/SectionToolbar";
 import api from "@/services/api";
@@ -76,7 +77,7 @@ export default function HistoricoComparativo() {
           </div>
         ) : (
           <div className="grid-dense md:grid-cols-2 lg:grid-cols-3">
-            {analyses.map((analysis) => (
+            {analyses.map((analysis: Analysis) => (
               <article key={analysis.id} className="panel-tight transition-shadow hover:shadow-md">
                 <div className="mb-4 flex items-start justify-between">
                   <h3 className="text-lg font-semibold text-slate-900">{analysis.clientName}</h3>
@@ -87,7 +88,7 @@ export default function HistoricoComparativo() {
                     Status: <span className="font-semibold text-slate-900">{analysis.status}</span>
                   </p>
                   <p className="text-xs text-slate-500">
-                    Data: {new Date(analysis.createdAt).toLocaleDateString()}
+                    Data: {formatDateShortBr(analysis.createdAt)}
                   </p>
                 </div>
               </article>

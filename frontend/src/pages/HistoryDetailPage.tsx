@@ -1,13 +1,4 @@
-﻿  function prettifyRecommendationText(text: string) {
-    if (!text) return "";
-    const trimmed = text.trim();
-    if (trimmed.includes("+")) {
-      return formatTreatmentCombo(trimmed);
-    }
-    return applyPeriodNormalization(trimmed);
-  }
-
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   getHistoryById,
@@ -17,7 +8,7 @@ import {
   listHistoryByClient,
 } from "@/services/history.service";
 import HighTechIntegrityPanel from "@/components/analysis/HighTechIntegrityPanel";
-import PageHero from "@/components/ui/PageHero";
+import { formatDateBr, formatDateShortBr } from "@/utils/date";
 import {
   AlertOctagon,
   AlertTriangle,
@@ -40,6 +31,10 @@ import {
   Tooltip,
   TooltipProps,
 } from "recharts";
+import PageHero from "@/components/ui/PageHero";
+import { useToast } from "@/components/ui/ToastProvider";
+import { useTheme } from "@/context/ThemeContext";
+import SectionToolbar from "@/components/ui/SectionToolbar";
 
 type ScoreTooltipProps = TooltipProps<number, string> & {
   payload?: { value?: number }[];
@@ -74,6 +69,15 @@ const ScoreTooltip = ({ active, payload, label }: ScoreTooltipProps) => {
   );
 };
 
+function prettifyRecommendationText(text: string) {
+  if (!text) return "";
+  const trimmed = text.trim();
+  if (trimmed.includes("+")) {
+    return formatTreatmentCombo(trimmed);
+  }
+  return applyPeriodNormalization(trimmed);
+}
+
 function humanizeFlag(value: unknown): string {
   const text = String(value ?? "").trim();
   if (!text) return "";
@@ -88,12 +92,6 @@ function formatClientCode(value?: string | null) {
   if (!clean) return "—";
   if (clean.length <= 4) return clean;
   return `${clean.slice(0, 4)}-${clean.slice(4)}`;
-}
-
-const TIMEZONE_SP = "America/Sao_Paulo";
-
-function formatDateTimePtBr(value: string | number | Date) {
-  return new Date(value).toLocaleString("pt-BR", { timeZone: TIMEZONE_SP });
 }
 
 export default function HistoryDetailPage() {
@@ -168,10 +166,7 @@ export default function HistoryDetailPage() {
       )
       .map((item) => ({
         id: item.id,
-        dateLabel: new Date(item.createdAt).toLocaleDateString("pt-BR", {
-          day: "2-digit",
-          month: "short",
-        }),
+        dateLabel: formatDateShortBr(item.createdAt),
         score: item.score,
         analysisType: item.analysisType,
       }));
@@ -219,10 +214,7 @@ export default function HistoryDetailPage() {
     if (!returnDate || Number.isNaN(returnDate.getTime())) {
       return null;
     }
-    const returnLabel = returnDate.toLocaleDateString("pt-BR", {
-      day: "2-digit",
-      month: "long",
-    });
+    const returnLabel = formatDateShortBr(returnDate);
     const daysUntilReturn = Math.max(
       0,
       Math.round(
@@ -357,10 +349,7 @@ export default function HistoryDetailPage() {
         return {
           ...bp,
           reminderDate,
-          dateLabel: reminderDate.toLocaleDateString("pt-BR", {
-            day: "2-digit",
-            month: "short",
-          }),
+          dateLabel: formatDateShortBr(reminderDate),
         };
       });
 
@@ -640,7 +629,7 @@ export default function HistoryDetailPage() {
     <div className="space-y-8 animate-page-in">
       <PageHero
         title={`Sessão ${sessionType}`}
-        subtitle={`Captura realizada em ${formatDateTimePtBr(history.createdAt)}`}
+        subtitle={`Captura realizada em ${formatDateBr(history.createdAt)}`}
         meta={heroMeta}
         actions={heroActions}
       />
@@ -1072,37 +1061,33 @@ export default function HistoryDetailPage() {
         </div>
 
         <aside className="space-y-4 self-start lg:sticky lg:top-24">
-          <div className="card-premium card-premium-interactive p-5">
+          <div className="card-premium card-premium-interactive p-5 space-y-3">
             <div className="flex items-center gap-3">
               <div className="rounded-2xl p-2" style={{ backgroundColor: "var(--bg-primary)", color: "var(--color-text)" }}>
                 <TrendingUp size={20} />
               </div>
               <div>
                 <p className="text-xs uppercase tracking-[0.35em]" style={{ color: "var(--color-text-muted)" }}>
-                  Status da sessão
+                  Panorama
                 </p>
-                <p className="text-lg font-semibold" style={{ color: "var(--color-text)" }}>{sessionType}</p>
+                <p className="text-sm font-semibold" style={{ color: "var(--color-text)" }}>
+                  Insights da sessão
+                </p>
               </div>
             </div>
-            <div className="mt-4 space-y-2 text-sm" style={{ color: "var(--color-text-muted)" }}>
-              <p>
-                Cliente: <span className="font-semibold">{clientDisplayName}</span>
-              </p>
-              <p>Cód: #{formatClientCode(history.clientId)}</p>
-              <p>Registro: {formatDateTimePtBr(history.createdAt)}</p>
-              {typeof averageScore === "number" && <p>Média da evolução: {averageScore}/100</p>}
-            </div>
-          </div>
 
-          {history.recommendations?.professionalAlert && (
-            <div className="card-premium border-has-danger/40 bg-has-danger/10 p-5 text-has-danger">
-              <div className="flex items-center gap-2 font-semibold">
-                <Sparkles size={18} />
-                Alerta profissional
+            {history.recommendations?.professionalAlert && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 font-semibold" style={{ color: "var(--color-text)" }}>
+                  <Sparkles size={18} />
+                  Alerta profissional
+                </div>
+                <p className="text-sm whitespace-pre-line" style={{ color: "var(--color-text-muted)" }}>
+                  {history.recommendations.professionalAlert}
+                </p>
               </div>
-              <p className="mt-2 text-sm whitespace-pre-line">{history.recommendations.professionalAlert}</p>
-            </div>
-          )}
+            )}
+          </div>
 
           {medicalReferral?.needed && (
             <div className="card-premium border-has-warning/40 bg-has-warning/10 p-5 text-has-warning">

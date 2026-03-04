@@ -4,6 +4,7 @@ import {
   listHistoryByClient,
   AnalysisHistory,
 } from "../services/history.service";
+import { formatDateShortBr } from "@/utils/date";
 
 export default function ClientHistory() {
   const { clientId } = useParams<{ clientId: string }>();
@@ -79,7 +80,7 @@ export default function ClientHistory() {
                     {item.analysisType === "capilar" ? "Capilar" : "Tricológica"}
                   </h3>
                   <p className="text-sm mt-1" style={{ color: "var(--color-text-muted)" }}>
-                    {new Date(item.createdAt).toLocaleDateString()}
+                    {formatDateShortBr(item.createdAt)}
                   </p>
                 </div>
                 <div className="rounded-full bg-[color:var(--color-success-100)] p-2">

@@ -2,6 +2,7 @@ import "./ResultadoCapilarCliente.css";
 import { ResultadoCapilar } from "@/types/ResultadoCapilar";
 import { exportResultadoCapilarPDF } from "@/components/utils/pdf/exportResultadoCapilar";
 import { useAuth } from "@/context/AuthContext";
+import { formatDateBr } from "@/utils/date";
 
 interface Props {
   resultado?: ResultadoCapilar | null;
@@ -37,10 +38,7 @@ export default function ResultadoCapilarCliente({ resultado }: Props) {
                   Profissional: {resultado.profissionalNome}
                 </span>
                 <span>
-                  Data:{" "}
-                  {new Date(
-                    resultado.dataAnalise
-                  ).toLocaleDateString()}
+                  Data: {formatDateBr(resultado.dataAnalise)}
                 </span>
               </div>
             )}

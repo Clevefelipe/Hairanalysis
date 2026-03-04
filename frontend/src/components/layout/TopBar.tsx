@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useAuth } from "../../context/AuthContext";
 import { useSalonBrandingTheme } from "@/context/SalonBrandingThemeContext";
 import { DashboardNotification, getHistoryNotifications, markHistoryNotificationsAsRead } from "@/services/history.service";
+import { formatDateShortBr } from "@/utils/date";
 import ClientLookupModal from "@/components/clientes/ClientLookupModal";
 import { listarClientes } from "@/core/cliente/cliente.service";
 import { askAiAssistant } from "@/services/aiAssistant.service";
@@ -619,7 +620,7 @@ export default function TopBar({ onOpenSidebar, fullWidth = false }: TopBarProps
                           {notification.title}
                         </p>
                         <span className="text-[10px] font-semibold uppercase tracking-[0.12em]" style={{ color: "var(--color-text-muted)" }}>
-                          {new Date(notification.createdAt).toLocaleDateString("pt-BR")}
+                          {formatDateShortBr(notification.createdAt)}
                         </span>
                       </div>
                       <p className="mt-1 text-[11px] leading-relaxed" style={{ color: "var(--color-text-muted)" }}>

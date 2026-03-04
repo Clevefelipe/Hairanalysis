@@ -2,6 +2,7 @@ import { useCliente } from "@/context/ClienteContext";
 import { useNavigate } from "react-router-dom";
 import html2pdf from "html2pdf.js";
 import { useRef, useState, useEffect } from "react";
+import { formatDateBr } from "@/utils/date";
 import { FileText, Loader2 } from "lucide-react";
 import { protocoloService, Protocolo as ProtocoloType } from "@/services/protocolo.service";
 import ProtocoloEditor from "@/components/ProtocoloEditor";
@@ -65,7 +66,7 @@ export default function RelatorioCliente() {
   }
 
 
-  const data = new Date().toLocaleDateString();
+  const data = formatDateBr(new Date());
 
   // Exemplo de URL pública (ajustar integração real depois)
   const publicUrl = `https://hairanalysis.com.br/history/public/token_exemplo`;
