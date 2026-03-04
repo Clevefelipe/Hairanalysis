@@ -8,7 +8,7 @@ import { randomUUID } from 'crypto';
 import { Repository } from 'typeorm';
 import { KnowledgeDocument } from './knowledge-document.entity';
 import * as path from 'path';
-import pdfParse from 'pdf-parse';
+import { PDFParse } from 'pdf-parse';
 import mammoth from 'mammoth';
 
 @Injectable()
@@ -232,13 +232,20 @@ export class KnowledgeService implements OnModuleInit {
     if (ext === '.txt' || ext === '.md') {
       content = this.decodeTextFileBuffer(file.buffer);
     } else if (ext === '.pdf') {
+      const parser = new PDFParse({ data: file.buffer });
       try {
-        const parsed = await pdfParse(file.buffer);
+        const parsed = await parser.getText();
         content = parsed.text || '';
       } catch {
         throw new BadRequestException(
           'Falha ao processar PDF. Verifique o arquivo.',
         );
+      } finally {
+        try {
+          await parser.destroy();
+        } catch {
+          // best-effort cleanup
+        }
       }
       sourceType = 'pdf';
     } else if (ext === '.docx') {

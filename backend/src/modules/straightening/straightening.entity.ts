@@ -67,15 +67,6 @@ export class StraighteningEntity {
    * METADADOS
    * ===================================================== */
 
-  @Column({ type: 'float', nullable: true })
-  maxDamageTolerance?: number;
-
-  @Column({ type: 'float', nullable: true })
-  porositySupport?: number;
-
-  @Column({ type: 'float', nullable: true })
-  elasticitySupport?: number;
-
   @CreateDateColumn()
   createdAt: Date;
 }
