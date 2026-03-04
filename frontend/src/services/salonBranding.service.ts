@@ -44,16 +44,43 @@ export type SalonBrandingPreset = {
   fontFamily: SupportedFontFamily;
 };
 
+async function withRouteFallback<T>(
+  primaryPath: string,
+  fallbackPath: string,
+  request: (path: string) => Promise<T>,
+): Promise<T> {
+  try {
+    return await request(primaryPath);
+  } catch (error: any) {
+    if (error?.response?.status === 404) {
+      return request(fallbackPath);
+    }
+    throw error;
+  }
+}
+
 export async function getMySalonBranding(): Promise<SalonBrandingResponse> {
-  const { data } = await api.get("/salon/me/branding");
-  return data as SalonBrandingResponse;
+  return withRouteFallback(
+    "/salon/me/branding",
+    "/salons/me/branding",
+    async (path) => {
+      const { data } = await api.get(path);
+      return data as SalonBrandingResponse;
+    },
+  );
 }
 
 export async function updateMySalonBranding(
   payload: UpdateSalonBrandingPayload,
 ): Promise<SalonBrandingResponse> {
-  const { data } = await api.patch("/salon/me/branding", payload);
-  return data as SalonBrandingResponse;
+  return withRouteFallback(
+    "/salon/me/branding",
+    "/salons/me/branding",
+    async (path) => {
+      const { data } = await api.patch(path, payload);
+      return data as SalonBrandingResponse;
+    },
+  );
 }
 
 export async function uploadMySalonLogo(
@@ -61,27 +88,51 @@ export async function uploadMySalonLogo(
 ): Promise<SalonBrandingResponse> {
   const formData = new FormData();
   formData.append("file", file);
-  const { data } = await api.post("/salon/me/branding/logo", formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
+  return withRouteFallback(
+    "/salon/me/branding/logo",
+    "/salons/me/branding/logo",
+    async (path) => {
+      const { data } = await api.post(path, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      return data as SalonBrandingResponse;
     },
-  });
-  return data as SalonBrandingResponse;
+  );
 }
 
 export async function removeMySalonLogo(): Promise<SalonBrandingResponse> {
-  const { data } = await api.delete("/salon/me/branding/logo");
-  return data as SalonBrandingResponse;
+  return withRouteFallback(
+    "/salon/me/branding/logo",
+    "/salons/me/branding/logo",
+    async (path) => {
+      const { data } = await api.delete(path);
+      return data as SalonBrandingResponse;
+    },
+  );
 }
 
 export async function getSalonBrandingPresets(): Promise<SalonBrandingPreset[]> {
-  const { data } = await api.get("/salon/branding/presets");
-  return Array.isArray(data) ? (data as SalonBrandingPreset[]) : [];
+  return withRouteFallback(
+    "/salon/branding/presets",
+    "/salons/branding/presets",
+    async (path) => {
+      const { data } = await api.get(path);
+      return Array.isArray(data) ? (data as SalonBrandingPreset[]) : [];
+    },
+  );
 }
 
 export async function applyMySalonBrandingPreset(
   presetId: string,
 ): Promise<SalonBrandingResponse> {
-  const { data } = await api.post("/salon/me/branding/preset", { presetId });
-  return data as SalonBrandingResponse;
+  return withRouteFallback(
+    "/salon/me/branding/preset",
+    "/salons/me/branding/preset",
+    async (path) => {
+      const { data } = await api.post(path, { presetId });
+      return data as SalonBrandingResponse;
+    },
+  );
 }

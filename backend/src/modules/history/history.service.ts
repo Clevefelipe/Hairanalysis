@@ -65,6 +65,37 @@ export class HistoryService {
     });
   }
 
+  async findById(id: string) {
+    const history = await this.historyRepo.findOne({ where: { id } });
+    if (!history) {
+      throw new NotFoundException("Histórico não encontrado.");
+    }
+    return history;
+  }
+
+  async listBySalon(
+    salonId: string,
+    filters?: { clientId?: string; domain?: "capilar" | "tricologia" }
+  ) {
+    const qb = this.historyRepo
+      .createQueryBuilder("history")
+      .where("history.salonId = :salonId", { salonId });
+
+    if (filters?.clientId) {
+      qb.andWhere("history.clientId = :clientId", {
+        clientId: filters.clientId,
+      });
+    }
+
+    if (filters?.domain) {
+      qb.andWhere("history.domain = :domain", { domain: filters.domain });
+    }
+
+    qb.orderBy("history.createdAt", "DESC");
+
+    return qb.getMany();
+  }
+
   async createShareToken(historyId: string, salonId: string) {
     return this.jwtService.sign(
       { historyId, salonId, scope: "history_share" },

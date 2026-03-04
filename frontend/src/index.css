@@ -2,3 +2,28 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --brand-primary: #0f172a;
+  --brand-secondary: #e2e8f0;
+  --brand-primary-rgb: 15, 23, 42;
+  --brand-font-family: "Manrope", "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+  --color-primary: #0f172a;
+  --color-primary-light: #0ea5a4;
+  --color-surface: #f8fafc;
+  --color-border: #e2e8f0;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-surface);
+  color: var(--color-primary);
+  font-family: var(--brand-font-family);
+}

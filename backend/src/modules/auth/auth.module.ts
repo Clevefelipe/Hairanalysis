@@ -7,11 +7,12 @@ import { AuthService } from "./auth.service";
 import { AuthController } from "./auth.controller";
 import { JwtStrategy } from "./jwt.strategy";
 import { User } from "./user.entity";
+import { SalonEntity } from "../salon/salon.entity";
 import { AuditModule } from "../audit/audit.module";
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, SalonEntity]),
     ConfigModule,
 
     // 🔑 IMPORTANTE: torna AuditService disponível

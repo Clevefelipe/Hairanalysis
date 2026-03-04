@@ -31,50 +31,32 @@ export interface AnalysisHistory {
 }
 
 export type HistoryFilters = {
+  clientId?: string;
   domain?: AnalysisType;
   q?: string;
 };
-
-async function fetchHistoryFromPrimary(
-  clientId: string,
-  filters?: HistoryFilters
-): Promise<AnalysisHistory[]> {
-  const res = await api.get(
-    `/clients/${clientId}/history`,
-    { params: filters }
-  );
-  return res.data;
-}
-
-async function fetchHistoryFromFallback(
-  clientId: string,
-  filters?: HistoryFilters
-): Promise<AnalysisHistory[]> {
-  const res = await api.get(`/history/${clientId}`, {
-    params: filters,
-  });
-  return res.data;
-}
 
 export async function getHistoryByClient(
   clientId: string,
   filters?: HistoryFilters
 ): Promise<AnalysisHistory[]> {
-  try {
-    return await fetchHistoryFromPrimary(
-      clientId,
-      filters
-    );
-  } catch {
-    try {
-      return await fetchHistoryFromFallback(
-        clientId,
-        filters
-      );
-    } catch {
-      return [];
-    }
-  }
+  const params = {
+    ...(filters || {}),
+    clientId,
+    domain:
+      filters?.domain === "tricologica"
+        ? "tricologia"
+        : filters?.domain,
+  };
+  const res = await api.get("/history", { params });
+  return Array.isArray(res.data) ? res.data : [];
+}
+
+export async function listHistoryByClient(
+  clientId: string,
+  filters?: HistoryFilters
+): Promise<AnalysisHistory[]> {
+  return getHistoryByClient(clientId, filters);
 }
 
 export const historyService = {
@@ -86,8 +68,8 @@ export const historyService = {
   },
 
   async list(): Promise<AnalysisHistory[]> {
-    // Sem rota global estavel ainda.
-    return [];
+    const res = await api.get("/history");
+    return Array.isArray(res.data) ? res.data : [];
   },
 
   

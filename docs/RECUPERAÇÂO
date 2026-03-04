@@ -1,6 +1,0 @@
-Se quiser recuperar tudo exatamente como estava antes da limpeza:
-
-git stash pop stash@{0}
-Se quiser recuperar só a rodada anterior:
-
-git stash pop stash@{1}

@@ -4,7 +4,10 @@ import TopBar from "./TopBar";
 
 export default function Layout() {
   return (
-    <div className="min-h-screen flex bg-slate-50">
+    <div
+      className="min-h-screen flex"
+      style={{ backgroundColor: "var(--color-surface)", color: "var(--color-primary)" }}
+    >
       <Sidebar />
 
       <div className="flex-1 flex flex-col">

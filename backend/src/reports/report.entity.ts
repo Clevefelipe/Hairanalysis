@@ -7,8 +7,8 @@ export class ReportEntity {
   @PrimaryColumn()
   id!: string;
 
-  @Column({ nullable: false })
-  analysisId!: string;
+  @Column({ nullable: true })
+  analysisId?: string;
 
   @Column({ default: 'pending' })
   status!: ReportStatus;

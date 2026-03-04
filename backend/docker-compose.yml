@@ -32,8 +32,10 @@ services:
       OPENAI_API_KEY: your-openai-api-key
       FRONTEND_URL: http://localhost:3000
       PORT: 3000
+      NODE_OPTIONS: --max-old-space-size=768
     ports:
       - "3000:3000"
+    mem_limit: 1g
     depends_on:
       - postgres
     volumes:

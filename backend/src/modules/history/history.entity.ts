@@ -20,13 +20,13 @@ export class HistoryEntity {
   @Column({ nullable: true })
   salonId: string;
 
-  @Column()
+  @Column({ default: 'capilar' })
   domain: "capilar" | "tricologia";
 
-  @Column("jsonb")
+  @Column("jsonb", { nullable: true, default: {} })
   baseResult: any;
 
-  @Column("jsonb")
+  @Column("jsonb", { nullable: true, default: {} })
   ragResult: any;
 
   @Column("jsonb", { nullable: true })
@@ -37,6 +37,33 @@ export class HistoryEntity {
 
   @Column("jsonb", { nullable: true })
   recommendations?: any;
+
+  @Column({ nullable: true })
+  modelVersion?: string;
+
+  @Column({ nullable: true })
+  weightProfileVersion?: string;
+
+  @Column({ nullable: true })
+  promptVersion?: string;
+
+  @Column({ type: 'float', nullable: true })
+  temperature?: number;
+
+  @Column('jsonb', { nullable: true })
+  rawIAOutput?: any;
+
+  @Column({ type: 'float', nullable: true })
+  scoreCalculado?: number;
+
+  @Column({ type: 'float', nullable: true })
+  confidenceScore?: number;
+
+  @Column({ nullable: true })
+  previousAnalysisId?: string;
+
+  @Column({ nullable: true, unique: true })
+  publicToken?: string;
 
   @CreateDateColumn()
   createdAt: Date;

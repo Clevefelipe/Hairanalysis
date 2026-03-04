@@ -24,3 +24,14 @@
 - Toda decisao final sobre alisamento, protocolo e cronograma deve ser validada por profissional responsavel.
 - Em modo tricológico, recomendacoes de alisamento sao bloqueadas por governanca.
 - Em baixa confiabilidade tecnica (`confidenceScore < 60`), a aptidao automatica e bloqueada e nova captura deve ser realizada.
+
+## Governanca textual obrigatoria
+
+- O sistema nao deve emitir determinacoes absolutas de procedimento.
+- Formula de saida recomendada: "Apresenta aptidao estética para procedimentos de alisamento".
+- A decisao final deve ser validada pelo profissional responsavel.
+- Sanitizacao de termos clinicos obrigatoria em entradas e saidas com os seguintes mapeamentos minimos:
+  - `cura` -> `cuidado estético`
+  - `diagnéstico` -> `avaliação estética`
+  - `alopecia` -> `queda acentuada percebida`
+  - `dermatite` -> `sensibilidade aparente`

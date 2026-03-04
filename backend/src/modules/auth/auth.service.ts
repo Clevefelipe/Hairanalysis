@@ -4,6 +4,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import * as bcrypt from "bcrypt";
 import { User } from "./user.entity";
+import { SalonEntity } from "../salon/salon.entity";
 import { AuditService } from "../audit/audit.service";
 
 @Injectable()
@@ -13,9 +14,37 @@ export class AuthService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(SalonEntity)
+    private readonly salonRepository: Repository<SalonEntity>,
     private readonly jwtService: JwtService,
     private readonly auditService: AuditService
   ) {}
+
+  private async resolveSalonIdForUser(user: User): Promise<string> {
+    const fromRelation = user?.salon?.id;
+    const fromColumn = user?.salonId;
+    const current = fromRelation || fromColumn;
+    if (current) return current;
+
+    // Backward compatibility: legacy users may exist without tenant binding.
+    const preferredSalonId = String(process.env.DEFAULT_SALON_ID || "").trim();
+    const fallbackSalon = preferredSalonId
+      ? await this.salonRepository.findOne({ where: { id: preferredSalonId } })
+      : (
+          await this.salonRepository.find({
+            order: { name: "ASC" },
+            take: 1,
+          })
+        )[0];
+
+    if (!fallbackSalon?.id) {
+      throw new UnauthorizedException("Usuário sem salão vinculado.");
+    }
+
+    user.salonId = fallbackSalon.id;
+    await this.userRepository.save(user);
+    return fallbackSalon.id;
+  }
 
   async login(email: string, password: string) {
     const user = await this.userRepository.findOne({
@@ -48,11 +77,13 @@ export class AuthService {
       throw new UnauthorizedException("Credenciais inválidas");
     }
 
+    const salonId = await this.resolveSalonIdForUser(user);
+
     const payload = {
       sub: user.id,
       email: user.email,
       role: user.role,
-      salonId: user.salon.id,
+      salonId,
     };
 
     const accessToken = this.jwtService.sign(payload);
@@ -68,7 +99,7 @@ export class AuthService {
     await this.auditService.log({
       action: "LOGIN_SUCCESS",
       userId: user.id,
-      salonId: user.salon.id,
+      salonId,
     });
 
     return {
@@ -87,11 +118,13 @@ export class AuthService {
       throw new UnauthorizedException("Refresh token inválido");
     }
 
+    const salonId = await this.resolveSalonIdForUser(user);
+
     const payload = {
       sub: user.id,
       email: user.email,
       role: user.role,
-      salonId: user.salon.id,
+      salonId,
     };
 
     return {

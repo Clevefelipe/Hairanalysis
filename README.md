@@ -240,11 +240,11 @@ Para manter o ritmo premium e denso do produto, utilizamos um conjunto de util c
 - [ ] Validar breakpoints 1280/1024/768 após integrações.
 - [ ] Mapear endpoints que alimentarão `heroHighlights`, KPIs e filtros — alinhar com backend.
 
-## Decisao Deterministica (Hardening v1.2.0)
+## Decisao Deterministica (Hardening v1.0.0)
 
 - A IA ficou restrita a extracao/classificacao de sinais visuais (elasticidade, porosidade, resistencia, historico quimico, integridade cuticular e qualidade da imagem).
 - O score final e a aptidao sao calculados apenas no backend pelo `AnalysisEngineService` (TypeScript), sem ajuste dinamico por IA.
-- Versao de pesos persistida: `weightProfileVersion: "v1.2.0"`.
+- Versao de pesos persistida: `weightProfileVersion: "v1.0.0"`.
 
 ### Perfis tecnicos fixos
 
@@ -291,3 +291,16 @@ Cada analise salva:
 - O H.A.S. nao prescreve tratamento medico.
 - O H.A.S. nao determina procedimento obrigatorio.
 - A validacao humana do profissional responsavel e obrigatoria em toda decisao final.
+
+## Integracao incremental (marco juridico-tecnico)
+
+- Novo arquivo de perfis fixos: `backend/src/modules/analysis-engine/weight-profiles.constants.ts`.
+- Motor deterministico continua em `backend/src/modules/analysis-engine/` com pesos imutaveis versionados.
+- Entidade `analysis_history` estendida com trilha de auditoria sem remover campos existentes:
+  `modelVersion`, `weightProfileVersion`, `promptVersion`, `temperature`, `rawIAOutput`,
+  `scoreCalculado`, `confidenceScore`, `previousAnalysisId`.
+- Middleware juridico reforcado: `backend/src/common/middleware/legal-terms-sanitizer.middleware.ts`.
+- Worker de relatorio hardened adicional (sem substituir worker atual):
+  `backend/src/reports/reports.hardening.worker.ts`.
+- Override opcional de limite de memoria Docker (sem alterar compose existente):
+  `backend/docker-compose.reports-worker.override.yml`.

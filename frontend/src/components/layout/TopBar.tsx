@@ -1,4 +1,4 @@
-import { useAuth } from "../../context/AuthContext";
+﻿import { useAuth } from "../../context/AuthContext";
 
 function formatRole(role: string | null | undefined) {
   if (role === "ADMIN") return "Administrador";
@@ -11,19 +11,21 @@ export default function TopBar() {
   const displayName = user?.fullName || user?.name || formatRole(role);
 
   return (
-    <header className="h-14 bg-white border-b flex items-center justify-between px-6">
+    <header
+      className="h-14 bg-white border-b flex items-center justify-between px-6"
+      style={{ borderColor: "var(--color-border)" }}
+    >
       <div className="flex flex-col">
-        <span className="text-sm text-gray-600">
-          {displayName}
-        </span>
+        <span className="text-sm text-gray-700">{displayName}</span>
         <span className="text-xs text-gray-400">
-          {formatRole(role)} - Salon: {user?.salonId ?? "-"}
+          {formatRole(role)} - Salao: {user?.salonId ?? "-"}
         </span>
       </div>
 
       <button
         onClick={logout}
-        className="text-sm bg-slate-900 text-white px-3 py-1 rounded"
+        className="text-sm text-white px-3 py-1 rounded"
+        style={{ backgroundColor: "var(--brand-primary)" }}
       >
         Sair
       </button>

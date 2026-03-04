@@ -24,9 +24,11 @@ export default function AnaliseVision() {
   function handleCapture(imageBase64: string) {
     sessionRef.current.addFrame(imageBase64);
     const allFrames = sessionRef.current.getFrames();
-    setFrames([...allFrames]);
+    const safeFrames = Array.isArray(allFrames) ? allFrames : [];
+    setFrames(safeFrames);
 
-    const lastFrame = allFrames[allFrames.length - 1];
+    const lastFrame = safeFrames[safeFrames.length - 1];
+    if (!lastFrame) return;
     setSelectedFrame(lastFrame);
 
     const analysisResult = analyzeFrame(lastFrame);

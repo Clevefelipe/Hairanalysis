@@ -200,9 +200,9 @@ export class SalonService {
   }
 
   private extractCurrentBranding(salon: SalonEntity): BrandingPayload {
-    const brandingSource =
+    const brandingSource: Record<string, any> =
       salon.branding && typeof salon.branding === 'object'
-        ? salon.branding
+        ? (salon.branding as Record<string, any>)
         : {};
 
     const logoUrl =
@@ -284,15 +284,15 @@ export class SalonService {
       presetLabel?: string;
     },
   ) {
-    const current =
+    const current: Record<string, any> =
       salon.branding && typeof salon.branding === 'object'
-        ? salon.branding
+        ? (salon.branding as Record<string, any>)
         : {};
-    const header =
+    const header: Record<string, any> =
       current?.header && typeof current.header === 'object'
         ? current.header
         : {};
-    const pdf =
+    const pdf: Record<string, any> =
       current?.pdf && typeof current.pdf === 'object' ? current.pdf : {};
 
     return {

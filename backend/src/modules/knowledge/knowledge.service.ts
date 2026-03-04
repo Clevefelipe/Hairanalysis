@@ -29,16 +29,34 @@ export class KnowledgeService {
 
   async semanticSearch(
     query: string,
-    domain: "tricologia" | "capilar",
-    limit = 3,
+    domainOrSalonId?: "tricologia" | "capilar" | string,
+    domainOrLimit?: "tricologia" | "capilar" | number,
+    maybeLimit?: number,
   ) {
+    let domain: 'tricologia' | 'capilar' = 'capilar';
+    let limit = 3;
+
+    if (domainOrSalonId === 'tricologia' || domainOrSalonId === 'capilar') {
+      domain = domainOrSalonId;
+      limit =
+        typeof domainOrLimit === 'number'
+          ? domainOrLimit
+          : typeof maybeLimit === 'number'
+            ? maybeLimit
+            : 3;
+    } else if (domainOrLimit === 'tricologia' || domainOrLimit === 'capilar') {
+      domain = domainOrLimit;
+      limit = typeof maybeLimit === 'number' ? maybeLimit : 3;
+    }
+
     const qEmbedding = await this.embeddingService.embed(query);
     const items = EmbeddingStore.all(domain);
 
     return items
-      .map((item) => ({
+      .map((item, idx) => ({
         content: item.content,
         score: cosineSimilarity(qEmbedding, item.embedding),
+        groupId: `${domain}-${idx + 1}`,
       }))
       .sort((a, b) => b.score - a.score)
       .slice(0, limit);

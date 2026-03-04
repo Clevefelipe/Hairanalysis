@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -10,6 +10,7 @@ import {
   Legend,
 } from "chart.js";
 import { getHistoryByClient, AnalysisHistory } from "../services/history.service";
+import { useClientSession } from "../context/ClientSessionContext";
 import "../styles/system.css";
 
 ChartJS.register(
@@ -22,38 +23,41 @@ ChartJS.register(
 );
 
 export default function HistoryEvolutionPage() {
+  const { activeClient } = useClientSession();
   const [history, setHistory] = useState<AnalysisHistory[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // ⚠️ temporário — depois vem por rota/contexto
-  const clientId = "cliente_123";
+  const clientId = useMemo(() => {
+    const fromQuery = new URLSearchParams(window.location.search).get("clientId");
+    return fromQuery || activeClient?.id || "";
+  }, [activeClient?.id]);
 
   useEffect(() => {
+    if (!clientId) {
+      setHistory([]);
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
     getHistoryByClient(clientId)
       .then((data) => {
-        const ordered = [...data].reverse();
+        const ordered = [...(Array.isArray(data) ? data : [])].reverse();
         setHistory(ordered);
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [clientId]);
 
   if (loading) {
     return <div className="p-6 text-gray-500">Carregando evolução...</div>;
   }
 
   if (history.length === 0) {
-    return (
-      <div className="p-6 text-gray-500">
-        Nenhum dado disponível para evolução.
-      </div>
-    );
+    return <div className="p-6 text-gray-500">Nenhum dado disponível para evolução.</div>;
   }
 
-  const labels = history.map((item) =>
-    new Date(item.createdAt).toLocaleDateString()
-  );
-
-  const scores = history.map((item) => item.score);
+  const labels = history.map((item) => new Date(item.createdAt).toLocaleDateString());
+  const scores = history.map((item) => Number(item.score ?? 0));
 
   const data = {
     labels,

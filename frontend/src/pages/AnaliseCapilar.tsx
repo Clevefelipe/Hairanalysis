@@ -3,7 +3,10 @@ import ImageCapture from "../components/vision/ImageCapture";
 import { useAuth } from "../context/AuthContext";
 import Card from "../components/ui/Card";
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
+const API =
+  import.meta.env.VITE_API_BASE_URL ||
+  import.meta.env.VITE_API_URL ||
+  "/api";
 const HISTORY_KEY = "has_capilar_history";
 
 interface AnalysisResult {
@@ -27,14 +30,19 @@ export default function AnaliseCapilar() {
   useEffect(() => {
     const stored = localStorage.getItem(HISTORY_KEY);
     if (stored) {
-      setHistory(JSON.parse(stored));
+      try {
+        const parsed = JSON.parse(stored);
+        setHistory(Array.isArray(parsed) ? parsed : []);
+      } catch {
+        setHistory([]);
+      }
     }
   }, []);
 
   useEffect(() => {
     async function startSession() {
       try {
-        const response = await fetch(`${API}/vision/session/start`, {
+        const response = await fetch(`${API}/vision/session`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -86,7 +94,7 @@ export default function AnaliseCapilar() {
       date: new Date().toLocaleString(),
     };
 
-    const updatedHistory = [normalized, ...history];
+    const updatedHistory = [normalized, ...(Array.isArray(history) ? history : [])];
 
     setResult(normalized);
     setHistory(updatedHistory);

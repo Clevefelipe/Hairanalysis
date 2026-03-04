@@ -1,4 +1,4 @@
-import {
+﻿import {
   Body,
   Controller,
   Get,
@@ -57,20 +57,20 @@ export class ReportsController {
       }
 
       const { analysisId } = body;
-      if (!analysisId) throw new NotFoundException('analysisId é obrigatório');
+      if (!analysisId) throw new NotFoundException('analysisId Ã© obrigatÃ³rio');
 
       const history = await this.historyService.findById(analysisId);
-      if (!history) throw new NotFoundException('Histórico não encontrado');
+      if (!history) throw new NotFoundException('HistÃ³rico nÃ£o encontrado');
       if (history.salonId !== salonId) {
         throw new ForbiddenException('Acesso negado');
       }
 
-      // Se houver usuário autenticado com salonId, validar pertencimento
+      // Se houver usuÃ¡rio autenticado com salonId, validar pertencimento
       const payload: ReportPayload =
         body.payload || (await this.mapHistoryToPayload(history));
 
       const meta = await this.reportsService.enqueue(analysisId);
-      // Dispara geração imediata (sem fila) utilizando o worker PDFKit.
+      // Dispara geraÃ§Ã£o imediata (sem fila) utilizando o worker PDFKit.
       void this.reportsService.generateAndStore(meta.id, payload, (p) =>
         this.reportsWorker.renderPdf(p),
       );
@@ -78,7 +78,7 @@ export class ReportsController {
       return { id: meta.id, status: meta.status };
     } catch (err) {
       this.logger.error(
-        `Falha ao criar relatório: ${err}`,
+        `Falha ao criar relatÃ³rio: ${err}`,
         err instanceof Error ? err.stack : undefined,
       );
       this.reportsCreated.inc({ status: 'rejected' });
@@ -99,6 +99,7 @@ export class ReportsController {
 
     const meta = await this.reportsService.getStatus(id);
     if (!meta) return { status: 'not_found' };
+    if (!meta.analysisId) return { status: 'not_found' };
 
     try {
       const history = await this.historyService.findById(meta.analysisId);
@@ -125,6 +126,7 @@ export class ReportsController {
 
     const meta = await this.reportsService.getStatus(id);
     if (!meta) return { status: 'not_ready' };
+    if (!meta.analysisId) return { status: 'not_ready' };
 
     try {
       const history = await this.historyService.findById(meta.analysisId);
@@ -180,18 +182,18 @@ export class ReportsController {
       typeof (history as any)?.clientName === 'string' &&
       (history as any).clientName.trim()
         ? (history as any).clientName.trim()
-        : 'Cliente não identificado';
+        : 'Cliente nÃ£o identificado';
     let clienteContato: string | undefined = undefined;
     try {
       const cliente = await this.clientesService.findOne(history.clientId);
-      if (cliente?.nome) clienteNome = cliente.nome;
-      if (cliente?.telefone) clienteContato = cliente.telefone;
+      if ((cliente as any)?.nome) clienteNome = (cliente as any).nome;
+      if ((cliente as any)?.telefone) clienteContato = (cliente as any).telefone;
     } catch {
-      // mantém fallback por ID
+      // mantÃ©m fallback por ID
     }
 
-    // Enriquecer salão
-    let salaoNome = history.salonId || 'Salão';
+    // Enriquecer salÃ£o
+    let salaoNome = history.salonId || 'SalÃ£o';
     let salaoLogo: string | undefined = undefined;
     try {
       if (history.salonId) {
@@ -216,7 +218,7 @@ export class ReportsController {
       return (
         alert.includes('sem alisamento') ||
         alert.includes('nao apto') ||
-        alert.includes('não apto')
+        alert.includes('nÃ£o apto')
       );
     })();
 
@@ -241,7 +243,7 @@ export class ReportsController {
           (warning) =>
             warning.includes('restri') ||
             warning.includes('nao recomendado') ||
-            warning.includes('não recomendado') ||
+            warning.includes('nÃ£o recomendado') ||
             warning.includes('evitar'),
         );
 
@@ -260,22 +262,22 @@ export class ReportsController {
       {
         semana: 1,
         foco: 'Hidratacao' as const,
-        observacoes: 'Repor água perdida em processos químicos/térmicos.',
+        observacoes: 'Repor Ã¡gua perdida em processos quÃ­micos/tÃ©rmicos.',
       },
       {
         semana: 2,
         foco: 'Nutricao' as const,
-        observacoes: 'Lipídios para maciez e redução de frizz.',
+        observacoes: 'LipÃ­dios para maciez e reduÃ§Ã£o de frizz.',
       },
       {
         semana: 3,
         foco: 'Reconstrucao' as const,
-        observacoes: 'Aminoácidos/queratina para fibra sensibilizada.',
+        observacoes: 'AminoÃ¡cidos/queratina para fibra sensibilizada.',
       },
       {
         semana: 4,
         foco: 'IntervaloSeguro' as const,
-        observacoes: 'Revisão técnica e ajuste de protocolo.',
+        observacoes: 'RevisÃ£o tÃ©cnica e ajuste de protocolo.',
       },
     ];
 
@@ -338,7 +340,7 @@ export class ReportsController {
         aptidao: 'Apto' as const,
         justificativa:
           (s?.reasons || s?.warnings || []).join('; ') ||
-          'Compatível com perfil técnico.',
+          'CompatÃ­vel com perfil tÃ©cnico.',
       })),
       ...rejected.map((s) => ({
         serviceId: s?.id || s?.serviceId || 'alisamento',
@@ -368,20 +370,20 @@ export class ReportsController {
               status: 'NaoApto' as const,
               justificativa:
                 professionalAlert ||
-                'Não apto para alisamento neste momento. Avaliar presencialmente.',
+                'NÃ£o apto para alisamento neste momento. Avaliar presencialmente.',
             }
           : anyEligible && (anyRejected || hasRestrictions || blockedByAlert)
             ? {
                 status: 'AptoComRestricoes' as const,
                 justificativa:
                   professionalAlert ||
-                  'Há restrições para alisamentos; siga protocolos seguros.',
+                  'HÃ¡ restriÃ§Ãµes para alisamentos; siga protocolos seguros.',
               }
             : anyEligible
               ? {
                   status: 'Apto' as const,
                   justificativa:
-                    'Alisamentos compatíveis cadastrados no salão.',
+                    'Alisamentos compatÃ­veis cadastrados no salÃ£o.',
                 }
               : undefined;
 
@@ -399,12 +401,12 @@ export class ReportsController {
               justificativa:
                 neutralizacaoRule.justificativa ||
                 neutralizacaoRule.reason ||
-                'Neutralização conforme avaliação técnica.',
+                'NeutralizaÃ§Ã£o conforme avaliaÃ§Ã£o tÃ©cnica.',
             }
           : {
               obrigatoria: false,
               justificativa:
-                'Avaliação não indicou necessidade adicional de neutralização; aplicar somente se pH alcalino ou instabilidade pós-química.',
+                'AvaliaÃ§Ã£o nÃ£o indicou necessidade adicional de neutralizaÃ§Ã£o; aplicar somente se pH alcalino ou instabilidade pÃ³s-quÃ­mica.',
             };
 
     const hairProfile =
@@ -472,21 +474,21 @@ export class ReportsController {
     if (!text || typeof text !== 'string') return '';
     const lower = text.toLowerCase();
     const clinicalTerms = [
-      'diagnóstico',
+      'diagnÃ³stico',
       'diagnostico',
       'patologia',
-      'doença',
+      'doenÃ§a',
       'doenca',
-      'inflamação',
+      'inflamaÃ§Ã£o',
       'inflamacao',
-      'infecção',
+      'infecÃ§Ã£o',
       'infeccao',
-      'lesão',
+      'lesÃ£o',
       'lesao',
     ];
     const softened = clinicalTerms.reduce((acc, term) => {
       const regex = new RegExp(term, 'gi');
-      return acc.replace(regex, 'sinal fora do escopo estético');
+      return acc.replace(regex, 'sinal fora do escopo estÃ©tico');
     }, text);
 
     const trimmed = softened.trim();
@@ -494,11 +496,12 @@ export class ReportsController {
 
     const modeLabel =
       analysisType === 'tricologica'
-        ? 'Modo tricológico estético'
+        ? 'Modo tricolÃ³gico estÃ©tico'
         : analysisType === 'capilar'
-          ? 'Modo capilar estético'
-          : 'Modo geral estético';
+          ? 'Modo capilar estÃ©tico'
+          : 'Modo geral estÃ©tico';
 
     return `${modeLabel}: ${trimmed}`;
   }
 }
+

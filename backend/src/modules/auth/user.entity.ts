@@ -17,6 +17,9 @@ export class User {
   @Column({ unique: true })
   email: string;
 
+  @Column({ nullable: true })
+  fullName?: string;
+
   @Column()
   password: string;
 
@@ -34,6 +37,11 @@ export class User {
   role: UserRole;
 
   @ManyToOne(() => Salon, (salon) => salon.users)
-  @JoinColumn({ name: "salon_id" })
+  @JoinColumn({ name: "salonId" })
   salon: Salon;
+
+  @Column({ type: 'uuid', nullable: true, name: 'salonId' })
+  salonId?: string;
 }
+
+export { User as UserEntity };

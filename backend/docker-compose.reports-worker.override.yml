@@ -1,0 +1,9 @@
+services:
+  reports-worker:
+    image: hair-analysis-backend:latest
+    command: ['node', 'dist/main.js']
+    environment:
+      NODE_OPTIONS: '--max-old-space-size=384'
+      REPORTS_HARDENING_WORKER_ENABLED: 'true'
+    mem_limit: 512m
+    cpus: 0.75

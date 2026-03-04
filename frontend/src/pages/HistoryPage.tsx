@@ -1,6 +1,7 @@
-﻿import { useEffect, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { getHistoryByClient, AnalysisHistory } from "../services/history.service";
+import { useClientSession } from "../context/ClientSessionContext";
 import "../styles/system.css";
 
 function getScoreStyle(score: number) {
@@ -32,17 +33,27 @@ function getScoreStyle(score: number) {
 }
 
 export default function HistoryPage() {
+  const { activeClient } = useClientSession();
   const [history, setHistory] = useState<AnalysisHistory[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // ⚠️ temporário — depois vem por rota ou contexto
-  const clientId = "cliente_123";
+  const clientId = useMemo(() => {
+    const fromQuery = new URLSearchParams(window.location.search).get("clientId");
+    return fromQuery || activeClient?.id || "";
+  }, [activeClient?.id]);
 
   useEffect(() => {
+    if (!clientId) {
+      setHistory([]);
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
     getHistoryByClient(clientId)
-      .then(setHistory)
+      .then((items) => setHistory(Array.isArray(items) ? items : []))
       .finally(() => setLoading(false));
-  }, []);
+  }, [clientId]);
 
   if (loading) {
     return <div className="p-6 text-gray-500">Carregando histórico...</div>;
@@ -66,13 +77,13 @@ export default function HistoryPage() {
       </div>
 
       {history.length === 0 && (
-        <p className="text-gray-500">
-          Nenhuma análise encontrada para este cliente.
-        </p>
+        <p className="text-gray-500">Nenhuma análise encontrada para este cliente.</p>
       )}
 
       {history.map((item) => {
-        const scoreStyle = getScoreStyle(item.score);
+        const score = Number(item.score ?? 0);
+        const scoreStyle = getScoreStyle(score);
+        const flags = Array.isArray(item.flags) ? item.flags : [];
 
         return (
           <div key={item.id} className="panel panel-muted space-y-3">
@@ -83,23 +94,17 @@ export default function HistoryPage() {
 
               <div className="flex gap-2 flex-wrap">
                 <span className="chip">
-                  {item.analysisType === "tricologica"
-                    ? "Tricológica"
-                    : "Capilar"}
+                  {item.analysisType === "tricologica" ? "Tricológica" : "Capilar"}
                 </span>
-                <span className={`chip ${scoreStyle.className}`}>
-                  {scoreStyle.label}
-                </span>
+                <span className={`chip ${scoreStyle.className}`}>{scoreStyle.label}</span>
               </div>
             </div>
 
             <div className="text-sm font-medium">
-              Score: <span className="text-lg font-semibold">{item.score}</span>
+              Score: <span className="text-lg font-semibold">{score}</span>
             </div>
 
-            <div className="text-sm whitespace-pre-line">
-              {item.interpretation}
-            </div>
+            <div className="text-sm whitespace-pre-line">{item.interpretation}</div>
 
             <div>
               <Link to={`/historico/${item.id}`} className="page-link">
@@ -107,9 +112,9 @@ export default function HistoryPage() {
               </Link>
             </div>
 
-            {item.flags.length > 0 && (
+            {flags.length > 0 && (
               <div className="flex flex-wrap gap-2 pt-2">
-                {item.flags.map((flag) => (
+                {flags.map((flag) => (
                   <span key={flag} className="chip chip-flag">
                     {flag}
                   </span>

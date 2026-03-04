@@ -171,7 +171,7 @@ Este blueprint serve como contrato para a refatoração completa mantendo requis
 
 2. Camada B - Motor matematico deterministico (backend)
 - `backend/src/modules/analysis-engine/*`
-- Perfis de pesos fixos/versionados (`weightProfileVersion: v1.2.0`).
+- Perfis de pesos fixos/versionados (`weightProfileVersion: v1.0.0`).
 - Repetibilidade obrigatoria (mesmo input => mesmo score).
 
 3. Camada C - Governanca juridica e entrega
@@ -197,3 +197,29 @@ Este blueprint serve como contrato para a refatoração completa mantendo requis
 - `salonId` obrigatorio em todas as operacoes autenticadas.
 - Cross-salon bloqueado via guards e validacao de ownership em history/reports.
 - Persistencia de analise sempre vinculada a `salonId` e `professionalId`.
+
+## 11. Hardening juridico e tecnico (incremental)
+
+### 11.1 Camada de pesos versionados
+- Arquivo isolado: `backend/src/modules/analysis-engine/weight-profiles.constants.ts`.
+- Versao fixa: `v1.0.0`.
+- Perfis tecnicos fixos: `VIRGEM`, `QUIMICAMENTE_TRATADO`, `ALTA_SENSIBILIDADE`.
+
+### 11.2 Auditoria expandida em analise
+- Entidade `HistoryEntity` (tabela `analysis_history`) recebe campos opcionais de auditoria:
+  `modelVersion`, `weightProfileVersion`, `promptVersion`, `temperature`, `rawIAOutput`,
+  `scoreCalculado`, `confidenceScore`, `previousAnalysisId`.
+- Integracao em `VisionService.process`: dados de `legalAudit` sao persistidos sem alterar contratos anteriores.
+
+### 11.3 Sanitizacao juridica de saida
+- Middleware: `backend/src/common/middleware/legal-terms-sanitizer.middleware.ts`.
+- Substituicoes obrigatorias:
+  - `cura` -> `cuidado estético`
+  - `diagnóstico` -> `avaliação estética`
+  - `alopecia` -> `queda acentuada percebida`
+  - `dermatite` -> `sensibilidade aparente`
+
+### 11.4 PDF hardening isolado
+- Worker adicional: `backend/src/reports/reports.hardening.worker.ts`.
+- Worker atual permanece ativo e inalterado.
+- Opcional: aplicar `backend/docker-compose.reports-worker.override.yml` para limitar memoria via `NODE_OPTIONS` e `mem_limit`.

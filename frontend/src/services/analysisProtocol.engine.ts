@@ -16,10 +16,11 @@ export type PremiumProtocol = {
 };
 
 export function deriveProtocolFromHistory(
-  history: AnalysisHistory[],
+  history: AnalysisHistory[] | null | undefined,
   goal: PremiumGoal,
 ): PremiumProtocol {
-  const recent = [...history]
+  const safeHistory = Array.isArray(history) ? history : [];
+  const recent = [...safeHistory]
     .sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt))
     .slice(0, 6);
 

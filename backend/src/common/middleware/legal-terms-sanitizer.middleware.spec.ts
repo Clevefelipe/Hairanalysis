@@ -1,11 +1,11 @@
-import { legalTermsSanitizerMiddleware } from './legal-terms-sanitizer.middleware';
+ï»¿import { legalTermsSanitizerMiddleware } from './legal-terms-sanitizer.middleware';
 
 describe('legalTermsSanitizerMiddleware', () => {
   it('sanitizes forbidden clinical terms', () => {
     const req = {
       body: {
         texto:
-          'Diagnóstico com alopecia e dermatite. Prescrição para tratar doença e cura.',
+          'DiagnÃ³stico com alopecia e dermatite. PrescriÃ§Ã£o para tratar doenÃ§a e cura.',
       },
     } as any;
 
@@ -24,13 +24,13 @@ describe('legalTermsSanitizerMiddleware', () => {
     expect(next).toHaveBeenCalled();
 
     const sanitizedBody = String(req.body.texto).toLowerCase();
-    expect(sanitizedBody).not.toContain('diagnóstico');
+    expect(sanitizedBody).not.toContain('diagn');
     expect(sanitizedBody).not.toContain('alopecia');
     expect(sanitizedBody).not.toContain('dermatite');
 
     res.json({ message: req.body.texto });
     const output = String(responsePayloads[0].message).toLowerCase();
-    expect(output).toContain('avaliação estética');
+    expect(output).toContain('avaliaÃ§Ã£o estÃ©tica');
     expect(output).toContain('queda acentuada percebida');
     expect(output).toContain('sensibilidade aparente');
   });
