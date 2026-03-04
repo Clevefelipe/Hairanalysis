@@ -1,13 +1,13 @@
-import type { NextFunction, Request, Response } from 'express';
+Ôªøimport type { NextFunction, Request, Response } from 'express';
 
 const REPLACEMENTS: Array<{ pattern: RegExp; replacement: string }> = [
-  { pattern: /\bcura\b/gi, replacement: 'melhora estÈtica percebida' },
-  { pattern: /\btratar\s+doen[cÁ]a\b/gi, replacement: 'cuidar esteticamente' },
-  { pattern: /\bdiagn[oÛ]stic[oa]s?\b/gi, replacement: 'avaliaÁ„o estÈtica' },
-  { pattern: /\bprescri[cÁ][a„]o\b/gi, replacement: 'orientaÁ„o estÈtica' },
-  { pattern: /\bpatologi(?:a|as)\b/gi, replacement: 'alteraÁ„o estÈtica' },
+  { pattern: /\bcura\b/gi, replacement: 'melhora est√©tica percebida' },
+  { pattern: /\btratar\s+doen[c√ß]a\b/gi, replacement: 'cuidar esteticamente' },
+  { pattern: /\bdiagn[o√≥]stic[oa]s?\b/gi, replacement: 'avalia√ß√£o est√©tica' },
+  { pattern: /\bprescri[c√ß][a√£]o\b/gi, replacement: 'orienta√ß√£o est√©tica' },
+  { pattern: /\bpatologi(?:a|as)\b/gi, replacement: 'altera√ß√£o est√©tica' },
   {
-    pattern: /\binflama[cÁ][a„]o\s+sever[ao]\b/gi,
+    pattern: /\binflama[c√ß][a√£]o\s+sever[ao]\b/gi,
     replacement: 'sensibilidade aparente importante',
   },
   {
@@ -18,6 +18,10 @@ const REPLACEMENTS: Array<{ pattern: RegExp; replacement: string }> = [
     pattern: /\bdermatites?\b/gi,
     replacement: 'sensibilidade aparente',
   },
+  // Fallbacks amplos para variantes corrompidas ou sem acento
+  { pattern: /diagn[^\s]*/gi, replacement: 'avalia√ß√£o est√©tica' },
+  { pattern: /prescri[^\s]*/gi, replacement: 'orienta√ß√£o est√©tica' },
+  { pattern: /doenc[^\s]*a/gi, replacement: 'condi√ß√£o est√©tica' },
 ];
 
 function sanitizeText(text: string): string {

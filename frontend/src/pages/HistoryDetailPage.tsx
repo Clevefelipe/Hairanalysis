@@ -210,14 +210,15 @@ export default function HistoryDetailPage() {
     const rec = history.recommendations ?? {};
     const treatments = safeList(rec?.treatments);
     const homeCare = safeList(rec?.homeCare);
-    const maintenanceIntervalDays =
-      typeof rec?.maintenanceIntervalDays === "number"
-        ? rec.maintenanceIntervalDays
-        : 60;
-    const baseDate = new Date(history.createdAt);
-    const returnDate = new Date(
-      baseDate.getTime() + maintenanceIntervalDays * 24 * 60 * 60 * 1000,
-    );
+
+    const maintenance = (history as any)?.maintenance ?? {};
+    const maintenanceIntervalDays = Number(maintenance?.intervalDays ?? 30);
+
+    const rawReturnDate = maintenance?.nextReturnDate || history.createdAt;
+    const returnDate = rawReturnDate ? new Date(rawReturnDate) : null;
+    if (!returnDate || Number.isNaN(returnDate.getTime())) {
+      return null;
+    }
     const returnLabel = returnDate.toLocaleDateString("pt-BR", {
       day: "2-digit",
       month: "long",

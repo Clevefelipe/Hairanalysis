@@ -126,6 +126,25 @@ A decisão é:
 
 ---
 
+## 🤖 Governança da IA e Motor Determinístico
+
+- **Modo Capilar/Tricológico/Geral**: a IA opera em escopo estético; modo tricológico bloqueia recomendações de alisamento e evita termos clínicos. 
+- **Prompt mestre seguro**: regras jurídicas obrigatórias (sem diagnósticos, sem promessas absolutas, uso de vocabulário estético, orientação a avaliação médica apenas quando necessário) e uso exclusivo de serviços cadastrados no catálogo para alisamentos.
+- **Camada IA (leitura)**: classifica atributos (elasticidade, porosidade, resistência, histórico químico, integridade cuticular, confidence) mas **não calcula score final**.
+- **Camada Determinística (analysis-engine)**: calcula Score de Integridade e aptidão com pesos versionados (`weightProfileVersion`), faixas 0–39/40–59/60–79/80–100 e bloqueio por baixa confiabilidade (`confidenceScore < 60`).
+- **Sanitização jurídica**: middleware troca termos clínicos por equivalentes estéticos (ex.: “diagnóstico” → “avaliação estética”).
+- **Auditabilidade**: cada análise registra `modelVersion`, `weightProfileVersion`, `promptVersion`, `temperature`, `rawIAOutput`, `scoreCalculado`, `confidenceScore`, `previousAnalysisId`.
+- **Compatibilidade/neutralização**: recomendações de neutralização de pH e combos inteligentes seguem apenas serviços do catálogo; nenhum alisamento é sugerido em modo tricológico.
+
+### Versionamento rápido
+
+| Artefato              | Versão          | Observação                                         |
+| --------------------- | --------------- | -------------------------------------------------- |
+| promptVersion         | has-prompt-legal-1.2.0 | Governança jurídica/estética, catálogo fechado de alisamentos, neutralização obrigatória em pH alcalino/instabilidade. |
+| weightProfileVersion  | v1.2.0          | Pesos determinísticos fixos (analysis-engine).     |
+
+---
+
 ## 📤 Relatórios Profissionais
 - Geração automática de **PDFs premium**
 - Linguagem técnica e profissional

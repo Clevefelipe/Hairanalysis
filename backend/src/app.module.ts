@@ -14,6 +14,7 @@ import { KnowledgeModule } from './modules/knowledge/knowledge.module';
 import { ClientesModule } from './clientes/clientes.module';
 import { ObservabilityModule } from './observability/observability.module';
 import { ReportsModule } from './reports/reports.module';
+import { AppLogger } from './logger/app-logger.service';
 
 // Entities (para migrations)
 import { UserEntity } from './modules/auth/user.entity';
@@ -75,6 +76,7 @@ import { env, getDatabaseConfig } from './config/env.config';
   ],
   controllers: [],
   providers: [
+    AppLogger,
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,

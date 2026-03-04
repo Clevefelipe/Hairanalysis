@@ -1096,6 +1096,20 @@ export default function AnaliseCapilar() {
                 Alerta profissional
               </div>
               <p className="mt-2 text-sm whitespace-pre-line">{professionalAlertText}</p>
+              {sessionId && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <button
+                    onClick={() => {
+                      setResult(null);
+                      setPreview(null);
+                      setStep("capture");
+                    }}
+                    className="btn-secondary"
+                  >
+                    Refazer captura
+                  </button>
+                </div>
+              )}
             </div>
           )}
 

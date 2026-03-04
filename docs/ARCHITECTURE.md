@@ -12,6 +12,21 @@ description: Visão arquitetural do Hair Analysis System monorepo
   - Infra: execução local via npm, dockerfiles por pacote e docker-compose para dev/prod.
 - **Padrões transversais**: ESLint/Prettier por pacote; documentação em `/docs`.
 
+## Governança da IA e Motor Determinístico
+
+- **Modos Capilar/Tricológico/Geral**: escopo estritamente estético; modo tricológico bloqueia recomendações de alisamento e evita termos clínicos.
+- **Camada IA (leitura)**: apenas extrai/classifica atributos (elasticidade, porosidade, resistência, histórico químico, integridade cuticular, confiança); não calcula score final.
+- **Camada determinística (analysis-engine)**: calcula Score de Integridade e aptidão com pesos versionados (`weightProfileVersion`), faixas 0–39/40–59/60–79/80–100, bloqueio se `confidenceScore < 60`.
+- **Catálogo controlado**: alisamentos só são recomendados se existirem no catálogo do salão; modo tricológico nunca recomenda alisamento.
+- **Sanitização jurídica**: middleware converte termos clínicos para equivalentes estéticos (ex.: “diagnóstico” → “avaliação estética”).
+- **Auditabilidade**: registros trazem `modelVersion`, `weightProfileVersion`, `promptVersion`, `temperature`, `rawIAOutput`, `scoreCalculado`, `confidenceScore`, `previousAnalysisId`.
+
+## Versionamento de Prompt
+
+- Prompt mestre atual: **has-prompt-legal-1.2.0** (governança jurídica/estética, catálogo fechado de alisamentos, neutralização de pH obrigatória em processos alcalinos/instabilidade, bloqueio de modo tricológico para química).
+- Pesos determinísticos: **weightProfileVersion: v1.2.0** (persistidos no analysis-engine).
+- Se ajustar o prompt, registrar nova tag aqui e atualizar `promptVersion` na camada de integração sem alterar o motor determinístico.
+
 ## 2. Estrutura do monorepo (simplificada)
 ```
 hair-analysis-system/

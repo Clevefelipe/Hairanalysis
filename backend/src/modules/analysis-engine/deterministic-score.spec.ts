@@ -18,6 +18,6 @@ describe('deterministic-score', () => {
 
     expect(resultA).toEqual(resultB);
     expect(resultA.score).toBe(72);
-    expect(resultA.weightProfileVersion).toBe('v1.0.0');
+    expect(resultA.weightProfileVersion).toBe('v1.2.0');
   });
 });
