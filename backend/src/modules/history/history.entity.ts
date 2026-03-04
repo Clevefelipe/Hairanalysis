@@ -13,6 +13,9 @@ export class HistoryEntity {
   @Column({ nullable: true })
   clientId: string;
 
+  @Column({ nullable: true })
+  professionalId: string;
+
   // 🔐 MULTI-TENANT REAL
   @Column({ nullable: true })
   salonId: string;
@@ -25,6 +28,15 @@ export class HistoryEntity {
 
   @Column("jsonb")
   ragResult: any;
+
+  @Column("jsonb", { nullable: true })
+  visionResult?: any;
+
+  @Column("jsonb", { nullable: true })
+  aiExplanation?: any;
+
+  @Column("jsonb", { nullable: true })
+  recommendations?: any;
 
   @CreateDateColumn()
   createdAt: Date;

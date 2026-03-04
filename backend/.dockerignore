@@ -1,0 +1,12 @@
+node_modules
+npm-debug.log
+Dockerfile*
+dist
+build
+coverage
+.tmp
+.env
+.env.*
+uploads
+.git
+.gitignore

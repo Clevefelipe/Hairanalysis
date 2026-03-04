@@ -1,0 +1,92 @@
+{
+  "title": "Hair Analysis - Reports & API",
+  "schemaVersion": 36,
+  "version": 1,
+  "tags": ["reports", "hair-analysis", "api"],
+  "panels": [
+    {
+      "type": "row",
+      "title": "API Overview",
+      "panels": [
+        {
+          "type": "timeseries",
+          "title": "HTTP Requests per Status",
+          "targets": [
+            {
+              "expr": "sum by (status)(rate(http_requests_total[5m]))",
+              "legendFormat": "{{status}}"
+            }
+          ],
+          "fieldConfig": {"defaults": {"unit": "ops"}}
+        },
+        {
+          "type": "timeseries",
+          "title": "HTTP Duration p95",
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.95, sum by (le)(rate(http_request_duration_seconds_bucket[5m])))",
+              "legendFormat": "p95"
+            }
+          ],
+          "fieldConfig": {"defaults": {"unit": "s"}}
+        }
+      ]
+    },
+    {
+      "type": "row",
+      "title": "Reports",
+      "panels": [
+        {
+          "type": "timeseries",
+          "title": "Reports Created by Status",
+          "targets": [
+            {
+              "expr": "sum by (status)(rate(reports_created_total[5m]))",
+              "legendFormat": "{{status}}"
+            }
+          ],
+          "fieldConfig": {"defaults": {"unit": "ops"}}
+        },
+        {
+          "type": "timeseries",
+          "title": "Reports Failed",
+          "targets": [
+            {"expr": "rate(reports_failed_total[5m])", "legendFormat": "fail"}
+          ],
+          "fieldConfig": {"defaults": {"unit": "ops"}}
+        },
+        {
+          "type": "timeseries",
+          "title": "Report Generation p95",
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.95, sum by (le)(rate(reports_generation_duration_seconds_bucket[5m])))",
+              "legendFormat": "p95"
+            },
+            {
+              "expr": "histogram_quantile(0.99, sum by (le)(rate(reports_generation_duration_seconds_bucket[5m])))",
+              "legendFormat": "p99"
+            }
+          ],
+          "fieldConfig": {"defaults": {"unit": "s"}}
+        }
+      ]
+    },
+    {
+      "type": "row",
+      "title": "Infrastructure",
+      "panels": [
+        {
+          "type": "stat",
+          "title": "Health Status",
+          "targets": [
+            {"expr": "max_over_time(health_status{status=\"ok\"}[1m])"}
+          ]
+        }
+      ]
+    }
+  ],
+  "templating": {
+    "list": []
+  }
+}

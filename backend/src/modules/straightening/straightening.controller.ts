@@ -1,9 +1,7 @@
 import { Body, Controller, Get, Post, Req, UseGuards } from "@nestjs/common";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
-import {
-  CreateStraighteningDTO,
-  StraighteningService,
-} from "./straightening.service";
+import type { CreateStraighteningDTO } from "./straightening.service";
+import { StraighteningService } from "./straightening.service";
 
 @Controller("straightenings")
 @UseGuards(JwtAuthGuard)

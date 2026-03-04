@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: hair-analysis-db
+    environment:
+      POSTGRES_DB: hair_analysis
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - hair-analysis-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: hair-analysis-backend
+    environment:
+      NODE_ENV: production
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: postgres
+      DATABASE_NAME: hair_analysis
+      JWT_SECRET: your-super-secret-jwt-key-change-in-production
+      OPENAI_API_KEY: your-openai-api-key
+      FRONTEND_URL: http://localhost:3000
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+    volumes:
+      - ./backend/uploads:/app/uploads
+    networks:
+      - hair-analysis-network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: hair-analysis-frontend
+    environment:
+      VITE_API_URL: http://localhost:3000
+    ports:
+      - "3001:80"
+    depends_on:
+      - backend
+    networks:
+      - hair-analysis-network
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: hair-analysis-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - hair-analysis-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  hair-analysis-network:
+    driver: bridge

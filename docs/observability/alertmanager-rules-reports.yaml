@@ -1,0 +1,48 @@
+groups:
+  - name: hair-analysis-reports
+    interval: 30s
+    rules:
+      - alert: HttpErrorRateHigh
+        expr: sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total[5m])) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "HTTP 5xx > 5%"
+          description: "Taxa de erro HTTP acima de 5% nos últimos 5 minutos."
+
+      - alert: HttpLatencyP95High
+        expr: histogram_quantile(0.95, sum by (le)(rate(http_request_duration_seconds_bucket[5m]))) > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Latência HTTP p95 alta"
+          description: "p95 acima de 1s nos últimos 5 minutos."
+
+      - alert: ReportsFailuresHigh
+        expr: rate(reports_failed_total[10m]) > 3
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Falhas na geração de relatórios"
+          description: "Mais de 3 falhas de relatório em 10 minutos."
+
+      - alert: ReportsDurationP95High
+        expr: histogram_quantile(0.95, sum by (le)(rate(reports_generation_duration_seconds_bucket[10m]))) > 60
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Duração p95 de relatórios alta"
+          description: "p95 de geração de relatórios acima de 60s nos últimos 10 minutos."
+
+      - alert: HealthDegraded
+        expr: health_status{status!="ok"} == 1
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Health check degradado"
+          description: "O endpoint /api/health reportou status diferente de ok."

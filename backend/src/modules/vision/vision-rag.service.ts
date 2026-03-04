@@ -36,6 +36,7 @@ export class VisionRagService {
     analysisType: "tricologica" | "capilar";
     signals: Record<string, string>;
     baseInterpretation: string;
+    salonId?: string;
   }) {
     const query = this.buildQuery(
       params.analysisType,
@@ -62,5 +63,16 @@ ${params.baseInterpretation}
 Interpretação técnica:
 ${knowledgeText || "Nenhum material técnico relevante encontrado para este padrão."}
 `.trim();
+  }
+
+  async buildPromptKnowledgeContext(params: {
+    salonId: string;
+    analysisType: "tricologica" | "capilar";
+    notes?: string;
+    extraSignals?: Record<string, string>;
+    limit?: number;
+  }) {
+    void params;
+    return "";
   }
 }

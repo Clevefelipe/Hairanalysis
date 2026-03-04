@@ -10,6 +10,7 @@ import { VisionModule } from "./modules/vision/vision.module";
 import { KnowledgeModule } from "./modules/knowledge/knowledge.module";
 import { AuditModule } from "./modules/audit/audit.module";
 import { StraighteningModule } from "./modules/straightening/straightening.module";
+import { AppLogger } from "./logger/app-logger.service";
 
 @Module({
   imports: [
@@ -42,5 +43,6 @@ import { StraighteningModule } from "./modules/straightening/straightening.modul
     KnowledgeModule,
     StraighteningModule,
   ],
+  providers: [AppLogger],
 })
 export class AppModule {}
