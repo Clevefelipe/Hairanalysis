@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import styles from "./AnalysisProcessingSkeleton.module.css";
 
 interface AnalysisProcessingSkeletonProps {
   mode: "tricologica" | "capilar";
@@ -50,17 +51,13 @@ export default function AnalysisProcessingSkeleton({
 
   return (
     <div
-      className="relative flex min-h-[260px] w-full flex-col gap-6 overflow-hidden rounded-3xl border px-6 py-9 shadow-sm sm:px-12 sm:py-12"
-      style={{
-        borderColor: "var(--color-border)",
-        backgroundColor: "var(--color-surface, #fff)",
-      }}
+      className={`relative flex min-h-[260px] w-full flex-col gap-6 overflow-hidden rounded-3xl border px-6 py-9 shadow-sm sm:px-12 sm:py-12 ${styles.container}`}
     >
       <div className="relative z-10 flex flex-col items-center gap-3 text-center">
         <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-[color:var(--color-text-muted)]">
           <span className="inline-flex h-1.5 w-1.5 rounded-full bg-[color:var(--color-primary,#0a84ff)] animate-pulse" />
           {progressValue < 100 ? "IA em processamento" : "Pronto para revisão"}
-          <span className="rounded-full bg-[color:var(--color-surface,#fff)] px-2 py-0.5 text-[10px] font-semibold border" style={{ borderColor: "var(--color-border)" }}>
+          <span className={`rounded-full bg-[color:var(--color-surface,#fff)] px-2 py-0.5 text-[10px] font-semibold border ${styles.modeBadge}`}>
             {mode === "tricologica" ? "Tricológica" : "Capilar"}
           </span>
         </div>
@@ -68,10 +65,9 @@ export default function AnalysisProcessingSkeleton({
         <div className="relative flex items-center justify-center">
           <svg
             viewBox={`0 0 ${circularProgress.ringSize} ${circularProgress.ringSize}`}
-            className="h-52 w-52"
+            className={`h-52 w-52 ${styles.svgFilter}`}
             role="img"
             aria-label={`Progresso ${progressValue}%`}
-            style={{ filter: "drop-shadow(0px 6px 16px rgba(10,132,255,0.12))" }}
           >
             <circle
               cx={circularProgress.ringSize / 2}
@@ -81,7 +77,7 @@ export default function AnalysisProcessingSkeleton({
               stroke="var(--color-border)"
               strokeWidth={circularProgress.strokeWidth}
               strokeDasharray={`${circularProgress.circumference}`}
-              style={{ opacity: 0.55 }}
+              className={styles.backgroundCircle}
             />
 
             <circle
@@ -95,7 +91,7 @@ export default function AnalysisProcessingSkeleton({
               strokeDasharray={`${circularProgress.circumference}`}
               strokeDashoffset={circularProgress.strokeDashoffset}
               transform={`rotate(-90 ${circularProgress.ringSize / 2} ${circularProgress.ringSize / 2})`}
-              style={{ transition: "stroke-dashoffset 0.4s ease, stroke 0.3s ease" }}
+              className={styles.progressCircle}
             />
             <circle
               cx={circularProgress.ringSize / 2}
@@ -107,7 +103,7 @@ export default function AnalysisProcessingSkeleton({
               strokeDasharray={`${circularProgress.circumference * 0.25} ${circularProgress.circumference}`}
               strokeDashoffset={circularProgress.circumference * 0.1}
               transform={`rotate(90 ${circularProgress.ringSize / 2} ${circularProgress.ringSize / 2})`}
-              style={{ opacity: 0.65 }}
+              className={styles.glowCircle}
             />
           </svg>
 
@@ -126,18 +122,14 @@ export default function AnalysisProcessingSkeleton({
         <div className="flex w-full max-w-lg flex-col items-center gap-2">
           <div className="flex items-center gap-2 text-sm font-semibold text-[color:var(--color-text)]">
             <span
-              className="inline-flex h-2 w-2 rounded-full"
-              style={{
-                backgroundColor: "var(--color-success-500, #16a34a)",
-                boxShadow: "0 0 0 6px rgba(34,197,94,0.12)",
-              }}
+              className={`inline-flex h-2 w-2 rounded-full ${styles.statusDot}`}
             />
             <span className="tracking-tight">Processando análise</span>
           </div>
           <div className="relative h-2 w-full overflow-hidden rounded-full bg-[color:var(--color-border)]/50">
             <div
-              className="absolute inset-y-0 left-0 rounded-full"
-              style={{ width: `${progressValue}%`, transition: "width 0.4s ease", backgroundColor: "var(--color-primary,#0a84ff)" }}
+              className={`absolute inset-y-0 left-0 rounded-full ${styles.progressBar}`}
+              style={{ "--progress-width": `${progressValue}%` } as React.CSSProperties}
             />
           </div>
           <div className="text-xs leading-relaxed text-[color:var(--color-text-muted)] text-center max-w-xl">
