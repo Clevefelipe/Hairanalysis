@@ -1,6 +1,4 @@
-import PageContainer from "../components/ui/PageContainer";
-import PageHeader from "../components/ui/PageHeader";
-import { exportTrichologyReportPdf } from "../utils/exportTrichologyReportPdf";
+import PageContainer from "@/components/layout/PageContainer";
 
 type ClinicalStatus = "normal" | "alerta" | "critico";
 
@@ -30,31 +28,20 @@ const TrichologyReport = () => {
   };
 
   function handleExportPdf() {
-    exportTrichologyReportPdf({
-      ...report,
-      risk: statusMap[report.risk].label,
-    });
+    window.print();
   }
 
   return (
     <PageContainer>
-      <PageHeader
-        title="Laudo Tricológico"
-        subtitle="Avaliação técnica do couro cabeludo e fios"
-      />
+      <div className="mb-6">
+        <h1 className="text-2xl font-semibold text-slate-900">Laudo Tricológico</h1>
+        <p className="text-sm text-slate-500">Avaliação técnica do couro cabeludo e fios</p>
+      </div>
 
-      <div style={{ marginBottom: 24 }}>
+      <div className="mb-6">
         <button
           onClick={handleExportPdf}
-          style={{
-            padding: "10px 16px",
-            borderRadius: 8,
-            border: "1px solid #e5e7eb",
-            background: "#111827",
-            color: "#ffffff",
-            fontSize: 14,
-            cursor: "pointer",
-          }}
+          className="btn-primary"
         >
           Exportar PDF Clínico
         </button>

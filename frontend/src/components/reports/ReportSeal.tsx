@@ -1,27 +1,7 @@
 export default function ReportSeal() {
   return (
-    <div
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: "8px",
-        padding: "6px 12px",
-        border: "1px solid #2e7d32",
-        borderRadius: "6px",
-        color: "#2e7d32",
-        fontSize: "12px",
-        fontWeight: 600
-      }}
-    >
-      <span
-        style={{
-          width: "10px",
-          height: "10px",
-          borderRadius: "50%",
-          backgroundColor: "#2e7d32",
-          display: "inline-block"
-        }}
-      />
+    <div className="inline-flex items-center gap-2 rounded-lg border border-[color:var(--color-success-500)] px-3 py-1 text-xs font-semibold text-[color:var(--color-success-700)]">
+      <span className="inline-block h-2.5 w-2.5 rounded-full bg-[color:var(--color-success-500)]" />
       Relatório válido
     </div>
   );

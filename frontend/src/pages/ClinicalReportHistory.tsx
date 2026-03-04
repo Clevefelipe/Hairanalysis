@@ -1,21 +1,25 @@
 import { useEffect, useState } from "react";
 import {
-  getClinicalReportHistory,
-  ClinicalReportHistory
-} from "../services/clinicalReportService";
-import Layout from "../components/Layout";
+  getClinicalReports,
+  ClinicalReport
+} from "@/services/clinicalReportService";
 
 export default function ClinicalReportHistoryPage() {
-  const [reports, setReports] = useState<ClinicalReportHistory[]>([]);
+  const [reports, setReports] = useState<ClinicalReport[]>([]);
 
   useEffect(() => {
-    getClinicalReportHistory("CLIENT_ID_FIXO_TEMP")
+    getClinicalReports()
       .then(setReports);
   }, []);
 
   return (
-    <Layout>
-      <h1>Histórico de Relatórios Clínicos</h1>
+    <section className="section-stack animate-page-in w-full">
+      <div className="page-hero">
+        <div>
+          <p className="text-xs uppercase tracking-[0.35em] text-slate-400">Relatórios clínicos</p>
+          <h1>Histórico de Relatórios Clínicos</h1>
+        </div>
+      </div>
 
       <table>
         <thead>
@@ -30,15 +34,15 @@ export default function ClinicalReportHistoryPage() {
         <tbody>
           {reports.map(r => (
             <tr key={r.id}>
-              <td>{new Date(r.generatedAt).toLocaleDateString()}</td>
-              <td>{r.periodDays} dias</td>
-              <td>{r.totalAnalyses}</td>
-              <td>{r.deltaPercentage}%</td>
-              <td>{r.fileName}</td>
+              <td>{new Date(r.createdAt).toLocaleDateString()}</td>
+              <td>—</td>
+              <td>—</td>
+              <td>—</td>
+              <td>—</td>
             </tr>
           ))}
         </tbody>
       </table>
-    </Layout>
+    </section>
   );
 }

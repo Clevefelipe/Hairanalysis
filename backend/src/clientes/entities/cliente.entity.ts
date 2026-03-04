@@ -23,6 +23,9 @@ export class Cliente {
   @Column({ nullable: true })
   cpf?: string;
 
+  @Column({ nullable: true, length: 30, unique: true })
+  codigo?: string;
+
   @Column({ type: 'date', nullable: true })
   dataNascimento?: string;
 

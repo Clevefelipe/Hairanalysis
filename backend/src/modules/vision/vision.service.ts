@@ -78,16 +78,6 @@ export class VisionService {
     payload: any,
   ) {
     const { visionResult, aiExplanation, recommendations } = payload || {};
-    const normalizedDomain: 'capilar' | 'tricologia' =
-      String(payload?.analysisType || payload?.type || '')
-        .toLowerCase()
-        .includes('trico')
-        ? 'tricologia'
-        : 'capilar';
-    const legalAudit =
-      payload?.legalAudit && typeof payload.legalAudit === 'object'
-        ? payload.legalAudit
-        : null;
     const deterministicScore = this.normalizeScore(
       payload?.deterministicResult?.score ?? recommendations?.score,
     );
@@ -133,43 +123,9 @@ export class VisionService {
       clientId,
       salonId,
       professionalId,
-      domain: normalizedDomain,
       visionResult: visionToSave,
       aiExplanation: aiExplanation || null,
       recommendations: recommendationsToSave,
-      modelVersion:
-        typeof legalAudit?.modelVersion === 'string'
-          ? legalAudit.modelVersion
-          : null,
-      weightProfileVersion:
-        typeof legalAudit?.weightProfileVersion === 'string'
-          ? legalAudit.weightProfileVersion
-          : null,
-      promptVersion:
-        typeof legalAudit?.promptVersion === 'string'
-          ? legalAudit.promptVersion
-          : null,
-      temperature:
-        typeof legalAudit?.temperature === 'number'
-          ? legalAudit.temperature
-          : null,
-      rawIAOutput: legalAudit?.rawIAOutput ?? null,
-      scoreCalculado:
-        typeof legalAudit?.scoreCalculado === 'number'
-          ? legalAudit.scoreCalculado
-          : typeof extractedScore === 'number'
-            ? extractedScore
-            : null,
-      confidenceScore:
-        typeof legalAudit?.confidenceScore === 'number'
-          ? legalAudit.confidenceScore
-          : typeof payload?.deterministicResult?.confidence === 'number'
-            ? payload.deterministicResult.confidence
-            : null,
-      previousAnalysisId:
-        typeof legalAudit?.previousAnalysisId === 'string'
-          ? legalAudit.previousAnalysisId
-          : null,
     });
   }
 

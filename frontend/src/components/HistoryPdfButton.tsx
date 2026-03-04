@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { historyService } from "../services/history.service";
+import { getHistoryPdf } from "../services/history.service";
 
 type Props = {
   historyId: string;
@@ -15,7 +15,7 @@ export default function HistoryPdfButton({
   async function handleClick() {
     try {
       setLoading(true);
-      const blob = await historyService.downloadPdf(historyId, domain);
+      const blob = await getHistoryPdf(historyId);
       const url = window.URL.createObjectURL(blob);
       window.open(url, "_blank");
     } catch {
@@ -29,13 +29,7 @@ export default function HistoryPdfButton({
     <button
       onClick={handleClick}
       disabled={loading}
-      style={{
-        padding: "8px 12px",
-        borderRadius: 6,
-        border: "1px solid #ccc",
-        background: "#fff",
-        cursor: loading ? "not-allowed" : "pointer",
-      }}
+      className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition-shadow hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60"
     >
       {loading ? "Gerando PDF..." : "📄 Ver Laudo (PDF)"}
     </button>

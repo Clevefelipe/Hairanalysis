@@ -14,33 +14,19 @@ export default function ClienteHeader({
   onActionClick,
 }: ClienteHeaderProps) {
   return (
-    <div style={{ marginBottom: "24px" }}>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
+    <div className="mb-6">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 style={{ margin: 0 }}>{title}</h1>
+          <h1 className="text-2xl font-semibold text-slate-900">{title}</h1>
           {subtitle && (
-            <p style={{ margin: "4px 0 0", color: "#6b7280" }}>
-              {subtitle}
-            </p>
+            <p className="mt-1 text-sm text-slate-500">{subtitle}</p>
           )}
         </div>
 
         {actionLabel && onActionClick && (
           <button
             onClick={onActionClick}
-            style={{
-              padding: "8px 16px",
-              borderRadius: "6px",
-              border: "1px solid #d1d5db",
-              background: "#fff",
-              cursor: "pointer",
-            }}
+            className="inline-flex items-center rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition-shadow hover:shadow-md"
           >
             {actionLabel}
           </button>

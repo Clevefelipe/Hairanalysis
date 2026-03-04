@@ -1,42 +1,26 @@
-import {
-  Controller,
-  Get,
-  Query,
-  Req,
-  UseGuards,
-  ForbiddenException,
-} from "@nestjs/common";
-import type { Request } from "express";
-import { JwtAuthGuard } from "../auth/jwt-auth.guard";
-import { AuditService } from "./audit.service";
+import { Controller, Get, Query } from '@nestjs/common';
+import { AuditService } from './audit.service';
 
-@Controller("audit")
-@UseGuards(JwtAuthGuard)
+@Controller('audit')
 export class AuditController {
   constructor(private readonly auditService: AuditService) {}
 
   @Get()
-  async list(
-    @Req() req: Request,
-    @Query("action") action?: string,
-    @Query("userId") userId?: string,
-    @Query("page") page = "1",
-    @Query("limit") limit = "20",
+  findAll(
+    @Query('salonId') salonId?: string,
+    @Query('userId') userId?: string,
+    @Query('action') action?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
   ) {
-    const user = (req as any).user;
-
-    if (user.role !== "ADMIN") {
-      throw new ForbiddenException(
-        "Acesso restrito a administradores",
-      );
-    }
-
-    return this.auditService.findAll({
-      salonId: user.salonId,
-      action,
-      userId,
-      page: Number(page),
-      limit: Number(limit),
-    });
+    return this.auditService.findPage(
+      {
+        salonId,
+        userId,
+        action,
+      },
+      Number(page ?? 1),
+      Number(limit ?? 20),
+    );
   }
 }

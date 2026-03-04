@@ -1,11 +1,8 @@
 import { WeightProfileId } from './analysis-engine.types';
-import {
-  LEGAL_WEIGHT_PROFILES,
-  WEIGHT_PROFILE_VERSION,
-} from './weight-profiles.constants';
-export { WEIGHT_PROFILE_VERSION };
 
 export const ANALYSIS_TOTAL_FIELDS = 8;
+
+export const WEIGHT_PROFILE_VERSION = 'v1.2.0';
 
 export const WEIGHT_PROFILES: Record<
   WeightProfileId,
@@ -21,16 +18,30 @@ export const WEIGHT_PROFILES: Record<
   }
 > = {
   [WeightProfileId.VIRGIN]: {
-    label: LEGAL_WEIGHT_PROFILES.VIRGEM.label,
-    weights: LEGAL_WEIGHT_PROFILES.VIRGEM.weights,
+    label: 'Perfil 1 - Cabelo Virgem',
+    weights: {
+      elasticity: 0.3,
+      resistance: 0.3,
+      porosity: 0.25,
+      thermalMechanicalDamage: 0.15,
+    },
   },
   [WeightProfileId.CHEMICALLY_TREATED]: {
-    label: LEGAL_WEIGHT_PROFILES.QUIMICAMENTE_TRATADO.label,
-    weights: LEGAL_WEIGHT_PROFILES.QUIMICAMENTE_TRATADO.weights,
+    label: 'Perfil 2 - Cabelo Quimicamente Tratado',
+    weights: {
+      elasticity: 0.4,
+      resistance: 0.3,
+      chemicalHistoryImpact: 0.2,
+      porosity: 0.1,
+    },
   },
   [WeightProfileId.HIGH_STRUCTURAL_SENSITIVITY]: {
-    label: LEGAL_WEIGHT_PROFILES.ALTA_SENSIBILIDADE.label,
-    weights: LEGAL_WEIGHT_PROFILES.ALTA_SENSIBILIDADE.weights,
+    label: 'Perfil 3 - Alta Sensibilidade Estrutural',
+    weights: {
+      elasticity: 0.45,
+      resistance: 0.35,
+      chemicalHistoryImpact: 0.2,
+    },
   },
 } as const;
 

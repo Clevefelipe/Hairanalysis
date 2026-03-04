@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
-import Card from "../components/ui/Card";
-import Button from "../components/ui/Button";
-import NivelBadge from "../components/ui/NivelBadge";
+import Card from "@/components/ui/Card";
+import Button from "@/components/ui/Button";
+import NivelBadge from "@/components/ui/NivelBadge";
 
 export default function ResultadoAnaliseTricologica() {
   const navigate = useNavigate();
@@ -11,25 +11,28 @@ export default function ResultadoAnaliseTricologica() {
   );
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-      <h1 style={{ fontSize: "32px", fontWeight: 700 }}>
-        Resultado da Análise Tricológica
-      </h1>
+    <div className="space-y-8 p-6 animate-page-in">
+      <div className="text-center">
+        <h1 className="text-4xl font-bold text-slate-900 mb-2">
+          Resultado da Análise Tricológica
+        </h1>
+        <p className="text-slate-600">Panorama técnico do couro cabeludo com suporte da IA</p>
+      </div>
 
       <Card title="Resumo técnico estético">
-        <div style={{ marginBottom: "12px" }}>
+        <div className="mb-3">
           <NivelBadge nivel={resultado.nivel} />
         </div>
 
-        <p>{resultado.resumo}</p>
+        <p className="text-sm text-slate-700">{resultado.resumo}</p>
 
-        <p style={{ marginTop: "8px", color: "#4B5563" }}>
+        <p className="mt-3 text-sm text-slate-500">
           Pontuação técnica: <strong>{resultado.score}</strong>
         </p>
       </Card>
 
       <Card title="Indicadores técnicos" variant="attention">
-        <ul>
+        <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">
           {(resultado.flags || []).map((f: string) => (
             <li key={f}>{f}</li>
           ))}
@@ -37,7 +40,7 @@ export default function ResultadoAnaliseTricologica() {
       </Card>
 
       <Card title="Recomendações estéticas assistivas">
-        <ul>
+        <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">
           {(resultado.recomendacoes || []).map((r: string) => (
             <li key={r}>{r}</li>
           ))}
@@ -45,18 +48,22 @@ export default function ResultadoAnaliseTricologica() {
       </Card>
 
       <Card title="Aviso importante" variant="attention">
-        Conteúdo gerado para apoio técnico-estético. O sistema não realiza
-        diagnósticos clínicos.
+        <p className="text-sm text-slate-600">
+          Conteúdo gerado para apoio técnico-estético. O sistema não realiza diagnósticos clínicos.
+        </p>
       </Card>
 
-      <div style={{ display: "flex", gap: "12px" }}>
+      <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
         <Button
           variant="secondary"
           onClick={() => navigate("/analise-tricologica")}
+          className="shadow-sm hover:shadow-md transition-shadow w-full sm:w-auto"
         >
           Voltar à Análise
         </Button>
-        <Button variant="primary">Salvar no Histórico</Button>
+        <Button className="w-full sm:w-auto">
+          Salvar no Histórico
+        </Button>
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 import "./ResultadoCapilarCliente.css";
-import { ResultadoCapilar } from "../../types/ResultadoCapilar";
-import { exportResultadoCapilarPDF } from "../utils/pdf/exportResultadoCapilar";
-import { useAuth } from "../../context/AuthContext";
+import { ResultadoCapilar } from "@/types/ResultadoCapilar";
+import { exportResultadoCapilarPDF } from "@/components/utils/pdf/exportResultadoCapilar";
+import { useAuth } from "@/context/AuthContext";
 
 interface Props {
   resultado?: ResultadoCapilar | null;
@@ -9,7 +9,7 @@ interface Props {
 
 export default function ResultadoCapilarCliente({ resultado }: Props) {
   const { role } = useAuth();
-  const isTecnico = role === "profissional";
+  const isTecnico = role === "PROFESSIONAL";
 
   if (!resultado) {
     return (
@@ -73,7 +73,7 @@ export default function ResultadoCapilarCliente({ resultado }: Props) {
         <section className="card">
           <h2 className="card-titulo">Alertas Técnicos</h2>
           <ul className="lista">
-            {resultado.alertas.map((a, i) => (
+            {(resultado.alertas ?? []).map((a, i) => (
               <li key={i}>{a}</li>
             ))}
           </ul>
@@ -83,7 +83,7 @@ export default function ResultadoCapilarCliente({ resultado }: Props) {
       <section className="card">
         <h2 className="card-titulo">Plano de Tratamento</h2>
         <ul className="lista">
-          {resultado.tratamentosRecomendados.map((t, i) => (
+          {(resultado.tratamentosRecomendados ?? []).map((t, i) => (
             <li key={i}>{t}</li>
           ))}
         </ul>

@@ -11,7 +11,6 @@ import React, { useRef, useState, useEffect } from 'react';
  */
 export function compressImage(file, callbackOrLiteMode, optionalCallback) {
   if (!file || !(file instanceof File)) {
-    console.error('❌ [ImageOptimizer] Arquivo inválido:', file);
     const cb = typeof callbackOrLiteMode === 'function' ? callbackOrLiteMode : optionalCallback;
     if (cb) cb(file);
     return;
@@ -57,7 +56,6 @@ export function compressImage(file, callbackOrLiteMode, optionalCallback) {
 
       canvas.toBlob((blob) => {
         if (!blob) {
-          console.error('❌ [ImageOptimizer] Falha ao comprimir imagem');
           if (callback) callback(file);
           return;
         }
@@ -71,14 +69,11 @@ export function compressImage(file, callbackOrLiteMode, optionalCallback) {
         const compressedSize = (compressedFile.size / 1024 / 1024).toFixed(2);
         const reduction = ((1 - compressedFile.size / file.size) * 100).toFixed(1);
 
-        console.log(`✅ [ImageOptimizer] Original: ${originalSize}MB, Comprimido: ${compressedSize}MB (${reduction}% redução)`);
-
         if (callback) callback(compressedFile);
       }, 'image/jpeg', quality);
     };
 
     img.onerror = () => {
-      console.error('❌ [ImageOptimizer] Erro ao carregar imagem');
       if (callback) callback(file);
     };
 
@@ -86,7 +81,6 @@ export function compressImage(file, callbackOrLiteMode, optionalCallback) {
   };
 
   reader.onerror = () => {
-    console.error('❌ [ImageOptimizer] Erro ao ler arquivo');
     if (callback) callback(file);
   };
 
@@ -94,7 +88,6 @@ export function compressImage(file, callbackOrLiteMode, optionalCallback) {
   if (typeof reader.readAsDataURL === 'function') {
     reader.readAsDataURL(file);
   } else {
-    console.error('❌ [ImageOptimizer] FileReader.readAsDataURL não disponível');
     if (callback) callback(file);
   }
 }

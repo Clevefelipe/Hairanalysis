@@ -5,11 +5,11 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   Index,
-} from "typeorm";
+} from 'typeorm';
 
-@Entity("vision_sessions")
+@Entity('vision_sessions')
 export class VisionSession {
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Index()
@@ -21,17 +21,17 @@ export class VisionSession {
   salonId: string;
 
   @Column({
-    type: "varchar",
+    type: 'varchar',
     length: 20,
   })
-  type: "tricologica" | "capilar";
+  type: 'tricologica' | 'capilar';
 
   @Column({
-    type: "varchar",
+    type: 'varchar',
     length: 20,
-    default: "started",
+    default: 'started',
   })
-  status: "started" | "finished";
+  status: 'started' | 'finished';
 
   @CreateDateColumn()
   startedAt: Date;

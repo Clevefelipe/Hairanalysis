@@ -1,21 +1,29 @@
 import React from "react";
 
-type ButtonVariant = "primary" | "secondary" | "ghost";
+type ButtonVariant = "primary" | "secondary" | "ghost" | "danger" | "green" | "blue" | "black";
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+export interface ButtonProps
+  extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "type"> {
   variant?: ButtonVariant;
+  type?: "button" | "submit" | "reset";
 }
 
-const baseClasses =
-  "inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-offset-2";
+const baseClasses = [
+  "inline-flex h-10 items-center justify-center gap-2",
+  "rounded-lg px-4 text-sm font-semibold",
+  "transition-all",
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-ring)] focus-visible:ring-offset-2",
+  "disabled:opacity-60 disabled:cursor-not-allowed",
+];
 
 const variantClasses: Record<ButtonVariant, string> = {
-  primary:
-    "bg-primary text-white border border-primary hover:bg-primary-dark focus:ring-primary",
-  secondary:
-    "bg-white text-primary border border-primary hover:bg-primary/10 focus:ring-primary",
-  ghost:
-    "bg-transparent text-primary border border-transparent hover:bg-primary/10 focus:ring-primary",
+  primary: "btn-primary",
+  secondary: "btn-secondary",
+  ghost: "btn-outline",
+  danger: "btn-danger",
+  green: "btn-green",
+  blue: "btn-blue",
+  black: "btn-black",
 };
 
 export default function Button({
@@ -23,16 +31,18 @@ export default function Button({
   disabled,
   children,
   className = "",
+  type = "button",
   ...props
 }: ButtonProps) {
   return (
     <button
       {...props}
+      type={type}
       disabled={disabled}
       className={[
-        baseClasses,
+        ...baseClasses,
         variantClasses[variant],
-        disabled ? "opacity-60 cursor-not-allowed" : "cursor-pointer",
+        disabled ? "cursor-not-allowed" : "cursor-pointer",
         className,
       ].join(" ")}
     >

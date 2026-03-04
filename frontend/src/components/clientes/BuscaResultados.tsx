@@ -1,13 +1,10 @@
 import "./BuscaResultados.css";
-import { useCliente } from "../../core/cliente/ClienteContext";
 
 interface Props {
   onClose: () => void;
 }
 
 export default function BuscaResultados({ onClose }: Props) {
-  const { selecionarCliente } = useCliente();
-
   // Mock de clientes (UI fake)
   const clientes = [
     {
@@ -24,8 +21,9 @@ export default function BuscaResultados({ onClose }: Props) {
     },
   ];
 
-  function handleSelect(cliente: any) {
-    selecionarCliente(cliente);
+  type ClienteResultado = (typeof clientes)[number];
+
+  function handleSelect(_cliente: ClienteResultado) {
     onClose();
   }
 

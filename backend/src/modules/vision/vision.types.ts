@@ -1,4 +1,4 @@
-export type VisionAnalysisType = "CAPILAR" | "TRICOLOGICA";
+export type VisionAnalysisType = 'CAPILAR' | 'TRICOLOGICA';
 
 export interface VisionRecord {
   id: string;

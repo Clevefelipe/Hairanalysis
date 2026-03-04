@@ -1,18 +1,16 @@
-import { evolucoes } from "./evolucoes.store";
+import { evolucoes, Evolucao } from './evolucoes.store';
 
 export class EvolucoesRepository {
-  listar() {
+  listar(): Evolucao[] {
     return evolucoes;
   }
 
-  criar(evolucao: any) {
+  criar(evolucao: Evolucao): Evolucao {
     evolucoes.push(evolucao);
     return evolucao;
   }
 
-  listarPorCliente(clienteId: string) {
-    return evolucoes.filter(
-      (e) => e.clienteId === clienteId
-    );
+  listarPorCliente(clienteId: string): Evolucao[] {
+    return evolucoes.filter((e) => e.clienteId === clienteId);
   }
 }

@@ -8,6 +8,7 @@ interface CardProps {
   children?: React.ReactNode;
   action?: React.ReactNode;
   variant?: CardVariant;
+  className?: string;
 }
 
 const variantBorderClasses: Record<CardVariant, string> = {
@@ -22,12 +23,14 @@ export default function Card({
   children,
   action,
   variant = "default",
+  className = "",
 }: CardProps) {
   return (
     <div
       className={[
-        "bg-surface rounded-xl border border-border border-l-4 p-5 shadow-card",
+        "bg-surface rounded-xl border border-border border-l-4 p-4 md:p-5 shadow-card",
         variantBorderClasses[variant],
+        className,
       ].join(" ")}
     >
       <div className="mb-3">

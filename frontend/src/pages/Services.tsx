@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useServices } from "../core/services/ServiceContext";
-import "../styles/alerts.css";
 
 export default function Services() {
   const { services, addService, removeService } = useServices();

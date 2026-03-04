@@ -1,11 +1,11 @@
-import { Controller, Get } from "@nestjs/common";
-import { DashboardService } from "./dashboard.service";
+import { Controller, Get } from '@nestjs/common';
+import { DashboardService } from './dashboard.service';
 
-@Controller("dashboard")
+@Controller('dashboard')
 export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}
 
-  @Get("admin")
+  @Get('admin')
   obterDashboardAdmin() {
     return this.dashboardService.obterResumoAdmin();
   }

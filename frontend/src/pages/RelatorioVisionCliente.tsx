@@ -1,10 +1,11 @@
 import { useParams } from "react-router-dom";
 
-import Button from "../components/ui/Button";
-import Card from "../components/ui/Card";
+import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
+import Section from "@/components/ui/Section";
 
-import { listarVisionHistory } from "../vision/VisionHistoryStorage";
-import { VisionHistoryItem } from "../vision/VisionHistory.types";
+import { listarVisionHistory } from "@/vision/VisionHistoryStorage";
+import { VisionHistoryItem } from "@/vision/VisionHistory.types";
 
 export default function RelatorioVisionCliente() {
   const { id } = useParams();
@@ -15,7 +16,15 @@ export default function RelatorioVisionCliente() {
   );
 
   if (!item) {
-    return <Card>Registro não encontrado.</Card>;
+    return (
+      <div className="section-stack animate-page-in w-full">
+        <Section>
+          <Card title="Registro não encontrado">
+            Não localizamos o registro visual solicitado.
+          </Card>
+        </Section>
+      </div>
+    );
   }
 
   const cuidadosRecomendados =
@@ -31,73 +40,75 @@ export default function RelatorioVisionCliente() {
         ];
 
   return (
-    <div
-      style={{
-        padding: "32px",
-        maxWidth: "900px",
-        margin: "0 auto",
-        fontFamily: "Arial, sans-serif",
-      }}
-    >
-      <h1 style={{ fontSize: "28px", marginBottom: "8px" }}>
-        Relatório de Acompanhamento Capilar
-      </h1>
+    <div className="section-stack animate-page-in w-full">
+      <div className="text-center">
+        <h1 className="text-4xl font-bold mb-2" style={{ color: "var(--color-text)" }}>
+          Relatório de Acompanhamento Capilar
+        </h1>
+        <p style={{ color: "var(--color-text-muted)" }}>Registro visual realizado durante seu atendimento</p>
+      </div>
 
-      <p style={{ color: "#6B7280", marginBottom: "16px" }}>
-        Registro visual realizado durante seu atendimento
-      </p>
+      <Section className="space-y-4">
+        <div className="flex items-center justify-between flex-wrap gap-3 text-sm" style={{ color: "var(--color-text-muted)" }}>
+          <span>
+            <strong>Data do atendimento:</strong> {new Date(item.createdAt).toLocaleDateString()}
+          </span>
+          <span className="rounded-full bg-[color:var(--color-success-50)] px-3 py-1 text-xs font-semibold text-[color:var(--color-success-700)]">
+            Relatório cliente
+          </span>
+        </div>
 
-      <p>
-        <strong>Data do atendimento:</strong>{" "}
-        {new Date(item.createdAt).toLocaleDateString()}
-      </p>
+        <div>
+          <h2 className="text-lg font-semibold" style={{ color: "var(--color-text)" }}>Imagem registrada</h2>
+          <p className="text-sm mt-1" style={{ color: "var(--color-text-muted)" }}>
+            A imagem abaixo ajuda a acompanhar a evolução do cuidado com seus fios e couro cabeludo.
+          </p>
+          <img
+            src={item.annotationBase64 || item.imageBase64}
+            alt="Imagem do atendimento"
+            className="mt-4 w-full rounded-2xl border"
+            style={{ borderColor: "var(--color-border)" }}
+          />
+        </div>
 
-      <hr style={{ margin: "16px 0" }} />
+        <div>
+          <h2 className="text-lg font-semibold" style={{ color: "var(--color-text)" }}>O que observamos</h2>
+          <p className="text-sm mt-1" style={{ color: "var(--color-text-muted)" }}>
+            A análise visual permite acompanhar como estão os fios e o couro cabeludo no momento do atendimento,
+            ajudando a definir os cuidados mais adequados.
+          </p>
+          {item.findings.length > 0 && (
+            <ul className="mt-3 list-disc space-y-1 pl-5 text-sm" style={{ color: "var(--color-text)" }}>
+              {item.findings.map((f) => (
+                <li key={f}>{f}</li>
+              ))}
+            </ul>
+          )}
+        </div>
 
-      <h2>Imagem registrada</h2>
-      <p style={{ marginBottom: "8px", color: "#4B5563" }}>
-        A imagem abaixo ajuda a acompanhar a evolução do cuidado com seus fios e couro cabeludo.
-      </p>
+        <div>
+          <h2 className="text-lg font-semibold" style={{ color: "var(--color-text)" }}>Cuidados recomendados</h2>
+          <ul className="mt-3 list-disc space-y-1 pl-5 text-sm" style={{ color: "var(--color-text)" }}>
+            {cuidadosRecomendados.map((c) => (
+              <li key={c}>{c}</li>
+            ))}
+          </ul>
+        </div>
+      </Section>
 
-      <img
-        src={item.annotationBase64 || item.imageBase64}
-        alt="Imagem do atendimento"
-        style={{
-          width: "100%",
-          borderRadius: "12px",
-          border: "1px solid #E5E7EB",
-        }}
-      />
+      <Section>
+        <Card title="Importante" variant="attention">
+        Este relatório tem caráter informativo e de acompanhamento estético. As orientações são personalizadas
+        para este atendimento e podem variar conforme a evolução ao longo do tempo.
+        </Card>
+      </Section>
 
-      <h2 style={{ marginTop: "20px" }}>O que observamos</h2>
-      <p>
-        A análise visual permite acompanhar como estão os fios e o couro cabeludo
-        no momento do atendimento, ajudando a definir os cuidados mais adequados.
-      </p>
-
-      {item.findings.length > 0 && (
-        <ul>
-          {item.findings.map((f) => (
-            <li key={f}>{f}</li>
-          ))}
-        </ul>
-      )}
-
-      <h2 style={{ marginTop: "20px" }}>Cuidados recomendados</h2>
-      <ul>
-        {cuidadosRecomendados.map((c) => (
-          <li key={c}>{c}</li>
-        ))}
-      </ul>
-
-      <Card title="Importante" variant="attention">
-        Este relatório tem caráter informativo e de acompanhamento estético.
-        As orientações são personalizadas para este atendimento e podem variar
-        conforme a evolução ao longo do tempo.
-      </Card>
-
-      <div style={{ marginTop: "24px" }}>
-        <Button variant="primary" onClick={() => window.print()}>
+      <div className="text-center">
+        <Button
+          variant="primary"
+          onClick={() => window.print()}
+          className="shadow-lg hover:shadow-xl transition-shadow w-full sm:w-auto"
+        >
           Salvar ou Imprimir PDF
         </Button>
       </div>

@@ -60,21 +60,16 @@ export default function VisionCapture({ onCapture }: VisionCaptureProps) {
   }
 
   return (
-    <div>
+    <div className="space-y-4">
       {/* Seleção de dispositivo */}
-      <div style={{ marginBottom: "12px" }}>
-        <label>
-          <strong>Dispositivo de captura:</strong>
+      <div>
+        <label className="text-sm font-semibold" style={{ color: "var(--color-text)" }}>
+          Dispositivo de captura:
         </label>
         <select
           value={selectedDeviceId}
           onChange={(e) => setSelectedDeviceId(e.target.value)}
-          style={{
-            display: "block",
-            marginTop: "6px",
-            padding: "6px",
-            width: "100%",
-          }}
+          className="clientes-input mt-2 w-full"
         >
           {devices.map((device) => (
             <option key={device.deviceId} value={device.deviceId}>
@@ -89,17 +84,17 @@ export default function VisionCapture({ onCapture }: VisionCaptureProps) {
         ref={videoRef}
         autoPlay
         playsInline
-        style={{
-          width: "100%",
-          borderRadius: "12px",
-          backgroundColor: "#000",
-        }}
+        className="w-full rounded-2xl bg-black shadow-inner"
       />
 
-      <canvas ref={canvasRef} style={{ display: "none" }} />
+      <canvas ref={canvasRef} className="hidden" />
 
-      <div style={{ marginTop: "12px" }}>
-        <Button variant="primary" onClick={handleCapture}>
+      <div>
+        <Button
+          variant="primary"
+          onClick={handleCapture}
+          className="shadow-lg hover:shadow-xl"
+        >
           Capturar Imagem
         </Button>
       </div>

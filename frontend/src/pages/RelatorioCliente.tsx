@@ -1,13 +1,14 @@
-import { useCliente } from "../context/ClienteContext";
+import { useCliente } from "@/context/ClienteContext";
 import { useNavigate } from "react-router-dom";
 import html2pdf from "html2pdf.js";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
+import { FileText, Loader2 } from "lucide-react";
+import { protocoloService, Protocolo as ProtocoloType } from "@/services/protocolo.service";
+import ProtocoloEditor from "@/components/ProtocoloEditor";
+import ReportQRCode from "@/components/ReportQRCode";
+import Section from "@/components/ui/Section";
 
-type Protocolo = {
-  titulo: string;
-  descricao: string;
-  indicacoes: string[];
-};
+
 
 export default function RelatorioCliente() {
   const { cliente } = useCliente();
@@ -20,52 +21,32 @@ export default function RelatorioCliente() {
 
   if (!cliente) {
     return (
-      <section style={styles.page}>
-        <h1>Relatório da Cliente</h1>
-        <p style={styles.muted}>Nenhuma cliente ativa nesta sessão.</p>
-        <button onClick={() => navigate("/dashboard")} style={styles.primaryBtn}>
-          Voltar ao Dashboard
-        </button>
-      </section>
+      <div className="section-stack animate-page-in w-full">
+        <Section className="panel-tight text-center">
+          <h1 className="text-2xl font-semibold mb-2" style={{ color: "var(--color-text)" }}>Relatório da Cliente</h1>
+          <p className="mb-4" style={{ color: "var(--color-text-muted)" }}>Nenhuma cliente ativa nesta sessão.</p>
+          <button onClick={() => navigate("/dashboard")} className="btn-primary">
+            Voltar ao Dashboard
+          </button>
+        </Section>
+      </div>
     );
   }
 
-  const analises = cliente.analises;
+  const analises = Array.isArray(cliente?.analises) ? cliente.analises : [];
+  const [protocolos, setProtocolos] = useState<ProtocoloType[]>([]);
+  const [loadingProtocolos, setLoadingProtocolos] = useState(true);
 
-  function gerarProtocolos(): Protocolo[] {
-    const protocolos: Protocolo[] = [];
-    const possuiCapilar = analises.some((a) => a.tipo === "capilar");
-    const possuiTrico = analises.some((a) => a.tipo === "tricológica");
-
-    if (possuiTrico) {
-      protocolos.push({
-        titulo: "Protocolo de Saúde do Couro Cabeludo",
-        descricao: "Equilíbrio do couro cabeludo antes de procedimentos químicos.",
-        indicacoes: [
-          "Tratamentos calmantes",
-          "Controle de oleosidade",
-          "Preparação pré-química",
-        ],
-      });
-    }
-
-    if (possuiCapilar) {
-      protocolos.push({
-        titulo: "Protocolo Capilar Personalizado",
-        descricao: "Procedimentos compatíveis com o histórico do fio.",
-        indicacoes: [
-          "Nutrição ou reconstrução",
-          "Alisamentos compatíveis",
-          "Manutenção periódica",
-        ],
-      });
-    }
-
-    return protocolos;
-  }
+  useEffect(() => {
+    if (!cliente?.id) return;
+    setLoadingProtocolos(true);
+    protocoloService.getByCliente(cliente.id)
+      .then((data) => setProtocolos(Array.isArray(data) ? data : []))
+      .finally(() => setLoadingProtocolos(false));
+  }, [cliente?.id]);
 
   function exportarPDF() {
-    if (!pdfRef.current) return;
+    if (!pdfRef.current || !cliente) return;
     if (!aceite || !profissional || !clienteNome) {
       alert("Preencha os nomes e confirme o aceite antes de exportar o PDF.");
       return;
@@ -83,152 +64,198 @@ export default function RelatorioCliente() {
       .save();
   }
 
-  const protocolos = gerarProtocolos();
+
   const data = new Date().toLocaleDateString();
 
+  // Exemplo de URL pública (ajustar integração real depois)
+  const publicUrl = `https://hairanalysis.com.br/history/public/token_exemplo`;
+
   return (
-    <section style={styles.page}>
+    <div className="section-stack animate-page-in w-full">
       {/* AÇÕES */}
-      <div style={styles.actions}>
-        <button onClick={exportarPDF} style={styles.primaryBtn}>
-          Exportar PDF com Assinatura
-        </button>
-        <button onClick={() => navigate("/dashboard")} style={styles.secondaryBtn}>
-          Voltar
-        </button>
-      </div>
+      <Section className="!panel-tight">
+        <div className="flex flex-wrap gap-3">
+          <button onClick={exportarPDF} className="btn-primary">
+            Exportar PDF com Assinatura
+          </button>
+          <button onClick={() => navigate("/dashboard")} className="btn-secondary">
+            Voltar
+          </button>
+        </div>
+      </Section>
+
+      {/* QR Code e Link público */}
+      <ReportQRCode url={publicUrl} />
+
+      {/* Editor de Protocolos */}
+      <Section>
+        <div className="flex items-center gap-2 mb-4">
+          <FileText size={18} style={{ color: "var(--color-text-muted)" }} />
+          <h3 className="text-sm font-semibold" style={{ color: "var(--color-text)" }}>Protocolos Recomendados</h3>
+        </div>
+        
+        {loadingProtocolos ? (
+          <div className="flex items-center gap-2 text-sm" style={{ color: "var(--color-text-muted)" }}>
+            <Loader2 size={16} className="animate-spin" />
+            Carregando protocolos...
+          </div>
+        ) : (
+          <ProtocoloEditor protocolos={protocolos} onChange={setProtocolos} />
+        )}
+      </Section>
 
       {/* CONTEÚDO DO PDF */}
       <div ref={pdfRef}>
-        <header style={styles.header}>
-          <h1>Relatório Técnico da Cliente</h1>
-          <p style={styles.subtitle}>
+        <header className="panel-tight text-center mb-6">
+          <h1 className="text-2xl font-bold mb-2" style={{ color: "var(--color-text)" }}>Relatório Técnico da Cliente</h1>
+          <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
             Documento técnico-estético • Hair Analysis System
           </p>
         </header>
 
-        <section style={styles.section}>
-          <h2>Identificação</h2>
-          <p><strong>ID:</strong> {cliente.id}</p>
-          <p><strong>Data:</strong> {data}</p>
-          <p><strong>Total de análises:</strong> {analises.length}</p>
-        </section>
-
-        <section style={styles.section}>
-          <h2>Histórico de Análises</h2>
-          {analises.map((a) => (
-            <div key={a.id} style={styles.card}>
-              <strong>Análise {a.tipo}</strong>
-              <p>{a.descricao}</p>
-              <span style={styles.small}>{a.data}</span>
+        <Section as="section">
+          <div className="flex items-center gap-2 mb-4">
+            <FileText size={18} style={{ color: "var(--color-text-muted)" }} />
+            <h3 className="text-sm font-semibold" style={{ color: "var(--color-text)" }}>Identificação</h3>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="rounded-xl p-3" style={{ backgroundColor: "var(--bg-primary)", border: "1px solid var(--color-border)" }}>
+              <p className="text-xs mb-1" style={{ color: "var(--color-text-muted)" }}>ID</p>
+              <p className="font-mono text-sm" style={{ color: "var(--color-text)" }}>{cliente.id}</p>
             </div>
-          ))}
-        </section>
-
-        <section style={styles.section}>
-          <h2>Protocolos Recomendados</h2>
-          {protocolos.map((p, i) => (
-            <div key={i} style={styles.card}>
-              <h3>{p.titulo}</h3>
-              <p>{p.descricao}</p>
-              <ul>
-                {p.indicacoes.map((item, idx) => (
-                  <li key={idx}>{item}</li>
-                ))}
-              </ul>
+            <div className="rounded-xl p-3" style={{ backgroundColor: "var(--bg-primary)", border: "1px solid var(--color-border)" }}>
+              <p className="text-xs mb-1" style={{ color: "var(--color-text-muted)" }}>Data</p>
+              <p className="text-sm" style={{ color: "var(--color-text)" }}>{data}</p>
             </div>
-          ))}
-        </section>
+            <div className="rounded-xl p-3" style={{ backgroundColor: "var(--bg-primary)", border: "1px solid var(--color-border)" }}>
+              <p className="text-xs mb-1" style={{ color: "var(--color-text-muted)" }}>Total de análises</p>
+              <p className="text-sm" style={{ color: "var(--color-text)" }}>{analises.length}</p>
+            </div>
+          </div>
+        </Section>
 
-        {/* ASSINATURAS */}
-        <section style={styles.section}>
-          <h2>Aceite e Assinaturas</h2>
+        <Section as="section">
+          <div className="flex items-center gap-2 mb-4">
+            <FileText size={18} style={{ color: "var(--color-text-muted)" }} />
+            <h3 className="text-sm font-semibold" style={{ color: "var(--color-text)" }}>Histórico de Análises</h3>
+          </div>
+          
+          {analises.length > 0 ? (
+            <div className="space-y-3">
+              {analises.map((a) => (
+                <div
+                  key={a.id || Math.random()}
+                  className="rounded-2xl border p-4"
+                  style={{ borderColor: "var(--color-border)", backgroundColor: "var(--bg-primary)" }}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-semibold" style={{ color: "var(--color-text)" }}>Análise {a.tipo || 'Não especificada'}</h4>
+                    <span className="text-xs px-2 py-1 rounded-full" style={{ backgroundColor: "var(--bg-primary)", color: "var(--color-text-muted)", border: "1px solid var(--color-border)" }}>
+                      {a.data || 'Sem data'}
+                    </span>
+                  </div>
+                  <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>{a.descricao || 'Sem descrição'}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8" style={{ color: "var(--color-text-muted)" }}>
+              <FileText size={32} className="mx-auto mb-2" style={{ color: "var(--color-border)" }} />
+              <p className="text-sm">Nenhuma análise encontrada</p>
+            </div>
+          )}
+        </Section>
 
-          <p style={styles.disclaimer}>
-            Declaro que recebi as orientações acima e estou ciente de que este
-            relatório possui caráter técnico-estético, não clínico.
-          </p>
+        <Section as="section">
+          <div className="flex items-center gap-2 mb-4">
+            <FileText size={18} style={{ color: "var(--color-text-muted)" }} />
+            <h3 className="text-sm font-semibold" style={{ color: "var(--color-text)" }}>Protocolos Recomendados</h3>
+          </div>
+          
+          {protocolos.length > 0 ? (
+            <div className="space-y-3">
+              {protocolos.map((p, i) => (
+                <div
+                  key={p.id || i}
+                  className="rounded-2xl border p-4"
+                  style={{ borderColor: "var(--color-border)", backgroundColor: "var(--bg-primary)" }}
+                >
+                  <h4 className="font-semibold mb-2" style={{ color: "var(--color-text)" }}>{p.titulo || 'Protocolo sem título'}</h4>
+                  <p className="text-sm mb-3" style={{ color: "var(--color-text-muted)" }}>{p.descricao || 'Sem descrição'}</p>
+                  {p.indicacoes && Array.isArray(p.indicacoes) && p.indicacoes.length > 0 && (
+                    <ul className="space-y-1">
+                      {p.indicacoes.map((item, idx) => (
+                        <li key={idx} className="text-sm flex items-start gap-2" style={{ color: "var(--color-text-muted)" }}>
+                          <span className="text-primary-600 mt-0.5">•</span>
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8" style={{ color: "var(--color-text-muted)" }}>
+              <FileText size={32} className="mx-auto mb-2" style={{ color: "var(--color-border)" }} />
+              <p className="text-sm">Nenhum protocolo disponível</p>
+            </div>
+          )}
+        </Section>
 
-          <div style={styles.signatureBlock}>
+        <Section as="section">
+          <div className="flex items-center gap-2 mb-4">
+            <FileText size={18} style={{ color: "var(--color-text-muted)" }} />
+            <h3 className="text-sm font-semibold" style={{ color: "var(--color-text)" }}>Aceite e Assinaturas</h3>
+          </div>
+
+          <div className="rounded-xl p-4 mb-4" style={{ border: "1px solid var(--color-warning-200)", backgroundColor: "var(--color-warning-50)" }}>
+            <p className="text-sm" style={{ color: "var(--color-warning-800)" }}>
+              <strong>Importante:</strong> Declaro que recebi as orientações acima e estou ciente de que este relatório possui caráter técnico-estético, não clínico.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label>Nome do Profissional</label>
+              <label className="block text-xs font-medium mb-2" style={{ color: "var(--color-text-muted)" }}>Nome do Profissional</label>
               <input
                 value={profissional}
                 onChange={(e) => setProfissional(e.target.value)}
-                style={styles.input}
+                className="clientes-input"
+                placeholder="Digite o nome completo"
               />
             </div>
 
             <div>
-              <label>Nome da Cliente</label>
+              <label className="block text-xs font-medium mb-2" style={{ color: "var(--color-text-muted)" }}>Nome da Cliente</label>
               <input
                 value={clienteNome}
                 onChange={(e) => setClienteNome(e.target.value)}
-                style={styles.input}
+                className="clientes-input"
+                placeholder="Digite o nome completo"
               />
             </div>
-
-            <label style={styles.checkbox}>
-              <input
-                type="checkbox"
-                checked={aceite}
-                onChange={(e) => setAceite(e.target.checked)}
-              />
-              Confirmo o aceite das orientações acima
-            </label>
           </div>
-        </section>
 
-        <footer style={styles.footer}>
-          <p style={styles.small}>
+          <label className="flex items-center gap-2 mt-4 text-sm" style={{ color: "var(--color-text-muted)" }}>
+            <input
+              type="checkbox"
+              checked={aceite}
+              onChange={(e) => setAceite(e.target.checked)}
+              className="rounded border-[var(--color-border)] text-primary-600 focus:ring-primary-500"
+            />
+            Confirmo o aceite das orientações acima
+          </label>
+        </Section>
+
+        <footer className="border-t pt-6 mt-8 text-center" style={{ borderColor: "var(--color-border)" }}>
+          <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>
             Relatório gerado para uso profissional • Não clínico
           </p>
         </footer>
       </div>
-    </section>
+    </div>
   );
 }
 
-/* ===== ESTILOS ===== */
-const styles: Record<string, React.CSSProperties> = {
-  page: { maxWidth: 900, margin: "0 auto", padding: 32 },
-  header: { borderBottom: "2px solid #e5e7eb", marginBottom: 20 },
-  subtitle: { color: "#6b7280" },
-  section: { marginBottom: 24 },
-  card: {
-    border: "1px solid #e5e7eb",
-    padding: 16,
-    borderRadius: 8,
-    marginBottom: 12,
-  },
-  actions: { display: "flex", gap: 12, marginBottom: 20 },
-  primaryBtn: {
-    padding: "10px 18px",
-    borderRadius: 6,
-    border: "none",
-    background: "#047857",
-    color: "#fff",
-    cursor: "pointer",
-  },
-  secondaryBtn: {
-    padding: "10px 18px",
-    borderRadius: 6,
-    border: "1px solid #d1d5db",
-    background: "#fff",
-    cursor: "pointer",
-  },
-  input: {
-    width: "100%",
-    padding: 8,
-    marginTop: 4,
-    marginBottom: 12,
-    borderRadius: 4,
-    border: "1px solid #d1d5db",
-  },
-  checkbox: { display: "flex", gap: 8, alignItems: "center" },
-  signatureBlock: { marginTop: 16 },
-  muted: { color: "#6b7280" },
-  small: { fontSize: 12, color: "#6b7280" },
-  disclaimer: { fontSize: 13, marginBottom: 12 },
-  footer: { borderTop: "1px solid #e5e7eb", paddingTop: 12, marginTop: 24 },
-};

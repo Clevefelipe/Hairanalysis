@@ -3,7 +3,6 @@ import { appApi } from "@/api/appClient";
 
 export function calcularPrecificacaoInteligente(analise, servico) {
   if (!servico || !servico.valor) {
-    console.warn('⚠️ [Precificação] Serviço sem valor base');
     return { precoFinal: 0, detalhamento: [] };
   }
 
@@ -211,9 +210,7 @@ export async function registrarDecisaoProfissional(analiseId, decisao) {
       automatica: false
     });
 
-    console.log('✅ [Precificação] Decisão registrada para aprendizado');
   } catch (error) {
-    console.error('❌ [Precificação] Erro ao registrar decisão:', error);
   }
 }
 

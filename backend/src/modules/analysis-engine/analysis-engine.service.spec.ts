@@ -1,4 +1,4 @@
-﻿import {
+import {
   calculateAnalysisResult,
   AnalysisEngineService,
 } from './analysis-engine.service';
@@ -29,7 +29,7 @@ describe('analysis-engine', () => {
     expect(result.score).toBe(79);
     expect(result.riskIndex).toBe(21);
     expect(result.aptitude).toBe(AptitudeClassification.CAUTION);
-    expect(result.weightProfileVersion).toBe('v1.0.0');
+    expect(result.weightProfileVersion).toBe('v1.2.0');
     expect(result.confidence).toBe(95);
   });
 

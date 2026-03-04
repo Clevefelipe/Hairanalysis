@@ -1,14 +1,14 @@
 import { useState } from "react";
 
-import Card from "../components/ui/Card";
-import Button from "../components/ui/Button";
-import VisualStatusBadge from "../components/ui/VisualStatusBadge";
+import Card from "@/components/ui/Card";
+import Button from "@/components/ui/Button";
+import VisualStatusBadge from "@/components/ui/VisualStatusBadge";
 
 import {
   listarVisionHistory,
-} from "../vision/VisionHistoryStorage";
-import { compararVision } from "../vision/compareVision";
-import { VisionHistoryItem } from "../vision/VisionHistory.types";
+} from "@/vision/VisionHistoryStorage";
+import { compararVision } from "@/vision/compareVision";
+import { VisionHistoryItem } from "@/vision/VisionHistory.types";
 
 export default function ComparacaoVisual() {
   const lista = listarVisionHistory();
@@ -18,9 +18,17 @@ export default function ComparacaoVisual() {
 
   if (lista.length < 2) {
     return (
-      <Card title="Comparação Visual">
-        É necessário ter pelo menos dois registros visuais salvos.
-      </Card>
+      <section className="section-stack animate-page-in w-full">
+        <div className="text-center">
+          <h1 className="text-4xl font-bold text-slate-900 mb-2">Comparação Visual (Antes × Depois)</h1>
+          <p className="text-slate-600">Compare registros visuais para analisar evoluções</p>
+        </div>
+        <div className="text-center py-12">
+          <div className="panel-tight max-w-md mx-auto text-center hover:shadow-md transition-shadow">
+            <p className="text-slate-500">É necessário ter pelo menos dois registros visuais salvos.</p>
+          </div>
+        </div>
+      </section>
     );
   }
 
@@ -34,17 +42,21 @@ export default function ComparacaoVisual() {
     antes && depois ? compararVision(antes, depois) : null;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-      <h1 style={{ fontSize: "32px", fontWeight: 700 }}>
-        Comparação Visual (Antes × Depois)
-      </h1>
+    <section className="section-stack animate-page-in w-full">
+      <div className="panel-tight">
+        <div className="text-center">
+          <h1 className="text-4xl font-bold text-slate-900 mb-2">Comparação Visual (Antes × Depois)</h1>
+          <p className="text-slate-600">Compare registros visuais para analisar evoluções</p>
+        </div>
+      </div>
 
-      <Card title="Selecionar registros">
-        <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
+      <div className="panel-tight hover:shadow-md transition-shadow">
+        <h3 className="text-lg font-semibold text-slate-900 mb-4">Selecionar registros</h3>
+        <div className="grid gap-6 md:grid-cols-2">
           <div>
-            <strong>Antes</strong>
+            <label className="block text-sm font-medium text-slate-700 mb-2">Antes</label>
             <select
-              style={{ display: "block", marginTop: "6px" }}
+              className="w-full border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-slate-900/20 shadow-sm focus:shadow-md transition-shadow"
               onChange={(e) => setIdxAntes(Number(e.target.value))}
             >
               <option value="">Selecione</option>
@@ -57,9 +69,9 @@ export default function ComparacaoVisual() {
           </div>
 
           <div>
-            <strong>Depois</strong>
+            <label className="block text-sm font-medium text-slate-700 mb-2">Depois</label>
             <select
-              style={{ display: "block", marginTop: "6px" }}
+              className="w-full border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-slate-900/20 shadow-sm focus:shadow-md transition-shadow"
               onChange={(e) => setIdxDepois(Number(e.target.value))}
             >
               <option value="">Selecione</option>
@@ -71,64 +83,67 @@ export default function ComparacaoVisual() {
             </select>
           </div>
         </div>
-      </Card>
+      </div>
 
       {antes && depois && (
         <>
-          <Card title="Resultado da comparação">
+          <div className="panel-tight hover:shadow-md transition-shadow">
+            <h3 className="text-lg font-semibold text-slate-900 mb-4">Resultado da comparação</h3>
             <VisualStatusBadge status={resultado!.status} />
-            <p style={{ marginTop: "8px" }}>{resultado!.resumo}</p>
-          </Card>
+            <p className="mt-2 text-sm text-slate-600">{resultado!.resumo}</p>
+          </div>
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: "16px",
-            }}
-          >
-            <Card title="Antes">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="panel-tight hover:shadow-md transition-shadow">
+              <h3 className="text-lg font-semibold text-slate-900 mb-4">Antes</h3>
               <img
                 src={antes.annotationBase64 || antes.imageBase64}
                 alt="Antes"
-                style={{ width: "100%", borderRadius: "12px" }}
+                className="w-full rounded-xl"
               />
               {antes.findings.length > 0 && (
-                <>
-                  <strong>Achados:</strong>
-                  <ul>
+                <div className="mt-4">
+                  <strong className="text-sm text-slate-700">Achados:</strong>
+                  <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-600">
                     {antes.findings.map((f) => (
                       <li key={f}>{f}</li>
                     ))}
                   </ul>
-                </>
+                </div>
               )}
-            </Card>
+            </div>
 
-            <Card title="Depois">
+            <div className="panel-tight hover:shadow-md transition-shadow">
+              <h3 className="text-lg font-semibold text-slate-900 mb-4">Depois</h3>
               <img
                 src={depois.annotationBase64 || depois.imageBase64}
                 alt="Depois"
-                style={{ width: "100%", borderRadius: "12px" }}
+                className="w-full rounded-xl"
               />
               {depois.findings.length > 0 && (
-                <>
-                  <strong>Achados:</strong>
-                  <ul>
+                <div className="mt-4">
+                  <strong className="text-sm text-slate-700">Achados:</strong>
+                  <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-600">
                     {depois.findings.map((f) => (
                       <li key={f}>{f}</li>
                     ))}
                   </ul>
-                </>
+                </div>
               )}
-            </Card>
+            </div>
           </div>
         </>
       )}
 
-      <Button variant="secondary" onClick={() => history.back()}>
-        Voltar
-      </Button>
-    </div>
+      <div className="text-center">
+        <Button 
+          variant="secondary" 
+          onClick={() => history.back()}
+          className="shadow-sm hover:shadow-md transition-shadow"
+        >
+          Voltar
+        </Button>
+      </div>
+    </section>
   );
 }

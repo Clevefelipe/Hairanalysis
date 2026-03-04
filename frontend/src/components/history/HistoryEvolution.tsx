@@ -22,7 +22,7 @@ export default function HistoryEvolution({ data }: Props) {
               {new Date(item.toDate).toLocaleDateString()}
             </span>
 
-            <span className="text-xs px-2 py-1 rounded bg-emerald-600 text-white">
+            <span className="text-xs px-2 py-1 rounded bg-[color:var(--color-success-600)] text-white">
               Evolução
             </span>
           </div>

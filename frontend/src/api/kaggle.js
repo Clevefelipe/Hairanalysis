@@ -6,7 +6,6 @@ export async function fetchKaggleDatasets(query) {
     const response = await axios.get(`/api/kaggle/datasets?query=${encodeURIComponent(query)}`);
     return response.data;
   } catch (error) {
-    console.error('Erro ao buscar datasets do Kaggle:', error);
     return [];
   }
 }

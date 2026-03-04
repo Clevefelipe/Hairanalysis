@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
-  historyService,
+  listHistoryByClient,
   AnalysisHistory,
-} from "../services/history.service";
-import HistoryTimeline from "../components/history/HistoryTimeline";
+} from "@/services/history.service";
+import HistoryTimeline from "@/components/history/HistoryTimeline";
 
 export default function ClientTimeline() {
   const { id: clientId } = useParams();
@@ -17,8 +17,7 @@ export default function ClientTimeline() {
   useEffect(() => {
     if (!clientId) return;
 
-    historyService
-      .getTimeline(clientId)
+    listHistoryByClient(clientId)
       .then(setData)
       .finally(() => setLoading(false));
   }, [clientId]);

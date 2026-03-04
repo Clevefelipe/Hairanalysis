@@ -71,28 +71,24 @@ export default function ImageAnnotator({
   }
 
   return (
-    <div>
+    <div className="space-y-4">
       <canvas
         ref={canvasRef}
-        style={{ width: "100%", borderRadius: "12px", cursor: "crosshair" }}
+        className="w-full rounded-2xl border bg-black/5 shadow-inner cursor-crosshair"
+        style={{ borderColor: "var(--color-border)" }}
         onMouseDown={startDraw}
         onMouseMove={draw}
         onMouseUp={endDraw}
         onMouseLeave={endDraw}
       />
 
-      <div
-        style={{
-          display: "flex",
-          gap: "12px",
-          marginTop: "12px",
-          flexWrap: "wrap",
-        }}
-      >
+      <div className="flex flex-wrap items-center gap-3">
         <input
           type="color"
           value={color}
           onChange={(e) => setColor(e.target.value)}
+          className="h-10 w-16 cursor-pointer rounded-lg border bg-white p-1 shadow-sm"
+          style={{ borderColor: "var(--color-border)" }}
         />
 
         <input
@@ -101,13 +97,15 @@ export default function ImageAnnotator({
           max={10}
           value={lineWidth}
           onChange={(e) => setLineWidth(Number(e.target.value))}
+          className="flex-1 min-w-[160px]"
+          style={{ accentColor: "var(--color-text)" as any }}
         />
 
-        <Button variant="secondary" onClick={handleClear}>
+        <Button variant="secondary" onClick={handleClear} className="shadow-sm hover:shadow-md">
           Limpar
         </Button>
 
-        <Button variant="primary" onClick={handleSave}>
+        <Button variant="primary" onClick={handleSave} className="shadow-lg hover:shadow-xl">
           Salvar Anotação
         </Button>
       </div>

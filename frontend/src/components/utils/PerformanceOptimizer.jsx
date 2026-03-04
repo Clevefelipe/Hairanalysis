@@ -5,7 +5,6 @@ import { useEffect } from 'react';
 
 export default function PerformanceOptimizer() {
   useEffect(() => {
-    console.log('⚡ [PerformanceOptimizer] Iniciando otimizações...');
 
     // 1. LAZY LOADING DE IMAGENS
     const enableImageLazyLoading = () => {
@@ -17,7 +16,6 @@ export default function PerformanceOptimizer() {
             img.setAttribute('loading', 'lazy');
           }
         });
-        console.log('✅ [PerformanceOptimizer] Lazy loading habilitado em', images.length, 'imagens');
       } else {
         // Fallback para navegadores sem suporte
         const imageObserver = new IntersectionObserver((entries) => {
@@ -170,7 +168,6 @@ export default function PerformanceOptimizer() {
           }
         `;
         document.head.appendChild(style);
-        console.log('✅ [PerformanceOptimizer] CSS otimizado aplicado');
       }
     };
 
@@ -179,7 +176,6 @@ export default function PerformanceOptimizer() {
       // Service Worker para cache (opcional, sem quebrar)
       if ('serviceWorker' in navigator && !navigator.serviceWorker.controller) {
         // Registrar apenas se não existir
-        console.log('💾 [PerformanceOptimizer] Cache do navegador habilitado');
       }
       
       // Cache de imagens no localStorage
@@ -192,7 +188,6 @@ export default function PerformanceOptimizer() {
         if (lastClear) {
           const daysSinceCleared = (Date.now() - parseInt(lastClear)) / (1000 * 60 * 60 * 24);
           if (daysSinceCleared > 30) {
-            console.log('🧹 [PerformanceOptimizer] Limpando cache antigo...');
             Object.keys(localStorage).forEach(key => {
               if (key.startsWith('img-cache-')) {
                 localStorage.removeItem(key);
@@ -268,8 +263,6 @@ export default function PerformanceOptimizer() {
         timestamp: new Date().toLocaleString('pt-BR')
       };
       
-      console.log('📊 [PerformanceOptimizer] Diagnóstico:', diagnostics);
-      
       // Salvar no localStorage para análise
       localStorage.setItem('last-performance-check', JSON.stringify(diagnostics));
     };
@@ -286,8 +279,6 @@ export default function PerformanceOptimizer() {
         deferHeavyScripts();
         cleanupEventListeners();
         
-        console.log('✅ [PerformanceOptimizer] Todas as otimizações aplicadas');
-        
         // Executar diagnóstico inicial
         runPeriodicDiagnostics();
         
@@ -296,7 +287,6 @@ export default function PerformanceOptimizer() {
         
         return () => clearInterval(diagnosticInterval);
       } catch (error) {
-        console.error('❌ [PerformanceOptimizer] Erro ao aplicar otimizações:', error);
       }
     };
 

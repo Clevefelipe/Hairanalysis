@@ -1,13 +1,13 @@
-import { Module } from "@nestjs/common";
-import { TypeOrmModule } from "@nestjs/typeorm";
-import { StraighteningEntity } from "./straightening.entity";
-import { StraighteningService } from "./straightening.service";
-import { StraighteningController } from "./straightening.controller";
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { StraighteningController } from './straightening.controller';
+import { StraighteningService } from './straightening.service';
+import { StraighteningEntity } from './straightening.entity';
 
 @Module({
   imports: [TypeOrmModule.forFeature([StraighteningEntity])],
   controllers: [StraighteningController],
   providers: [StraighteningService],
-  exports: [StraighteningService],
+  exports: [StraighteningService], // 🔑 usado pelo VisionModule
 })
 export class StraighteningModule {}

@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { historyService } from "../services/history.service";
-import HistoryRecommendations from "../components/history/HistoryRecommendations";
-import PdfActions from "../components/history/PdfActions";
+import { getHistoryRecommendations } from "@/services/history.service";
+import HistoryRecommendations from "@/components/history/HistoryRecommendations";
+import PdfActions from "@/components/history/PdfActions";
 
 export default function AnalysisDetails() {
   const { id } = useParams();
@@ -12,9 +12,8 @@ export default function AnalysisDetails() {
   useEffect(() => {
     if (!id) return;
 
-    historyService
-      .getRecommendations(id)
-      .then((res) => {
+    getHistoryRecommendations(id)
+      .then((res: any) => {
         setData(
           res ?? {
             historyId: id,

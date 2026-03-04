@@ -1,19 +1,18 @@
+
 type Props = {
-  onNovoCliente: () => void;
+  total: number;
 };
 
-export default function ClientesHeader({ onNovoCliente }: Props) {
+export default function ClientesHeader({ total }: Props) {
   return (
-    <div className="clientes-hero">
+    <div className="clientes-header">
       <div>
-        <span className="clientes-hero-badge">Gestão ativa</span>
-        <h1>Clientes</h1>
-        <p>Gerencie seus clientes e acompanhe históricos de atendimento.</p>
+        <h1 className="clientes-title">Clientes</h1>
+        <p className="clientes-subtitle">
+          Cadastrados no sistema: <strong>{total}</strong>
+        </p>
       </div>
-
-      <button className="btn-primary" onClick={onNovoCliente}>
-        Cadastrar cliente
-      </button>
+      <button className="clientes-filter-toggle">Esconder filtros</button>
     </div>
   );
 }

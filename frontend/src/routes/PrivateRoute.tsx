@@ -1,31 +1,35 @@
-import { Navigate, useLocation } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-interface Props {
-  children: JSX.Element;
+type Props = {
   requiredRole?: "ADMIN" | "PROFESSIONAL";
-}
+  children?: React.ReactNode;
+};
 
 export default function PrivateRoute({
-  children,
   requiredRole,
+  children,
 }: Props) {
-  const { token, role } = useAuth();
-  const location = useLocation();
+  const { token, user, isReady } = useAuth();
 
-  if (!token) {
+  if (!isReady) {
     return (
-      <Navigate
-        to="/login"
-        state={{ from: location }}
-        replace
-      />
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
+        <p className="text-sm font-medium text-slate-600">Validando sessão...</p>
+      </div>
     );
   }
 
-  if (requiredRole && role !== requiredRole) {
-    return <Navigate to="/dashboard" replace />;
+  if (!token) {
+    return <Navigate to="/login" replace />;
   }
 
-  return children;
+  if (requiredRole) {
+    const currentRole = (user as any)?.role;
+    if (currentRole !== requiredRole) {
+      return <Navigate to="/dashboard" replace />;
+    }
+  }
+
+  return children ? <>{children}</> : <Outlet />;
 }

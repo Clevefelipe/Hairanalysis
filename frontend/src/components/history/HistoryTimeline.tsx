@@ -27,7 +27,7 @@ export default function HistoryTimeline({
               </span>
 
               <span className="text-xs px-2 py-1 rounded bg-slate-800 text-white">
-                {item.domain.toUpperCase()}
+                {item.analysisType.toUpperCase()}
               </span>
             </div>
 

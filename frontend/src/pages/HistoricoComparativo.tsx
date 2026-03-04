@@ -1,4 +1,7 @@
 import { useEffect, useState } from "react";
+import PageHero from "@/components/ui/PageHero";
+import SectionToolbar from "@/components/ui/SectionToolbar";
+import api from "@/services/api";
 
 interface Analysis {
   id: string;
@@ -13,18 +16,11 @@ export default function HistoricoComparativo() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const API_URL = "http://localhost:3333/api/analysis";
-
   useEffect(() => {
     async function loadAnalyses() {
       try {
-        const response = await fetch(API_URL);
-
-        if (!response.ok) {
-          throw new Error("Erro ao carregar histórico");
-        }
-
-        const data = await response.json();
+        const response = await api.get("/analysis");
+        const data = Array.isArray(response.data) ? response.data : [];
         setAnalyses(data);
       } catch {
         setError("Não foi possível carregar o histórico clínico.");
@@ -36,102 +32,73 @@ export default function HistoricoComparativo() {
     loadAnalyses();
   }, []);
 
-  const container: React.CSSProperties = {
-    maxWidth: 1000,
-    margin: "0 auto",
-    padding: 32,
-  };
-
-  const card: React.CSSProperties = {
-    background: "#ffffff",
-    border: "1px solid #e5e7eb",
-    borderRadius: 12,
-    padding: 24,
-  };
-
-  if (loading) {
-    return (
-      <section style={container}>
-        <h1 style={{ fontSize: 26, fontWeight: 600 }}>
-          Histórico Comparativo
-        </h1>
-        <p style={{ marginTop: 12, color: "#6b7280" }}>
-          Carregando histórico clínico...
-        </p>
-      </section>
-    );
-  }
-
-  if (error) {
-    return (
-      <section style={container}>
-        <h1 style={{ fontSize: 26, fontWeight: 600 }}>
-          Histórico Comparativo
-        </h1>
-        <p style={{ marginTop: 12, color: "#b91c1c" }}>{error}</p>
-      </section>
-    );
-  }
+  const metaValue = loading ? "--" : analyses.length;
+  const statusLabel = loading ? "Carregando registros" : error ? "Erro ao carregar" : "Atualizado";
 
   return (
-    <section style={container}>
-      {/* Cabeçalho */}
-      <header style={{ marginBottom: 28 }}>
-        <h1 style={{ fontSize: 28, fontWeight: 600 }}>
-          Histórico Comparativo
-        </h1>
-        <p style={{ color: "#6b7280", marginTop: 6 }}>
-          Acompanhamento das análises clínicas realizadas
-        </p>
-      </header>
+    <main className="section-stack animate-page-in w-full">
+      <PageHero
+        title="Histórico Comparativo"
+        subtitle="Acompanhamento das análises clínicas realizadas"
+        meta={[{ label: "Registros", value: metaValue }]}
+      />
 
-      {analyses.length === 0 ? (
-        <div
-          style={{
-            border: "1px dashed #d1d5db",
-            borderRadius: 12,
-            padding: 32,
-            background: "#fafafa",
-          }}
-        >
-          <h3 style={{ fontSize: 18, fontWeight: 600 }}>
-            Nenhuma análise registrada
-          </h3>
-          <p style={{ marginTop: 10, color: "#6b7280" }}>
-            Assim que análises capilares ou tricológicas forem
-            registradas, elas aparecerão aqui para acompanhamento e
-            comparação clínica.
-          </p>
-        </div>
-      ) : (
-        <div style={{ display: "grid", gap: 16 }}>
-          {analyses.map((analysis) => (
-            <div key={analysis.id} style={card}>
-              <strong>{analysis.clientName}</strong>
-              <p style={{ marginTop: 6 }}>
-                Tipo de análise:{" "}
-                <strong>{analysis.analysisType}</strong>
-              </p>
-              <p>Status: {analysis.status}</p>
-              <p style={{ color: "#6b7280", fontSize: 13 }}>
-                Data:{" "}
-                {new Date(analysis.createdAt).toLocaleDateString()}
-              </p>
-            </div>
-          ))}
+      <SectionToolbar className="justify-between">
+        <div className="text-xs uppercase tracking-[0.3em] text-slate-400">Visão longitudinal</div>
+        <p className="text-xs text-slate-500">{statusLabel}</p>
+      </SectionToolbar>
+
+      {loading && (
+        <div className="panel-tight text-center text-sm text-slate-500">
+          <div className="inline-flex items-center gap-2">
+            <div
+              className="h-4 w-4 rounded-full border-2 animate-spin"
+              style={{ borderColor: "var(--color-border)", borderTopColor: "var(--color-primary)" }}
+            />
+            Carregando histórico clínico...
+          </div>
         </div>
       )}
 
-      <p
-        style={{
-          marginTop: 32,
-          fontSize: 12,
-          color: "#6b7280",
-        }}
-      >
-        O histórico comparativo não substitui avaliação dermatológica.
-        Uso técnico-profissional.
-      </p>
-    </section>
+      {!loading && error && (
+        <div className="panel-tight border border-rose-200 bg-rose-50 text-center text-sm text-rose-700">
+          {error}
+        </div>
+      )}
+
+      {!loading && !error && (
+        analyses.length === 0 ? (
+          <div className="panel-tight text-center">
+            <h3 className="text-lg font-semibold text-slate-900">Nenhuma análise registrada</h3>
+            <p className="mt-2 text-sm text-slate-500">
+              Assim que análises capilares ou tricológicas forem registradas, elas aparecerão aqui para comparação clínica.
+            </p>
+          </div>
+        ) : (
+          <div className="grid-dense md:grid-cols-2 lg:grid-cols-3">
+            {analyses.map((analysis) => (
+              <article key={analysis.id} className="panel-tight transition-shadow hover:shadow-md">
+                <div className="mb-4 flex items-start justify-between">
+                  <h3 className="text-lg font-semibold text-slate-900">{analysis.clientName}</h3>
+                  <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-600">{analysis.analysisType}</span>
+                </div>
+                <div className="space-y-2 text-sm text-slate-600">
+                  <p>
+                    Status: <span className="font-semibold text-slate-900">{analysis.status}</span>
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    Data: {new Date(analysis.createdAt).toLocaleDateString()}
+                  </p>
+                </div>
+              </article>
+            ))}
+          </div>
+        )
+      )}
+
+      <div className="panel-tight bg-slate-50 text-center text-xs text-slate-500">
+        O histórico comparativo não substitui avaliação dermatológica. Uso técnico-profissional.
+      </div>
+    </main>
   );
 }

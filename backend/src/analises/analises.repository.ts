@@ -1,18 +1,16 @@
-import { analises } from "./analises.store";
+import { analises, Analise } from './analises.store';
 
 export class AnalisesRepository {
-  listar() {
+  listar(): Analise[] {
     return analises;
   }
 
-  criar(analise: any) {
+  criar(analise: Analise): Analise {
     analises.push(analise);
     return analise;
   }
 
-  listarPorCliente(clienteId: string) {
-    return analises.filter(
-      (a) => a.clienteId === clienteId
-    );
+  listarPorCliente(clienteId: string): Analise[] {
+    return analises.filter((a) => a.clienteId === clienteId);
   }
 }

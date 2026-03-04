@@ -1,9 +1,9 @@
 ﻿import { useNavigate } from "react-router-dom";
 
-import Card from "../components/ui/Card";
-import Button from "../components/ui/Button";
-import NivelBadge from "../components/ui/NivelBadge";
-import { gerarResumoIntegrado } from "../engine/analiseIntegradaHeuristica";
+import Card from "@/components/ui/Card";
+import Button from "@/components/ui/Button";
+import NivelBadge from "@/components/ui/NivelBadge";
+import { gerarResumoIntegrado } from "@/engine/analiseIntegradaHeuristica";
 
 export default function ResumoExecutivo() {
   const navigate = useNavigate();
@@ -23,21 +23,26 @@ export default function ResumoExecutivo() {
   });
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-      <h1 style={{ fontSize: "32px", fontWeight: 700 }}>Resumo Executivo</h1>
+    <div className="space-y-8 p-6 animate-page-in">
+      <div className="text-center">
+        <h1 className="text-4xl font-bold text-slate-900 mb-2">Resumo Executivo</h1>
+        <p className="text-slate-600">Síntese integrada entre análises capilar e tricológica</p>
+      </div>
 
       <Card title="Nível técnico geral do atendimento">
-        <div style={{ marginBottom: "12px" }}>
+        <div className="mb-3">
           <NivelBadge nivel={resumoIntegrado.nivelGeral} />
         </div>
-        <p>{resumoIntegrado.recomendacoes[0]}</p>
+        <p className="text-sm text-slate-600">
+          {resumoIntegrado.recomendacoes?.[0] || "Análise não disponível"}
+        </p>
       </Card>
 
       <Card title="Pontos de atenção">
         {resumoIntegrado.pontosAtencao.length === 0 ? (
-          <p>Nenhum ponto crítico aparente no momento da análise.</p>
+          <p className="text-sm text-slate-600">Nenhum ponto crítico aparente no momento da análise.</p>
         ) : (
-          <ul style={{ marginLeft: "18px", listStyle: "disc" }}>
+          <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">
             {resumoIntegrado.pontosAtencao.map((item: string) => (
               <li key={item}>{item}</li>
             ))}
@@ -46,7 +51,7 @@ export default function ResumoExecutivo() {
       </Card>
 
       <Card title="Recomendações estéticas">
-        <ul style={{ marginLeft: "18px", listStyle: "disc" }}>
+        <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">
           {resumoIntegrado.recomendacoes.map((item: string) => (
             <li key={item}>{item}</li>
           ))}
@@ -55,28 +60,33 @@ export default function ResumoExecutivo() {
 
       <Card title="Análise Capilar">
         <NivelBadge nivel={resultadoCapilar.nivel || "baixo"} />
-        <p style={{ marginTop: "8px" }}>
+        <p className="mt-2 text-sm text-slate-600">
           {resultadoCapilar.resumo || "Nenhuma análise capilar registrada."}
         </p>
       </Card>
 
       <Card title="Análise Tricológica">
         <NivelBadge nivel={resultadoTricologico.nivel || "baixo"} />
-        <p style={{ marginTop: "8px" }}>
-          {resultadoTricologico.resumo ||
-            "Nenhuma análise tricológica registrada."}
+        <p className="mt-2 text-sm text-slate-600">
+          {resultadoTricologico.resumo || "Nenhuma análise tricológica registrada."}
         </p>
       </Card>
 
       <Card title="Observação importante" variant="attention">
-        {resumoIntegrado.aviso}
+        <p className="text-sm text-slate-600">{resumoIntegrado.aviso}</p>
       </Card>
 
-      <div style={{ display: "flex", gap: "12px" }}>
-        <Button variant="secondary" onClick={() => navigate("/dashboard")}>
+      <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
+        <Button
+          variant="secondary"
+          onClick={() => navigate("/dashboard")}
+          className="shadow-sm hover:shadow-md transition-shadow w-full sm:w-auto"
+        >
           Voltar ao Dashboard
         </Button>
-        <Button variant="primary">Registrar decisão do atendimento</Button>
+        <Button className="w-full sm:w-auto">
+          Registrar decisão do atendimento
+        </Button>
       </div>
     </div>
   );

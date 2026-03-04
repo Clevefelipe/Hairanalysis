@@ -8,11 +8,9 @@ import { appApi } from "@/api/appClient";
  * @returns {Object} Pacote de manutenção estruturado
  */
 export function gerarPacoteManutencao(analise, servicos) {
-  console.log('🎁 [PacoteManutencao] Gerando pacote inteligente...');
 
   // Não gerar para modo "Antes x Depois"
   if (analise.modo_analise === "antes_depois") {
-    console.log('⚠️ [PacoteManutencao] Modo "Antes x Depois" - não gera pacote');
     return null;
   }
 
@@ -26,8 +24,6 @@ export function gerarPacoteManutencao(analise, servicos) {
     s.ativo !== false &&
     s.nome !== analise.recomendacao_tratamento // Evitar duplicar o tratamento principal
   );
-
-  console.log(`📦 [PacoteManutencao] ${tratamentos.length} tratamentos disponíveis para manutenção`);
 
   // LÓGICA CONTEXTUAL BASEADA NA CONDIÇÃO DO CABELO
 
@@ -259,7 +255,6 @@ export function gerarPacoteManutencao(analise, servicos) {
 
   // Se não encontrou nenhum serviço, retorna null
   if (servicosManutencao.length === 0) {
-    console.log('⚠️ [PacoteManutencao] Nenhum serviço de manutenção encontrado');
     return null;
   }
 
@@ -269,8 +264,6 @@ export function gerarPacoteManutencao(analise, servicos) {
     objetivo,
     observacoes: ""
   };
-
-  console.log(`✅ [PacoteManutencao] Pacote gerado com ${servicosManutencao.length} serviços`);
 
   return pacote;
 }
@@ -296,7 +289,6 @@ export async function registrarAprendizadoPacote(analise, pacoteAceito) {
       automatica: false
     });
   } catch (error) {
-    console.error('❌ Erro ao registrar aprendizado de pacote:', error);
   }
 }
 

@@ -1,16 +1,16 @@
 import { useRef, useState } from "react";
 
-import Card from "../components/ui/Card";
-import VisionCapture from "../components/vision/VisionCapture";
-import ImageAnnotator from "../components/vision/ImageAnnotator";
+import Card from "@/components/ui/Card";
+import VisionCapture from "@/components/vision/VisionCapture";
+import ImageAnnotator from "@/components/vision/ImageAnnotator";
 
-import { VisionSession } from "../vision/VisionSession";
-import { analyzeFrame } from "../vision/VisionAnalyzer";
-import { VisionFrame } from "../vision/types";
+import { VisionSession } from "@/vision/VisionSession";
+import { analyzeFrame } from "@/vision/VisionAnalyzer";
+import { VisionFrame } from "@/vision/types";
 
-import { salvarVisionHistory } from "../vision/VisionHistoryStorage";
-import { salvarVisionBackend } from "../services/visionApi";
-import { useAuth } from "../context/AuthContext";
+import { salvarVisionHistory } from "@/vision/VisionHistoryStorage";
+import { salvarVisionBackend } from "@/services/visionApi";
+import { useAuth } from "@/context/AuthContext";
 
 export default function AnaliseVision() {
   const { token, user } = useAuth(); // 🔐 salonId REAL vem daqui
@@ -57,13 +57,12 @@ export default function AnaliseVision() {
 
     // 3️⃣ Salva no backend com salonId REAL
     try {
-      await salvarVisionBackend(user.salonId, {
+      await salvarVisionBackend(selectedFrame.id, {
         imageBase64: selectedFrame.imageBase64,
         annotationBase64,
         findings,
       });
     } catch (error) {
-      console.error("Erro ao sincronizar com backend:", error);
       alert(
         "A imagem foi salva localmente, mas não foi possível sincronizar com o servidor."
       );
@@ -74,10 +73,13 @@ export default function AnaliseVision() {
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-      <h1 style={{ fontSize: "32px", fontWeight: 700 }}>
-        Análise Visual (IA Vision Assistiva)
-      </h1>
+    <div className="space-y-8 p-6 animate-page-in">
+      <div className="text-center">
+        <h1 className="text-4xl font-bold mb-2" style={{ color: "var(--color-text)" }}>
+          Análise Visual (IA Vision Assistiva)
+        </h1>
+        <p style={{ color: "var(--color-text-muted)" }}>Captura e análise assistida por inteligência artificial</p>
+      </div>
 
       <Card title="Captura por câmera ou microscópio">
         <VisionCapture onCapture={handleCapture} />
@@ -105,7 +107,7 @@ export default function AnaliseVision() {
       </Card>
 
       {saving && (
-        <Card variant="attention">
+        <Card title="Salvando dados" variant="attention">
           Salvando dados… aguarde.
         </Card>
       )}

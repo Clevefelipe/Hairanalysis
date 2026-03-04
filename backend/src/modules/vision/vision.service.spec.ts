@@ -1,4 +1,4 @@
-﻿import { BadRequestException } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
 import { VisionService } from './vision.service';
 
 describe('VisionService', () => {
@@ -31,7 +31,7 @@ describe('VisionService', () => {
         confidence: 82,
         aptitude: 'APTO_COM_CAUTELA',
         aptitudeMessage: 'ok',
-        weightProfileVersion: 'v1.0.0',
+        weightProfileVersion: 'v1.2.0',
         weightProfileId: 'CHEMICALLY_TREATED',
       },
       legalAudit: { modelVersion: 'gpt-4o-mini' },
@@ -47,7 +47,7 @@ describe('VisionService', () => {
         recommendations: expect.objectContaining({
           score: 74,
           confidenceScore: 82,
-          weightProfileVersion: 'v1.0.0',
+          weightProfileVersion: 'v1.2.0',
         }),
         visionResult: expect.objectContaining({
           score: 74,

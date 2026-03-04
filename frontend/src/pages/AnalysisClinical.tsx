@@ -26,7 +26,6 @@ export default function AnalysisClinical() {
     e.preventDefault();
     const result = await submitClinicalAnalysis(form);
     alert("Análise clínica registrada com sucesso");
-    console.log(result);
   }
 
   return (

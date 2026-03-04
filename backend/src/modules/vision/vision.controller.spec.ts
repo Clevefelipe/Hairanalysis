@@ -1,7 +1,7 @@
-﻿import { VisionController } from './vision.controller';
+import { VisionController } from './vision.controller';
 
-describe('VisionController - governanÃ§a tricolÃ³gica', () => {
-  it('deve remover recomendaÃ§Ãµes de alisamento no modo tricolÃ³gico durante process', async () => {
+describe('VisionController - governança tricológica', () => {
+  it('deve remover recomendações de alisamento no modo tricológico durante process', async () => {
     const visionService = {
       process: jest.fn(
         async (_salonId, _professionalId, _clientId, payload) => payload,
@@ -48,11 +48,11 @@ describe('VisionController - governanÃ§a tricolÃ³gica', () => {
         score: 72,
         confidence: 85,
         aptitude: 'BLOQUEADO_MODO_TRICOLOGICO',
-        aptitudeLabel: 'Sem aptidÃ£o de alisamento no modo tricolÃ³gico',
+        aptitudeLabel: 'Sem aptidão de alisamento no modo tricológico',
         aptitudeMessage:
-          'Modo tricolÃ³gico estÃ©tico: foco em cuidados do couro cabeludo e retorno de manutenÃ§Ã£o.',
+          'Modo tricológico estético: foco em cuidados do couro cabeludo e retorno de manutenção.',
         canSuggestStraightening: false,
-        weightProfileVersion: 'v1.0.0',
+        weightProfileVersion: 'v1.2.0',
         weightProfileId: 'CHEMICALLY_TREATED',
       })),
     };
@@ -80,10 +80,10 @@ describe('VisionController - governanÃ§a tricolÃ³gica', () => {
       analysisType: 'tricologica',
       signals: { oleosidade: 'alta' },
       aiExplanation: {
-        summary: 'Resumo estÃ©tico',
+        summary: 'Resumo estético',
         riskLevel: 'medio',
-        technicalDetails: 'Detalhes tÃ©cnicos',
-        ragSupport: 'Suporte tÃ©cnico existente',
+        technicalDetails: 'Detalhes técnicos',
+        ragSupport: 'Suporte técnico existente',
       },
       recommendations: {
         recommendedStraightenings: ['Progressiva X'],
@@ -98,14 +98,14 @@ describe('VisionController - governanÃ§a tricolÃ³gica', () => {
     );
     expect(result.recommendations.rejectedStraighteningsDetailed).toEqual([]);
     expect(result.recommendations.restrictedProcedures).toContain(
-      'Alisamentos (fora do escopo da anÃ¡lise tricolÃ³gica estÃ©tica)',
+      'Alisamentos (fora do escopo da análise tricológica estética)',
     );
     expect(
       String(result.recommendations.professionalAlert).toLowerCase(),
-    ).toContain('nÃ£o sÃ£o recomendados neste escopo');
+    ).toContain('não são recomendados neste escopo');
   });
 
-  it('deve aplicar governanÃ§a tricolÃ³gica removendo alisamentos e alertando', async () => {
+  it('deve aplicar governança tricológica removendo alisamentos e alertando', async () => {
     const visionService = {
       process: jest.fn((_, __, ___, body) => ({
         ...body,
@@ -139,11 +139,11 @@ describe('VisionController - governanÃ§a tricolÃ³gica', () => {
         score: 65,
         confidence: 82,
         aptitude: 'BLOQUEADO_MODO_TRICOLOGICO',
-        aptitudeLabel: 'Sem aptidÃ£o de alisamento no modo tricolÃ³gico',
+        aptitudeLabel: 'Sem aptidão de alisamento no modo tricológico',
         aptitudeMessage:
-          'Modo tricolÃ³gico estÃ©tico: foco em cuidados do couro cabeludo e retorno de manutenÃ§Ã£o.',
+          'Modo tricológico estético: foco em cuidados do couro cabeludo e retorno de manutenção.',
         canSuggestStraightening: false,
-        weightProfileVersion: 'v1.0.0',
+        weightProfileVersion: 'v1.2.0',
         weightProfileId: 'CHEMICALLY_TREATED',
       })),
     } as any;
@@ -167,7 +167,7 @@ describe('VisionController - governanÃ§a tricolÃ³gica', () => {
         summary: 'Resumo',
         riskLevel: 'medio',
         technicalDetails: 'detalhe',
-        ragSupport: 'jÃ¡ veio',
+        ragSupport: 'já veio',
       },
       recommendations: {},
     };
@@ -177,11 +177,11 @@ describe('VisionController - governanÃ§a tricolÃ³gica', () => {
     expect(visionService.process).toHaveBeenCalledTimes(1);
     expect((result as any).analysisType).toBe('tricologica');
     expect(result.recommendations.restrictedProcedures).toContain(
-      'Alisamentos (fora do escopo da anÃ¡lise tricolÃ³gica estÃ©tica)',
+      'Alisamentos (fora do escopo da análise tricológica estética)',
     );
     expect(
       String(result.recommendations.professionalAlert).toLowerCase(),
-    ).toContain('nÃ£o sÃ£o recomendados neste escopo');
+    ).toContain('não são recomendados neste escopo');
   });
 
   it('deve aceitar analysisType geral e repassar ao service', async () => {
@@ -217,9 +217,9 @@ describe('VisionController - governanÃ§a tricolÃ³gica', () => {
         aptitude: 'APTO_COM_CAUTELA',
         aptitudeLabel: 'Apto com cautela',
         aptitudeMessage:
-          'Apresenta aptidÃ£o estÃ©tica para procedimentos de alisamento, conforme parÃ¢metros tÃ©cnicos do sistema.',
+          'Apresenta aptidão estética para procedimentos de alisamento, conforme parâmetros técnicos do sistema.',
         canSuggestStraightening: true,
-        weightProfileVersion: 'v1.0.0',
+        weightProfileVersion: 'v1.2.0',
         weightProfileId: 'CHEMICALLY_TREATED',
       })),
     } as any;
@@ -243,7 +243,7 @@ describe('VisionController - governanÃ§a tricolÃ³gica', () => {
         summary: 'Resumo',
         riskLevel: 'medio',
         technicalDetails: 'detalhe',
-        ragSupport: 'jÃ¡ veio',
+        ragSupport: 'já veio',
       },
       recommendations: {},
     };
@@ -254,7 +254,7 @@ describe('VisionController - governanÃ§a tricolÃ³gica', () => {
     expect((result as any).analysisType).toBe('geral');
   });
 
-  it('deve rejeitar analysisType invÃ¡lido', async () => {
+  it('deve rejeitar analysisType inválido', async () => {
     const controller = new VisionController(
       { process: jest.fn() } as any,
       { enrichInterpretation: jest.fn() } as any,
@@ -278,9 +278,9 @@ describe('VisionController - governanÃ§a tricolÃ³gica', () => {
           aptitude: 'APTO_COM_CAUTELA',
           aptitudeLabel: 'Apto com cautela',
           aptitudeMessage:
-            'Apresenta aptidÃ£o estÃ©tica para procedimentos de alisamento, conforme parÃ¢metros tÃ©cnicos do sistema.',
+            'Apresenta aptidão estética para procedimentos de alisamento, conforme parâmetros técnicos do sistema.',
           canSuggestStraightening: true,
-          weightProfileVersion: 'v1.0.0',
+          weightProfileVersion: 'v1.2.0',
           weightProfileId: 'CHEMICALLY_TREATED',
         })),
       } as any,
@@ -291,6 +291,6 @@ describe('VisionController - governanÃ§a tricolÃ³gica', () => {
     const req = { user: { salonId: 's-1', userId: 'p-1' } } as any;
     await expect(
       controller.process(req, { clientId: 'c-1', analysisType: 'invalido' }),
-    ).rejects.toThrow('analysisType invÃ¡lido');
+    ).rejects.toThrow('analysisType inválido');
   });
 });
