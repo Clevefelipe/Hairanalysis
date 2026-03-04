@@ -55,6 +55,16 @@ const envSchema = z.object({
   // Observability
   PROMETHEUS_PORT: z.coerce.number().default(9090),
   GRAFANA_URL: z.string().optional(),
+
+  // TypeORM safety (default: hardened / no destructive sync)
+  TYPEORM_SYNCHRONIZE: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((v) => v === 'true'),
+  TYPEORM_MIGRATIONS_RUN: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((v) => v === 'true'),
 });
 
 // Tipo inferido do schema

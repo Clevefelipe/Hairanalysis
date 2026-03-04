@@ -58,8 +58,8 @@ import { env, getDatabaseConfig } from './config/env.config';
         ReportEntity,
       ],
       migrations: ['dist/migrations/*.js'],
-      migrationsRun: false,
-      synchronize: env.NODE_ENV !== 'production',
+      migrationsRun: env.TYPEORM_MIGRATIONS_RUN,
+      synchronize: env.TYPEORM_SYNCHRONIZE && env.NODE_ENV !== 'production',
       logging: env.NODE_ENV === 'development',
     }),
 
