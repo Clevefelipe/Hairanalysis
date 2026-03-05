@@ -145,6 +145,36 @@ const PROFESSIONAL_ALERT_FALLBACKS = [
   },
 ] as const;
 
+function fixMojibake(text: string) {
+  return text
+    .replace(/Ã¡/g, "á")
+    .replace(/Ã /g, "à")
+    .replace(/Ã£/g, "ã")
+    .replace(/Ã¢/g, "â")
+    .replace(/Ã©/g, "é")
+    .replace(/Ãª/g, "ê")
+    .replace(/Ãí/g, "í")
+    .replace(/Ã³/g, "ó")
+    .replace(/Ã´/g, "ô")
+    .replace(/Ãµ/g, "õ")
+    .replace(/Ãº/g, "ú")
+    .replace(/Ã§/g, "ç")
+    .replace(/Ã‰/g, "É")
+    .replace(/Ã€/g, "À")
+    .replace(/Ã•/g, "Õ")
+    .replace(/Ã“/g, "Ó")
+    .replace(/Ã”/g, "Ô")
+    .replace(/Ã‡/g, "Ç")
+    .replace(/Ã/g, "Á")
+    .replace(/Ã/g, "Â")
+    .replace(/Ã/g, "É")
+    .replace(/ÃŠ/g, "Ê")
+    .replace(/Ã/g, "Í")
+    .replace(/Ã/g, "Ó")
+    .replace(/Ã/g, "Õ")
+    .replace(/Ãº/g, "ú");
+}
+
 function normalizeAlertComparison(text: string) {
   return text
     .replace(/\uFFFD/g, "")
@@ -157,13 +187,11 @@ function normalizeAlertComparison(text: string) {
 
 function sanitizeProfessionalAlert(text: string) {
   if (!text) return "";
-  const normalized = normalizeAlertComparison(text);
+  const cleaned = fixMojibake(text.replace(/\uFFFD/g, ""));
+  const normalized = normalizeAlertComparison(cleaned);
   const fallback = PROFESSIONAL_ALERT_FALLBACKS.find((item) => item.normalized === normalized);
   if (fallback) return fallback.text;
-  if (text.includes("\uFFFD")) {
-    return text.replace(/\uFFFD/g, "");
-  }
-  return text;
+  return cleaned;
 }
 
 export default function AnaliseCapilar() {
@@ -474,6 +502,7 @@ export default function AnaliseCapilar() {
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
+      notify("PDF gerado com sucesso.", "success");
     } catch (e: any) {
       const message =
         e?.response?.data?.message ||
@@ -611,7 +640,31 @@ export default function AnaliseCapilar() {
         throw new Error(apiMessage || `Erro HTTP: ${res.status}`);
       }
 
-      const data = await res.json();
+      const raw = await res.json();
+      const data = {
+        score: Number(raw?.score) || 0,
+        flags: Array.isArray(raw?.flags) ? raw.flags : [],
+        signals: raw?.signals && typeof raw.signals === "object" ? raw.signals : {},
+        interpretation: raw?.interpretation || "",
+        analyzedAt: raw?.analyzedAt,
+        recomendacoes: Array.isArray(raw?.recomendacoes) ? raw.recomendacoes : [],
+      };
+
+      const criticalCompleteness = Number(
+        (data.signals as any)?.analysis_quality?.criticalCompleteness ??
+          (raw?.analysis_quality as any)?.criticalCompleteness,
+      );
+      const isLowQuality = Number.isFinite(criticalCompleteness) && criticalCompleteness < 60;
+      if (isLowQuality) {
+        notify(
+          `Captura inconclusiva (${Math.max(0, Math.round(criticalCompleteness))}% de completude crítica). Refaça com foco e luz frontal difusa.`,
+          "warning",
+        );
+        setResult(null);
+        setPreview(null);
+        setStep("config");
+        return;
+      }
 
       let savedHistory: any = null;
       const finalClientId =
@@ -620,9 +673,9 @@ export default function AnaliseCapilar() {
         searchParams.get("clientId") ||
         null;
       const uploadHistoryId =
-        data?.historyId ||
-        data?.history?.id ||
-        data?.visionResult?.historyId ||
+        raw?.historyId ||
+        raw?.history?.id ||
+        raw?.visionResult?.historyId ||
         null;
 
       if (finalClientId) {
@@ -639,26 +692,7 @@ export default function AnaliseCapilar() {
         savedHistory = await salvarVisionBackend(clientIdToPersist, {
           type: persistedAnalysisType,
           analysisType: persistedAnalysisType,
-          source,
-          sourceLabel,
-          visionResult: {
-            type: persistedAnalysisType,
-            analysisType: persistedAnalysisType,
-            source,
-            sourceLabel,
-            score: Number(data.score) || 0,
-            flags: data.flags || [],
-            signals: data.signals || {},
-            interpretation: data.interpretation || "",
-            analyzedAt: data.analyzedAt,
-          },
-          interpretation: data.interpretation || "",
-          signals: data.signals || {},
         });
-
-        if (clientIdToPersist !== "cliente_demo") {
-          setSavedClientId(clientIdToPersist);
-        }
         setSavedHistoryId(savedHistory?.id ?? null);
       } catch (e: any) {
         notify(
@@ -717,7 +751,7 @@ export default function AnaliseCapilar() {
           ? "Tempo excedido na análise capilar. Tente novamente ou gere o resultado com o que já foi processado."
           : e?.message || e?.response?.data?.message || "Erro na análise";
       notify(msg, "error");
-      setStep("capture");
+      setStep("config");
     } finally {
       setIsLoading(false);
     }
@@ -1667,17 +1701,21 @@ export default function AnaliseCapilar() {
           <button
             className="btn-primary"
             onClick={() => {
-              endClientSession();
-              setSelectedClient(null);
-              setStep("config");
-              setConfirmEndSessionOpen(false);
+              try {
+                endClientSession();
+                setSelectedClient(null);
+                setStep("config");
+                setConfirmEndSessionOpen(false);
+                notify("Sessão do cliente encerrada.", "success");
+              } catch (e: any) {
+                notify(e?.message || "Não foi possível encerrar a sessão.", "error");
+              }
             }}
           >
-            Encerrar sessão
+            Confirmar
           </button>
         </div>
       </Modal>
     </main>
   );
 }
-

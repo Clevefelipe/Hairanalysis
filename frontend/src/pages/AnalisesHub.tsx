@@ -233,7 +233,14 @@ export default function AnalisesHub() {
         {
           label: "Encerrar sessão",
           variant: "ghost" as const,
-          onClick: endSession,
+          onClick: () => {
+            try {
+              endSession();
+              notify("Sessão encerrada.", "success");
+            } catch (e: any) {
+              notify(e?.message || "Não foi possível encerrar a sessão.", "error");
+            }
+          },
         },
       ]
     : undefined;

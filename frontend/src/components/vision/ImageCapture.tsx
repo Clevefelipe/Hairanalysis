@@ -1,5 +1,6 @@
 import { Camera, ImagePlus, Loader2, ShieldCheck, Sparkles, Upload } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
+import { useToast } from "@/components/ui/ToastProvider";
 
 interface Props {
   onCapture: (file: File) => void;
@@ -25,6 +26,8 @@ export default function ImageCapture({
   const [selectedFileName, setSelectedFileName] = useState<string>("");
   const [dragging, setDragging] = useState(false);
   const [shotFiles, setShotFiles] = useState<Array<File | null>>([]);
+  const [lastError, setLastError] = useState<string>("");
+  const { notify } = useToast();
 
   const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
 
@@ -156,15 +159,21 @@ export default function ImageCapture({
       allowedTypes.some((type) => file.name.toLowerCase().endsWith(type.replace("image/", ".")));
 
     if (!isAllowed) {
-      window.alert("Apenas imagens PNG ou JPG são permitidas. Escolha outra imagem.");
+      const msg = "Apenas imagens PNG ou JPG são permitidas. Escolha outra imagem.";
+      setLastError(msg);
+      notify(msg, "error");
       return;
     }
 
     const quality = await validateImageQuality(file);
     if (!quality.ok) {
-      window.alert(quality.message || "Imagem sem qualidade suficiente para leitura técnica.");
+      const msg = quality.message || "Imagem sem qualidade suficiente para leitura técnica.";
+      setLastError(msg);
+      notify(msg, "warning");
       return;
     }
+
+    setLastError("");
 
     if (!sequence) {
       setSelectedFileName(file.name);
@@ -206,6 +215,16 @@ export default function ImageCapture({
           Protocolo guiado
         </span>
       </div>
+
+      {lastError && (
+        <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+          <Sparkles size={16} className="mt-0.5" />
+          <div className="space-y-1">
+            <p className="font-semibold">Ajuste necessário para a captura</p>
+            <p className="leading-relaxed">{lastError}</p>
+          </div>
+        </div>
+      )}
 
       <div
         className={[

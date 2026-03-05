@@ -132,6 +132,36 @@ const PROFESSIONAL_ALERT_FALLBACKS = [
   },
 ] as const;
 
+function fixMojibake(text: string) {
+  return text
+    .replace(/Ã¡/g, "á")
+    .replace(/Ã /g, "à")
+    .replace(/Ã£/g, "ã")
+    .replace(/Ã¢/g, "â")
+    .replace(/Ã©/g, "é")
+    .replace(/Ãª/g, "ê")
+    .replace(/Ã­/g, "í")
+    .replace(/Ã³/g, "ó")
+    .replace(/Ã´/g, "ô")
+    .replace(/Ãµ/g, "õ")
+    .replace(/Ãº/g, "ú")
+    .replace(/Ã§/g, "ç")
+    .replace(/Ã‰/g, "É")
+    .replace(/Ã€/g, "À")
+    .replace(/Ã•/g, "Õ")
+    .replace(/Ã“/g, "Ó")
+    .replace(/Ã”/g, "Ô")
+    .replace(/Ã‡/g, "Ç")
+    .replace(/Ã/g, "Á")
+    .replace(/Ã/g, "Â")
+    .replace(/Ã‰/g, "É")
+    .replace(/ÃŠ/g, "Ê")
+    .replace(/Ã/g, "Í")
+    .replace(/Ã“/g, "Ó")
+    .replace(/Ã•/g, "Õ")
+    .replace(/Ãº/g, "ú");
+}
+
 function normalizeAlertComparison(text: string) {
   return text
     .replace(/\uFFFD/g, "")
@@ -144,13 +174,11 @@ function normalizeAlertComparison(text: string) {
 
 function sanitizeProfessionalAlert(text: string) {
   if (!text) return "";
-  const normalized = normalizeAlertComparison(text);
+  const cleaned = fixMojibake(text.replace(/\uFFFD/g, ""));
+  const normalized = normalizeAlertComparison(cleaned);
   const fallback = PROFESSIONAL_ALERT_FALLBACKS.find((item) => item.normalized === normalized);
   if (fallback) return fallback.text;
-  if (text.includes("\uFFFD")) {
-    return text.replace(/\uFFFD/g, "");
-  }
-  return text;
+  return cleaned;
 }
 
 export default function AnaliseTricologica() {
@@ -227,7 +255,7 @@ export default function AnaliseTricologica() {
   async function startSession(clientId?: string) {
     if (!token) {
       notify("Sessão expirada. Entre novamente para iniciar a análise.", "error");
-      return;
+      return false;
     }
 
     setIsLoading(true);
@@ -253,9 +281,12 @@ export default function AnaliseTricologica() {
       if (!data?.id) throw new Error("Sessão inválida");
 
       setSessionId(data.id);
-      setStep("capture");
+      setStep("config");
+      notify("Sessão tricológica iniciada.", "success");
+      return true;
     } catch (e: any) {
       notify(e.message || "Erro ao iniciar sessão", "error");
+      return false;
     } finally {
       setIsLoading(false);
     }
@@ -469,7 +500,7 @@ export default function AnaliseTricologica() {
 
     if (!token) {
       notify("Token de autenticação não encontrado. Faça login novamente.", "error");
-      setStep("capture");
+      setStep("config");
       return;
     }
 
@@ -530,6 +561,22 @@ export default function AnaliseTricologica() {
         analyzedAt: raw?.analyzedAt,
         recomendacoes: Array.isArray(raw?.recomendacoes) ? raw.recomendacoes : [],
       };
+
+      const criticalCompleteness = Number(
+        (data.signals as any)?.analysis_quality?.criticalCompleteness ??
+          (raw?.analysis_quality as any)?.criticalCompleteness,
+      );
+      const isLowQuality = Number.isFinite(criticalCompleteness) && criticalCompleteness < 60;
+      if (isLowQuality) {
+        notify(
+          `Captura inconclusiva (${Math.max(0, Math.round(criticalCompleteness))}% de completude crítica). Refaça com foco e luz frontal difusa.`,
+          "warning",
+        );
+        setResult(null);
+        setPreview(null);
+        setStep("config");
+        return;
+      }
 
       let savedHistory: any = null;
 
@@ -628,11 +675,11 @@ export default function AnaliseTricologica() {
       }
     } catch (e: any) {
       const msg =
-        e?.name === "AbortError"
+        e?.message === "TIMEOUT"
           ? "Tempo excedido na análise tricológica. Tente novamente ou avance para a capilar."
           : e?.message || e?.response?.data?.message || "Erro na análise";
       notify(msg, "error");
-      setStep("capture");
+      setStep("config");
     } finally {
       setIsLoading(false);
     }
@@ -650,6 +697,7 @@ export default function AnaliseTricologica() {
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
+      notify("PDF gerado com sucesso.", "success");
     } catch (e: any) {
       const message =
         e?.response?.data?.message ||
@@ -688,10 +736,17 @@ export default function AnaliseTricologica() {
     [professionalAlertText],
   );
   const hasResult = wizardStep === "analyzing" && !!result;
-  const isAnalysisModalOpen = wizardStep !== "config";
+  const [immersiveMode, setImmersiveMode] = useState(true);
+  const isAnalysisModalOpen = immersiveMode || wizardStep !== "config";
   const lastAnalysisLabel = result?.date
     ? new Date(result.date).toLocaleString()
     : null;
+
+  useEffect(() => {
+    if (wizardStep !== "config") {
+      setImmersiveMode(true);
+    }
+  }, [wizardStep]);
 
   const statusLabel =
     wizardStep === "config"
@@ -940,8 +995,8 @@ export default function AnaliseTricologica() {
           </div>
 
           <button
-            onClick={() => {
-              if (!hasSession || !selectedClient) {
+            onClick={async () => {
+              if (!selectedClient) {
                 setLookupOpen(true);
                 return;
               }
@@ -949,7 +1004,10 @@ export default function AnaliseTricologica() {
                 notify("No modo tempo real, ative a microscopia antes de iniciar.", "error");
                 return;
               }
-              startSession(selectedClient.id);
+              const ok = await startSession(selectedClient.id);
+              if (ok) {
+                setStep("capture");
+              }
             }}
             disabled={isLoading}
             className="btn-primary w-full disabled:cursor-not-allowed disabled:opacity-40"
@@ -1288,7 +1346,7 @@ export default function AnaliseTricologica() {
                     onClick={() => {
                       setResult(null);
                       setPreview(null);
-                      setStep("capture");
+                      setStep("config");
                     }}
                     className="btn-secondary"
                   >
@@ -1604,6 +1662,7 @@ export default function AnaliseTricologica() {
                 onClick={() => {
                   if (isLoading) return;
                   setStep("config");
+                  setImmersiveMode(false);
                 }}
                 disabled={isLoading}
               >
@@ -1713,13 +1772,18 @@ export default function AnaliseTricologica() {
           <button
             className="btn-primary"
             onClick={() => {
-              endClientSession();
-              setSelectedClient(null);
-              setStep("config");
-              setConfirmEndSessionOpen(false);
+              try {
+                endClientSession();
+                setSelectedClient(null);
+                setStep("config");
+                setConfirmEndSessionOpen(false);
+                notify("Sessão do cliente encerrada.", "success");
+              } catch (e: any) {
+                notify(e?.message || "Não foi possível encerrar a sessão.", "error");
+              }
             }}
           >
-            Encerrar sessão
+            Confirmar
           </button>
         </div>
       </Modal>
