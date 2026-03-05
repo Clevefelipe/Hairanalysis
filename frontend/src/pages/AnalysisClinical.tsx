@@ -24,7 +24,7 @@ export default function AnalysisClinical() {
 
   async function handleSubmit(e: any) {
     e.preventDefault();
-    const result = await submitClinicalAnalysis(form);
+    await submitClinicalAnalysis(form);
     alert("Análise clínica registrada com sucesso");
   }
 

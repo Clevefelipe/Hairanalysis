@@ -936,7 +936,7 @@ export default function Dashboard() {
       ? "erro"
       : healthLoading
         ? "carregando"
-        : healthData?.status ?? "unknown";
+        : healthData?.status ?? "desconhecido";
     const backendLabel =
       backendStatus === "erro"
         ? "Erro"

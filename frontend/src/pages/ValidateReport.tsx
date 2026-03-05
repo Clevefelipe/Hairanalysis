@@ -3,7 +3,7 @@ import axios from "axios";
 import Section from "@/components/ui/Section";
 
 export default function ValidateReport() {
-  const [status, setStatus] = useState<"loading" | "valid" | "invalid">("loading");
+  const [status, setStatus] = useState<"carregando" | "valid" | "invalid">("carregando");
   const [reportId, setReportId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -28,16 +28,20 @@ export default function ValidateReport() {
       .catch(() => setStatus("invalid"));
   }, []);
 
+  if (!reportId) return null;
+
   return (
     <section className="section-stack animate-page-in min-h-[70vh] flex items-center justify-center w-full">
       <Section className="w-full max-w-lg space-y-5">
-        {status === "loading" && (
+        {status === "carregando" && (
           <div className="text-center space-y-3">
             <div className="inline-flex items-center gap-2 text-sm" style={{ color: "var(--color-text-muted)" }}>
               <div className="w-4 h-4 border-2 rounded-full animate-spin" style={{ borderColor: "var(--color-border)", borderTopColor: "var(--color-primary)" }}></div>
-              Validando relatório...
+              <span>Validando relatório...</span>
             </div>
-            <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>Confirmando a autenticidade do documento.</p>
+            <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>
+              Aguarde enquanto confirmamos a integridade do relatório.
+            </p>
           </div>
         )}
 

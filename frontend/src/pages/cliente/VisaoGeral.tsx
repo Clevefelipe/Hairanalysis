@@ -338,7 +338,7 @@ export default function VisaoGeralCliente() {
         ),
       );
       setSelectedIds([]);
-      notify("Clientes removidos com sucesso.", "success");
+      notify("Clientes removidos com sucesso.", "error");
       setActiveDialog(null);
     } catch (error) {
       notify("Não foi possível remover os clientes selecionados.", "error");

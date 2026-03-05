@@ -555,6 +555,20 @@ export default function HistoryDetailPage() {
     ? history.aiExplanation.riskFactors
     : [];
   const recommendations = history.recommendations ?? {};
+  const salonTreatments = Array.isArray(recommendations?.treatments)
+    ? recommendations.treatments
+        .map((item) =>
+          typeof item === "string" ? prettifyRecommendationText(item) : "",
+        )
+        .filter((item) => item.length > 0)
+    : [];
+  const homeCareItems = Array.isArray(recommendations?.homeCare)
+    ? recommendations.homeCare
+        .map((item) =>
+          typeof item === "string" ? prettifyRecommendationText(item) : "",
+        )
+        .filter((item) => item.length > 0)
+    : [];
   const scalpTreatments = Array.isArray(recommendations?.scalpTreatments)
     ? recommendations.scalpTreatments
         .map((item: any) => {
@@ -624,6 +638,83 @@ export default function HistoryDetailPage() {
     typeof scoreDelta === "number"
       ? `${scoreDelta > 0 ? "+" : ""}${scoreDelta.toFixed(1)} pts`
       : "Sem base comparativa";
+  const summaryCards = [
+    {
+      id: "score",
+      label: "Score atual",
+      value: `${history.score}/100`,
+      helper: sessionType,
+      valueClass: "text-[color:var(--color-text)]",
+    },
+    {
+      id: "trend",
+      label: "Tendência",
+      value: trendLabel,
+      helper:
+        typeof averageScore === "number"
+          ? `Média histórica ${averageScore}/100`
+          : "Sem histórico suficiente",
+      valueClass:
+        typeof scoreDelta === "number"
+          ? scoreDelta >= 0
+            ? "text-has-success"
+            : "text-has-danger"
+          : "text-[color:var(--color-text)]",
+    },
+    {
+      id: "return",
+      label: "Próximo retorno",
+      value: nextReturnSummary,
+      helper: maintenancePlan?.status?.label ?? "Plano não definido",
+      valueClass: "text-[color:var(--color-text)]",
+    },
+    {
+      id: "risk",
+      label: "Risco e plano",
+      value: riskSummaryLabel,
+      helper: `${recommendedItemsCount} ações listadas`,
+      valueClass: hasMedicalReferral
+        ? "text-has-warning"
+        : alertsCount > 0
+          ? "text-has-danger"
+          : "text-has-success",
+    },
+  ];
+  const recommendationSections = [
+    {
+      id: "salon",
+      title: "Sessão no salão",
+      badgeClass: "bg-[color:var(--color-primary)]/10",
+      titleColor: "var(--color-text)",
+      dotClass: "bg-[color:var(--color-primary)]",
+      containerClass:
+        "border border-[color:var(--color-border)]/30 bg-[color:var(--color-surface)]/30",
+      items: salonTreatments,
+      defaultOpen: true,
+    },
+    {
+      id: "homecare",
+      title: "Home care inteligente",
+      badgeClass: "bg-[color:var(--color-success)]/10",
+      titleColor: "var(--color-text)",
+      dotClass: "bg-[color:var(--color-success)]",
+      containerClass:
+        "border border-[color:var(--color-success)]/30 bg-[color:var(--color-success)]/5",
+      items: homeCareItems,
+      defaultOpen: false,
+    },
+    {
+      id: "scalp",
+      title: "Tratamentos para couro cabeludo",
+      badgeClass: "bg-[color:var(--color-warning)]/10",
+      titleColor: "var(--color-text)",
+      dotClass: "bg-[color:var(--color-warning)]",
+      containerClass:
+        "border border-[color:var(--color-warning)]/30 bg-[color:var(--color-warning)]/5",
+      items: scalpTreatments,
+      defaultOpen: false,
+    },
+  ].filter((section) => section.items.length > 0);
 
   return (
     <div className="space-y-8 animate-page-in">

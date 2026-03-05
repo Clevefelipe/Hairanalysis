@@ -11,7 +11,6 @@ import AnalysisClientContextCard from "@/components/analysis/AnalysisClientConte
 import AnalysisModeSelector from "@/components/analysis/AnalysisModeSelector";
 import AnalysisResultDetails from "@/components/analysis/AnalysisResultDetails";
 import ProfessionalDecisionPanel from "@/components/analysis/ProfessionalDecisionPanel";
-import AnalysisProcessingSkeleton from "@/components/analysis/AnalysisProcessingSkeleton";
 import HighTechIntegrityPanel from "@/components/analysis/HighTechIntegrityPanel";
 import ActiveClientSessionBar from "@/components/analysis/ActiveClientSessionBar";
 import AnalysisStepProgress from "@/components/analysis/AnalysisStepProgress";
@@ -73,6 +72,40 @@ const MICRO_ALERTS = [
   "Fio sensibilizado",
 ];
 
+type OverviewCard = {
+  id: string;
+  label: string;
+  value: string;
+  helper: string;
+  helperClass?: string;
+};
+
+const CAPTURE_ENVIRONMENT_CARDS = [
+  { label: "Região", value: "Couro cabeludo" },
+  { label: "Distância", value: "10-20 cm" },
+  { label: "Nitidez", value: "Raiz e densidade" },
+] as const;
+
+const CAPTURE_SEQUENCE_STEPS = [
+  "1. Frontal da linha do cabelo.",
+  "2. Lateral direita e esquerda.",
+  "3. Região superior com foco em densidade.",
+];
+
+const CAPTURE_CHECKLIST_ITEMS = [
+  "Separação limpa da região",
+  "Sem sombra sobre a raiz",
+  "Registro frontal e lateral",
+];
+
+const PROCESSING_CHECKLIST_ITEMS = [
+  "Triagem clínica",
+  "Microcirculação",
+  "Microscopia de cutícula",
+  "Risco inflamatório",
+  "Score de integridade",
+];
+
 const normalizeAnalysisSource = (
   mode: AnalysisMode,
 ): "imagem" | "video" | "tempo-real" | "microscopio" => {
@@ -90,6 +123,35 @@ const analysisSourceLabel = (
   if (source === "microscopio") return "Microscópio";
   return "Captura fotográfica";
 };
+
+const PROFESSIONAL_ALERT_FALLBACKS = [
+  {
+    normalized:
+      "analise com baixa confiabilidade tecnica. recomenda se nova captura de imagem.",
+    text: "Análise com baixa confiabilidade técnica. Recomenda-se nova captura de imagem.",
+  },
+] as const;
+
+function normalizeAlertComparison(text: string) {
+  return text
+    .replace(/\uFFFD/g, "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+}
+
+function sanitizeProfessionalAlert(text: string) {
+  if (!text) return "";
+  const normalized = normalizeAlertComparison(text);
+  const fallback = PROFESSIONAL_ALERT_FALLBACKS.find((item) => item.normalized === normalized);
+  if (fallback) return fallback.text;
+  if (text.includes("\uFFFD")) {
+    return text.replace(/\uFFFD/g, "");
+  }
+  return text;
+}
 
 export default function AnaliseTricologica() {
   const navigate = useNavigate();
@@ -621,6 +683,10 @@ export default function AnaliseTricologica() {
       ? "Existem sinais tricológicos de atenção. Valide o caso no histórico detalhado antes da conduta final."
       : "Sem alertas críticos no recorte atual. Confirme o histórico antes de concluir o protocolo.") ||
     "";
+  const displayProfessionalAlert = useMemo(
+    () => sanitizeProfessionalAlert(professionalAlertText),
+    [professionalAlertText],
+  );
   const hasResult = wizardStep === "analyzing" && !!result;
   const isAnalysisModalOpen = wizardStep !== "config";
   const lastAnalysisLabel = result?.date
@@ -739,7 +805,51 @@ export default function AnaliseTricologica() {
           : "Processando";
   const attentionToneClass =
     pendingChecklist > 0 ? "text-has-warning" : "text-has-success";
-  const clientIdForFlow = activeClient?.id || selectedClient?.id || clientIdParam || "";
+  const overviewCards = useMemo<OverviewCard[]>(
+    () => [
+      {
+        id: "stage",
+        label: "Etapa atual",
+        value: statusLabel,
+        helper: progressLabel,
+      },
+      {
+        id: "checklist",
+        label: "Checklist técnico",
+        value: `${completedChecklist}/${safetyChecklist.length}`,
+        helper: pendingChecklist > 0 ? `${pendingChecklist} pendência(s)` : "Tudo validado",
+        helperClass: attentionToneClass,
+      },
+      {
+        id: "client",
+        label: "Cliente",
+        value: selectedClient?.nome || activeClient?.nome || "Não definido",
+        helper: flowState.mode === "completo" ? "Fluxo completo" : "Fluxo individual",
+      },
+      {
+        id: "result",
+        label: "Resultado",
+        value: hasResult && result ? `${result.score}/100` : "—",
+        helper:
+          hasResult && result
+            ? `${result.flags?.length ?? 0} alerta(s)`
+            : "Sem score ainda",
+      },
+    ],
+    [
+      statusLabel,
+      progressLabel,
+      completedChecklist,
+      safetyChecklist.length,
+      pendingChecklist,
+      attentionToneClass,
+      selectedClient?.nome,
+      activeClient?.nome,
+      flowState.mode,
+      hasResult,
+      result,
+    ],
+  );
 
   function renderMain() {
     if (wizardStep === "config") {
@@ -1084,7 +1194,7 @@ export default function AnaliseTricologica() {
               Confira primeiro o histórico detalhado desta cliente.
             </p>
             <p className="mt-2 text-sm whitespace-pre-line" style={{ color: "#166534" }}>
-              {professionalAlertText}
+              {displayProfessionalAlert}
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
               {(savedHistoryId || savedClientId || selectedClient?.id) && (
@@ -1165,13 +1275,13 @@ export default function AnaliseTricologica() {
             </div>
           )}
 
-          {professionalAlertText && (
+          {displayProfessionalAlert && (
             <div className="rounded-lg border p-4" style={{ borderColor: "#fde68a", backgroundColor: "#fffbeb", color: "#92400e", boxShadow: "var(--shadow-card)" }}>
               <div className="flex items-center gap-2 text-sm font-semibold">
                 <AlertTriangle size={16} />
                 Alerta profissional
               </div>
-              <p className="mt-2 text-sm whitespace-pre-line">{professionalAlertText}</p>
+              <p className="mt-2 text-sm whitespace-pre-line">{displayProfessionalAlert}</p>
               {sessionId && (
                 <div className="mt-3 flex flex-wrap gap-2">
                   <button
@@ -1334,30 +1444,29 @@ export default function AnaliseTricologica() {
           />
 
           <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            <article className="panel-tight" style={{ borderColor: "var(--color-border)", backgroundColor: "var(--color-surface)" }}>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--color-text-muted)" }}>Etapa atual</p>
-              <p className="mt-1 text-lg font-semibold" style={{ color: "var(--color-text)" }}>{statusLabel}</p>
-              <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>{progressLabel}</p>
-            </article>
-            <article className="panel-tight" style={{ borderColor: "var(--color-border)", backgroundColor: "var(--color-surface)" }}>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--color-text-muted)" }}>Checklist técnico</p>
-              <p className="mt-1 text-lg font-semibold" style={{ color: "var(--color-text)" }}>{completedChecklist}/{safetyChecklist.length}</p>
-              <p className={`text-xs ${attentionToneClass}`}>
-                {pendingChecklist > 0 ? `${pendingChecklist} pendência(s)` : "Tudo validado"}
-              </p>
-            </article>
-            <article className="panel-tight" style={{ borderColor: "var(--color-border)", backgroundColor: "var(--color-surface)" }}>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--color-text-muted)" }}>Cliente</p>
-              <p className="mt-1 text-lg font-semibold truncate" style={{ color: "var(--color-text)" }}>{selectedClient?.nome || activeClient?.nome || "Não definido"}</p>
-              <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>{flowState.mode === "completo" ? "Fluxo completo" : "Fluxo individual"}</p>
-            </article>
-            <article className="panel-tight" style={{ borderColor: "var(--color-border)", backgroundColor: "var(--color-surface)" }}>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--color-text-muted)" }}>Resultado</p>
-              <p className="mt-1 text-lg font-semibold" style={{ color: "var(--color-text)" }}>{hasResult && result ? `${result.score}/100` : "—"}</p>
-              <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>
-                {hasResult && result ? `${result.flags?.length ?? 0} alerta(s)` : "Sem score ainda"}
-              </p>
-            </article>
+            {overviewCards.map((card) => (
+              <article
+                key={card.id}
+                className="panel-tight"
+                style={{ borderColor: "var(--color-border)", backgroundColor: "var(--color-surface)" }}
+              >
+                <p
+                  className="text-[11px] font-semibold uppercase tracking-[0.2em]"
+                  style={{ color: "var(--color-text-muted)" }}
+                >
+                  {card.label}
+                </p>
+                <p className="mt-1 text-lg font-semibold" style={{ color: "var(--color-text)" }}>
+                  {card.value}
+                </p>
+                <p
+                  className={`text-xs ${card.helperClass ?? ""}`.trim()}
+                  style={card.helperClass ? undefined : { color: "var(--color-text-muted)" }}
+                >
+                  {card.helper}
+                </p>
+              </article>
+            ))}
           </section>
 
           <section className="grid-dense lg:grid-cols-[2fr,1fr] items-start w-full gap-3 md:gap-4">

@@ -590,7 +590,7 @@ export default function ClientesLista({
             try {
               setDeleting(true);
               await excluirCliente(deleteTarget.id);
-              notify("Cliente excluído com sucesso.", "success");
+              notify("Cliente excluído com sucesso.", "error");
               onClientDeleted?.(deleteTarget.id);
               setDeleteTarget(null);
             } catch {

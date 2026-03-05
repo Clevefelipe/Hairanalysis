@@ -481,7 +481,7 @@ export default function SalonBranding() {
                 {saving ? "Salvando..." : "Salvar branding"}
               </button>
               <button type="button" onClick={handleResetDefaults} className="btn-secondary">
-                Restaurar padrao visual
+                Restaurar padrão visual
               </button>
             </div>
           </div>
@@ -489,7 +489,7 @@ export default function SalonBranding() {
 
         <Section>
           <h2 className="text-lg font-semibold text-slate-900">Preview executivo</h2>
-          <p className="mt-1 text-sm text-slate-500">Pre-visualizacao do cabecalho aplicado no PDF.</p>
+          <p className="mt-1 text-sm text-slate-500">Pré-visualização do cabeçalho aplicado no PDF.</p>
 
           <div
             className="mt-5 rounded-2xl border p-4"

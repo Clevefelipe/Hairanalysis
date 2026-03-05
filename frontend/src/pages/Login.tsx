@@ -108,8 +108,8 @@ export default function Login() {
             </p>
 
             <h1 className="text-4xl lg:text-5xl font-semibold leading-tight text-white font-[Sora]">
-             Técnologia, Segurança.
-              Inteligência aplicada à estética capilar profissional.
+             Técnologia e Segurança.
+             Inteligência aplicada à estética capilar profissional.
               <span className="block text-[color:var(--color-success-200)]">pare de operar no escuro: laudos claros, seguros e acionáveis.</span>
             </h1>
 
