@@ -1,4 +1,4 @@
-import { IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString, IsObject } from 'class-validator';
 
 export class UploadVisionDto {
   @IsString()
@@ -26,4 +26,8 @@ export class UploadVisionDto {
   @IsOptional()
   @IsString()
   microscopy?: string;
+
+  @IsOptional()
+  @IsObject()
+  chemicalProfile?: Record<string, any>;
 }

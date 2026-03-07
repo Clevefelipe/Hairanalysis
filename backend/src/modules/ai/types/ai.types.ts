@@ -116,11 +116,38 @@ export interface HairAnalysisAIResponse {
   };
 }
 
+export type PorosityBand = 'baixa' | 'media' | 'alta';
+
+export interface AbsorptionTestInput {
+  volumeMl?: number | null;
+  weightGainMl?: number | null;
+  timeSeconds?: number | null;
+  dryingTimeSeconds?: number | null;
+}
+
+export interface CuticleDiagnosticInput {
+  toquePoints?: number | null;
+  toqueText?: string | null;
+  brilhoPoints?: number | null;
+  brilhoText?: string | null;
+  elasticidadePoints?: number | null;
+  elasticidadeText?: string | null;
+  chemicalEvents?: number | null;
+}
+
+export interface BreakRiskContext {
+  porosityPercent?: number | null;
+  elasticityPercent?: number | null;
+}
+
 export interface AestheticDecisionInput {
   structuredData?: Record<string, any>;
   imageSignals?: Record<string, any>;
   evolutionHistory?: Record<string, any>;
   sicInput?: SicInput;
+  absorptionTest?: AbsorptionTestInput;
+  cuticleDiagnostic?: CuticleDiagnosticInput;
+  straighteningRiskContext?: BreakRiskContext;
 }
 
 export interface AestheticRiskIndexes {
@@ -137,11 +164,28 @@ export interface AestheticDecisionResponse {
   sicResult?: SicResult;
   indicesRisco: AestheticRiskIndexes;
   classificacaoAptidao: 'apto' | 'apto_com_restricoes' | 'nao_apto';
+  absorptionCoefficient?: {
+    index: number;
+    label: PorosityBand;
+  };
+  cuticleDiagnostic?: {
+    ipt: number;
+    label: PorosityBand;
+    toque?: number;
+    brilho?: number;
+    elasticidade?: number;
+    historico?: number;
+  };
+  breakRiskPercentual?: number;
   alisamentoSelecionado: {
     nome: string;
     justificativa: string;
   };
   protocoloPersonalizado: {
+    baseTratamento?: {
+      foco: PorosityBand;
+      descricao: string;
+    };
     preQuimica: string[];
     alisamento: {
       produto: string;

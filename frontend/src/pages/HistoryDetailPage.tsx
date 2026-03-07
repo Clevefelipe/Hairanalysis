@@ -557,17 +557,17 @@ export default function HistoryDetailPage() {
   const recommendations = history.recommendations ?? {};
   const salonTreatments = Array.isArray(recommendations?.treatments)
     ? recommendations.treatments
-        .map((item) =>
+        .map((item: unknown) =>
           typeof item === "string" ? prettifyRecommendationText(item) : "",
         )
-        .filter((item) => item.length > 0)
+        .filter((item: string) => item.length > 0)
     : [];
   const homeCareItems = Array.isArray(recommendations?.homeCare)
     ? recommendations.homeCare
-        .map((item) =>
+        .map((item: unknown) =>
           typeof item === "string" ? prettifyRecommendationText(item) : "",
         )
-        .filter((item) => item.length > 0)
+        .filter((item: string) => item.length > 0)
     : [];
   const scalpTreatments = Array.isArray(recommendations?.scalpTreatments)
     ? recommendations.scalpTreatments

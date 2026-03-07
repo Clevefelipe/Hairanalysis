@@ -88,7 +88,6 @@ export default function ClientLookupModal({
     }
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       notify("Informe um e-mail válido.", "warning");
-      nextErrors.telefone = nextErrors.telefone; // keep
     }
 
     if (Object.keys(nextErrors).length > 0) {

@@ -24,6 +24,7 @@ type DashboardHistory = {
   interpretation: string;
   aiExplanation?: any;
   recommendations?: any;
+  chemicalProfile?: any;
 };
 
 @Injectable()
@@ -483,7 +484,10 @@ export class HistoryService {
 
   async getRecommendations(id: string) {
     const history = await this.findById(id);
-    return history.recommendations;
+    return {
+      recommendations: history.recommendations,
+      chemicalProfile: history.chemicalProfile || null,
+    };
   }
 
   async generatePublicToken(id: string) {
@@ -681,6 +685,7 @@ export class HistoryService {
         modeGovernedRecommendations,
         score,
       ),
+      chemicalProfile: item?.chemicalProfile || null,
     };
   }
 
@@ -786,6 +791,7 @@ export class HistoryService {
         modeGovernedRecommendations,
         normalizedScore,
       ),
+      chemicalProfile: history.chemicalProfile || null,
       clientName: clientName || undefined,
     } as HistoryEntity & { clientName?: string };
   }

@@ -19,6 +19,7 @@ export type AnalysisFlowState = {
   mode: AnalysisFlowMode;
   tricologicaDone: boolean;
   capilarDone: boolean;
+  tricologicaOverride: boolean;
   tricologicaHistoryId?: string | null;
   capilarHistoryId?: string | null;
   updatedAt?: string;
@@ -31,6 +32,7 @@ type ClientSessionContextValue = {
   endSession: () => void;
   flowState: AnalysisFlowState;
   setFlowMode: (mode: AnalysisFlowMode) => void;
+  setTricologicaOverride: (active: boolean) => void;
   markAnalysisCompleted: (kind: AnalysisKind, historyId?: string | null) => void;
   resetFlowProgress: () => void;
   isCompleteProtocolReady: boolean;
@@ -47,6 +49,7 @@ function createDefaultFlowState(mode: AnalysisFlowMode = "completo"): AnalysisFl
     mode,
     tricologicaDone: false,
     capilarDone: false,
+    tricologicaOverride: false,
     tricologicaHistoryId: null,
     capilarHistoryId: null,
     updatedAt: new Date().toISOString(),
@@ -137,6 +140,23 @@ export function ClientSessionProvider({ children }: { children: React.ReactNode 
         [clientId]: {
           ...current,
           mode,
+          tricologicaOverride: mode === "completo" ? current.tricologicaOverride : false,
+          updatedAt: new Date().toISOString(),
+        },
+      };
+    });
+  };
+
+  const setTricologicaOverride = (active: boolean) => {
+    const clientId = activeClient?.id;
+    if (!clientId) return;
+    setFlowByClient((prev) => {
+      const current = prev[clientId] || createDefaultFlowState();
+      return {
+        ...prev,
+        [clientId]: {
+          ...current,
+          tricologicaOverride: active,
           updatedAt: new Date().toISOString(),
         },
       };
@@ -154,6 +174,7 @@ export function ClientSessionProvider({ children }: { children: React.ReactNode 
           ...current,
           tricologicaDone: kind === "tricologica" ? true : current.tricologicaDone,
           capilarDone: kind === "capilar" ? true : current.capilarDone,
+          tricologicaOverride: kind === "tricologica" ? false : current.tricologicaOverride,
           tricologicaHistoryId:
             kind === "tricologica" ? historyId ?? current.tricologicaHistoryId : current.tricologicaHistoryId,
           capilarHistoryId:
@@ -191,6 +212,7 @@ export function ClientSessionProvider({ children }: { children: React.ReactNode 
       endSession,
       flowState: activeFlow,
       setFlowMode,
+      setTricologicaOverride,
       markAnalysisCompleted,
       resetFlowProgress,
       isCompleteProtocolReady,

@@ -12,6 +12,7 @@ import AnalysisModeSelector from "@/components/analysis/AnalysisModeSelector";
 import AnalysisResultDetails from "@/components/analysis/AnalysisResultDetails";
 import ProfessionalDecisionPanel from "@/components/analysis/ProfessionalDecisionPanel";
 import HighTechIntegrityPanel from "@/components/analysis/HighTechIntegrityPanel";
+import DecisionMatrix from "@/components/analysis/DecisionMatrix";
 import ActiveClientSessionBar from "@/components/analysis/ActiveClientSessionBar";
 import AnalysisStepProgress from "@/components/analysis/AnalysisStepProgress";
 import { obterClientePorId } from "@/core/cliente/cliente.service";
@@ -96,6 +97,24 @@ const CAPTURE_CHECKLIST_ITEMS = [
   "Separação limpa da região",
   "Sem sombra sobre a raiz",
   "Registro frontal e lateral",
+];
+
+const SCALP_REQUIRED_SHOTS = [
+  {
+    key: "frontal",
+    label: "Linha frontal",
+    hint: "Registre a linha do cabelo de frente, com separação limpa.",
+  },
+  {
+    key: "laterais",
+    label: "Laterais",
+    hint: "Documente lado direito e esquerdo sem sombras.",
+  },
+  {
+    key: "superior",
+    label: "Região superior",
+    hint: "Foque densidade e eventuais rarefações.",
+  },
 ];
 
 const PROCESSING_CHECKLIST_ITEMS = [
@@ -243,11 +262,11 @@ export default function AnaliseTricologica() {
     | "capilar_individual"
     | "tricologica_individual"
     | null;
+  const isCompleteFlow = flowParam === "completo" || flowState.mode === "completo";
   const manualJourney = searchParams.get("journey") === "manual";
   const manualTricologica = searchParams.get("tricologica") === "1";
   const manualCapilar = searchParams.get("capilar") === "1";
   const journeyStepParam = searchParams.get("journeyStep");
-  const isCompleteFlow = flowParam === "completo" || flowState.mode === "completo";
   const wizardStep = step === "processing" || step === "results" ? "analyzing" : step;
 
   // ================= SESSION =================
@@ -736,17 +755,20 @@ export default function AnaliseTricologica() {
     [professionalAlertText],
   );
   const hasResult = wizardStep === "analyzing" && !!result;
-  const [immersiveMode, setImmersiveMode] = useState(true);
-  const isAnalysisModalOpen = immersiveMode || wizardStep !== "config";
+  const [immersiveMode, setImmersiveMode] = useState(() => isCompleteFlow);
+  const isAnalysisModalOpen = isCompleteFlow && (immersiveMode || wizardStep !== "config");
   const lastAnalysisLabel = result?.date
     ? new Date(result.date).toLocaleString()
     : null;
 
   useEffect(() => {
-    if (wizardStep !== "config") {
-      setImmersiveMode(true);
+    if (!isCompleteFlow) {
+      setImmersiveMode(false);
+      return;
     }
-  }, [wizardStep]);
+
+    setImmersiveMode(wizardStep !== "config");
+  }, [isCompleteFlow, wizardStep]);
 
   const statusLabel =
     wizardStep === "config"
@@ -774,6 +796,9 @@ export default function AnaliseTricologica() {
   const readyForProtocol = isCompleteFlow && flowState.capilarDone && flowState.tricologicaDone;
   const source = normalizeAnalysisSource(mode);
   const modeUiLabel = analysisSourceLabel(source);
+  const advancedSignalsActive = uvMode || microscopeOn;
+  const advancedSignalsRequired = isCompleteFlow || mode === "tempo-real";
+  const showAdvancedAlert = advancedSignalsRequired && !advancedSignalsActive;
   const heroMeta = [
     { label: "Modo", value: modeUiLabel },
     { label: "Status", value: statusLabel },
@@ -793,7 +818,8 @@ export default function AnaliseTricologica() {
       const hasClient = Boolean(selectedClient || activeClient);
       const hasSessionActive = Boolean(sessionId);
       const hasContextNotes = Boolean((observacoes || "").trim() || premiumGoal || premiumNote);
-      const hasAdvancedSignals = uvMode || microscopeOn;
+      const hasAdvancedSignals = advancedSignalsActive;
+      const advancedRequirementMet = !advancedSignalsRequired || hasAdvancedSignals;
       const hasRecordedResult = Boolean(result);
 
       return [
@@ -817,9 +843,11 @@ export default function AnaliseTricologica() {
         },
         {
           key: "signals",
-          label: "Sinais avançados (UV/microscópio)",
-          description: "Opcional, mas recomendado para enriquecer a triagem do couro cabeludo.",
-          complete: hasAdvancedSignals || mode === "imagem" || mode === "video",
+          label: advancedSignalsRequired ? "Sinais avançados ativos" : "Sinais avançados (UV/microscópio)",
+          description: advancedSignalsRequired
+            ? "Ative luz UV ou microscópio para manter a cadeia clínica do protocolo completo."
+            : "Opcional, mas recomendado para enriquecer a triagem do couro cabeludo.",
+          complete: advancedRequirementMet,
         },
         {
           key: "result",
@@ -831,6 +859,8 @@ export default function AnaliseTricologica() {
     },
     [
       activeClient,
+      advancedSignalsActive,
+      advancedSignalsRequired,
       microscopeAlerts.length,
       microscopeOn,
       mode,
@@ -994,6 +1024,18 @@ export default function AnaliseTricologica() {
             </button>
           </div>
 
+          {showAdvancedAlert && (
+            <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm" style={{ color: "#92400e" }}>
+              <AlertTriangle size={18} />
+              <div>
+                <p className="font-semibold text-amber-700">Ative ao menos um modo avançado</p>
+                <p className="text-xs text-amber-700/80">
+                  No protocolo completo ou em tempo real, mantenha luz UV ou microscopia ligados para garantir rastreabilidade e desbloquear a etapa seguinte.
+                </p>
+              </div>
+            </div>
+          )}
+
           <button
             onClick={async () => {
               if (!selectedClient) {
@@ -1002,6 +1044,10 @@ export default function AnaliseTricologica() {
               }
               if (mode === "tempo-real" && !microscopeOn) {
                 notify("No modo tempo real, ative a microscopia antes de iniciar.", "error");
+                return;
+              }
+              if (showAdvancedAlert) {
+                notify("Ative luz UV ou microscopia para manter a integridade do protocolo.", "warning");
                 return;
               }
               const ok = await startSession(selectedClient.id);
@@ -1046,6 +1092,20 @@ export default function AnaliseTricologica() {
             </div>
           </div>
 
+          {showAdvancedAlert && (
+            <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm" style={{ color: "#92400e" }}>
+              <div className="flex items-start gap-2">
+                <AlertTriangle size={16} className="mt-0.5 text-amber-500" />
+                <div>
+                  <p className="font-semibold text-amber-700">Sequência incompleta</p>
+                  <p className="text-xs text-amber-700/80">
+                    Reative UV ou microscópio para registrar micro-sinais obrigatórios antes de concluir o laudo integrado.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="grid gap-4 xl:grid-cols-[1.6fr,1fr]">
             <div className="rounded-xl border p-5 capture-card-premium capture-stage-enter capture-stage-enter-delay-1" style={{ borderColor: "var(--color-border)", backgroundColor: "var(--color-surface)", boxShadow: "var(--shadow-card)" }}>
               <ImageCapture
@@ -1053,6 +1113,7 @@ export default function AnaliseTricologica() {
                 isProcessing={isLoading}
                 title="Captura guiada para análise tricológica"
                 subtitle="Foque couro cabeludo, densidade e sinais de sensibilidade para leitura clínica mais assertiva."
+                requiredShots={SCALP_REQUIRED_SHOTS}
               />
 
               <div className="mt-4 grid gap-3 sm:grid-cols-3">
@@ -1298,6 +1359,12 @@ export default function AnaliseTricologica() {
             signals={result.signals}
             flags={result.flags}
             recommendations={result.recommendations}
+            chemicalProfile={(result as any)?.chemicalProfile || null}
+          />
+          <DecisionMatrix
+            recommendations={result.recommendations}
+            flags={result.flags}
+            breakRiskPercentual={(result as any)?.aesthetic?.breakRiskPercentual ?? null}
           />
           <HighTechIntegrityPanel
             score={result.score}
@@ -1491,9 +1558,9 @@ export default function AnaliseTricologica() {
 
           <PageHero
             title="Análise Tricológica"
-            subtitle="Wizard premium com modos avançados (UV + microscópio) e inteligência estética ativa."
+            subtitle="Wizard em 3 etapas com inteligência técnica ativa."
             meta={heroMeta}
-            actions={heroActions}
+            actions={heroActions as any}
           />
 
           <AnalysisStepProgress
@@ -1720,7 +1787,7 @@ export default function AnaliseTricologica() {
                           style={{ borderColor: "var(--color-border)", borderTopColor: "var(--color-primary)" }}
                         />
                         <div className="min-w-0">
-                          <p className="text-sm font-semibold" style={{ color: "var(--color-text)" }}>Processando análise</p>
+                          <p className="text-sm font-semibold" style={{ color: "var(--color-text)" }}>Processando análise tricológica</p>
                           <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>
                             Sincronizando leitura clínica e consolidando indicadores.
                           </p>
@@ -1753,7 +1820,7 @@ export default function AnaliseTricologica() {
         onSelect={(c) => {
           startClientSession(c);
           setSelectedClient(c);
-          notify("Cliente selecionado", "success");
+          notify(`Sessão iniciada\n${c.nome || "Cliente"}`, "success");
         }}
       />
 
@@ -1773,11 +1840,12 @@ export default function AnaliseTricologica() {
             className="btn-primary"
             onClick={() => {
               try {
+                const clientName = activeClient?.nome || selectedClient?.nome;
                 endClientSession();
                 setSelectedClient(null);
                 setStep("config");
                 setConfirmEndSessionOpen(false);
-                notify("Sessão do cliente encerrada.", "success");
+                notify(clientName ? `Sessão encerrada\n${clientName}` : "Sessão encerrada.", "success");
               } catch (e: any) {
                 notify(e?.message || "Não foi possível encerrar a sessão.", "error");
               }

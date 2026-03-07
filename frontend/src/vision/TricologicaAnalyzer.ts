@@ -1,12 +1,9 @@
 import { VisionFrame } from "./types";
-import {
-  TricologicaFinding,
-  SeverityLevel,
-} from "./tricologica.types";
+import { TricologicaFinding, SeverityLevel } from "./tricologica.types";
 import { buildTricologicaFinding } from "./tricologica.heuristics";
 
 export function analyzeTricologicaFrame(
-  frame: VisionFrame
+  _frame: VisionFrame
 ): {
   findings: TricologicaFinding[];
   totalScore: number;

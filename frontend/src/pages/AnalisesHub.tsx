@@ -1,6 +1,6 @@
 ﻿import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, CheckCircle2, Layers, Loader2, Microscope, Sparkles, Timer, User, UserRound, Wand2 } from "lucide-react";
+import { AlertTriangle, ArrowRight, CheckCircle2, Layers, Loader2, Microscope, Sparkles, Timer, User, UserRound, Wand2 } from "lucide-react";
 
 import PageHero from "@/components/ui/PageHero";
 import SectionToolbar from "@/components/ui/SectionToolbar";
@@ -18,6 +18,7 @@ function safeDate(value: string | number | Date | undefined | null) {
 export default function AnalisesHub() {
   const navigate = useNavigate();
   const { activeClient, hasSession, startSession, endSession, flowState, setFlowMode, resetFlowProgress } = useClientSession();
+  const overridePending = flowState.tricologicaOverride && flowState.mode === "completo" && !flowState.tricologicaDone;
   const { notify } = useToast();
 
   const [historyLoading, setHistoryLoading] = useState(false);
@@ -184,6 +185,12 @@ export default function AnalisesHub() {
 
     if (flowState.mode === "completo") {
       if (!flowState.tricologicaDone) {
+        if (overridePending) {
+          return {
+            label: "Tricologia pendente (override ativo) — retome antes de fechar protocolo",
+            path: `/analise-tricologica?flow=completo&clientId=${activeClient.id}`,
+          };
+        }
         return {
           label: "Inicie pela análise tricológica (protocolo completo)",
           path: `/analise-tricologica?flow=completo&clientId=${activeClient.id}`,
@@ -236,7 +243,11 @@ export default function AnalisesHub() {
           onClick: () => {
             try {
               endSession();
-              notify("Sessão encerrada.", "success");
+              if (activeClient?.nome) {
+                notify(`Sessão encerrada\n${activeClient.nome}`, "success");
+              } else {
+                notify("Sessão encerrada.", "success");
+              }
             } catch (e: any) {
               notify(e?.message || "Não foi possível encerrar a sessão.", "error");
             }
@@ -262,6 +273,32 @@ export default function AnalisesHub() {
         ]}
         actions={heroActions}
       />
+
+      {overridePending && hasSession && (
+        <section className="panel-tight" style={{ borderColor: "var(--color-border)", backgroundColor: "var(--color-surface)" }}>
+          <div className="flex flex-col gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm" style={{ color: "#92400e" }}>
+            <div className="flex items-center gap-2">
+              <AlertTriangle size={18} className="text-amber-500" />
+              <p className="font-semibold text-amber-700">Protocolo completo em estado parcial</p>
+            </div>
+            <p>
+              A análise capilar foi executada antes do couro cabeludo. Retome a etapa tricológica para liberar o laudo integrado e remover o alerta de override.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <button
+                className="btn-primary flex items-center gap-2 text-sm"
+                onClick={() => navigate(`/analise-tricologica?flow=completo&clientId=${activeClient!.id}`)}
+              >
+                <Microscope size={16} />
+                Reabrir tricologia
+              </button>
+              <button className="btn-secondary text-sm" onClick={() => navigate(`/analise-capilar?flow=completo&clientId=${activeClient!.id}`)}>
+                Revisar análise capilar
+              </button>
+            </div>
+          </div>
+        </section>
+      )}
 
       {sessionGate && (
         <section className="panel-tight" style={{ borderColor: "var(--color-border)", backgroundColor: "var(--color-surface)" }}>

@@ -126,6 +126,7 @@ export class VisionService {
       visionResult: visionToSave,
       aiExplanation: aiExplanation || null,
       recommendations: recommendationsToSave,
+      chemicalProfile: payload?.chemicalProfile || null,
     });
   }
 

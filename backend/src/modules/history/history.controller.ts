@@ -223,7 +223,7 @@ export class HistoryController {
     if (!salonId || history.salonId !== salonId) {
       throw new ForbiddenException('Acesso negado');
     }
-    return history.recommendations;
+    return this.service.getRecommendations(id);
   }
 
   @Patch(':id/next-visit')

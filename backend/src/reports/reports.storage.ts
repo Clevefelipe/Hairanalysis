@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/require-await */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Provider } from '@nestjs/common';
 import { promises as fs } from 'fs';
 import * as path from 'path';

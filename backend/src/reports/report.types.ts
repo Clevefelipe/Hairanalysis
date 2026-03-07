@@ -25,6 +25,7 @@ export interface ReportPayload {
       observacoes?: string[];
     };
   };
+  chemicalProfile?: any;
   protocolos?: {
     alisamentos?: Array<{
       serviceId: string;

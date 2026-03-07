@@ -13,13 +13,9 @@ export type AiAssistantResponse = {
 export async function askAiAssistant(
   payload: AiAssistantRequest,
 ): Promise<AiAssistantResponse> {
-  try {
-    const { data } = await api.post<AiAssistantResponse>("/assistant/chat", payload);
-    if (!data || typeof data.answer !== "string") {
-      throw new Error("Resposta inválida da IA");
-    }
-    return data;
-  } catch (error) {
-    throw error;
+  const { data } = await api.post<AiAssistantResponse>("/assistant/chat", payload);
+  if (!data || typeof data.answer !== "string") {
+    throw new Error("Resposta inválida da IA");
   }
+  return data;
 }

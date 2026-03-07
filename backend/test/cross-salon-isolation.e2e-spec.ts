@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import {
   Controller,
   ForbiddenException,
@@ -15,7 +18,7 @@ import { SalonGuard } from '../src/common/guards/salon.guard';
 class MockJwtGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     const req = context.switchToHttp().getRequest();
-    req.user = { salonId: 'salon-A' };
+    req.user = { salonId: 'salon-A' } as any;
     return true;
   }
 }

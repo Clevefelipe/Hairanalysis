@@ -207,6 +207,8 @@ export class ReportsController {
       // fallback
     }
 
+    const chemicalProfile = (history as any)?.chemicalProfile || vision?.chemicalProfile;
+
     const professionalAlertRaw =
       typeof rec?.professionalAlert === 'string' ? rec.professionalAlert : '';
     const professionalAlert = this.sanitizeAestheticAlert(
@@ -446,6 +448,7 @@ export class ReportsController {
       sumario: ai?.summary,
       aptidao,
       perfil,
+      chemicalProfile,
       protocolos: {
         alisamentos,
         tratamentosSalao,

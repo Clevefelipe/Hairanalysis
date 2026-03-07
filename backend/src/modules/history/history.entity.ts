@@ -28,6 +28,9 @@ export class HistoryEntity {
   @Column('jsonb', { nullable: true })
   recommendations: any;
 
+  @Column('jsonb', { nullable: true })
+  chemicalProfile: any;
+
   @Column({ nullable: true })
   publicToken: string;
 

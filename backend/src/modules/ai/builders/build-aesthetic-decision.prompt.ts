@@ -66,7 +66,7 @@ export function buildAestheticDecisionPrompt(
   return `PROMPT ESTRUTURAL | MOTOR DE DECISAO ESTETICA CAPILAR (PT-BR)
 
 OBJETIVO DA IA
-Interpretar dados estruturados + sinais visuais para calcular score de integridade (0-100), índices de risco, aptidão para alisamento, selecionar alisamento compatível do catálogo e gerar protocolo técnico seguro. Escopo exclusivamente estético/profissional de salão (nao clinico).
+Interpretar dados estruturados + sinais visuais para calcular score de integridade (0-100), coeficiente de absorção, IPT (diagnóstico de cutícula), risco de quebra, índices de risco segmentados, aptidão para alisamento, selecionar alisamento compatível do catálogo e gerar protocolo técnico seguro. Escopo exclusivamente estético/profissional de salão (nao clinico).
 
 ESCOPO E LIMITES
 - Nao diagnosticar doenca ou prescrever medicamentos.
@@ -92,23 +92,35 @@ ${catalogList}
 
 REGRAS CRITICAS
 1. Calcular Score de Integridade (0-100) coerente com porosidade, elasticidade, resistência, histórico químico, dano térmico/mecânico e estabilidade pós-química.
-2. Calcular índices de risco segmentados: termico, quimico, quebra, elasticidade, sensibilidade (quando aplicável). Classificar em: baixo | moderado | elevado | critico, sempre com justificativa.
-3. Classificar aptidão para alisamento: apto | apto_com_restricoes | nao_apto. Se nao_apto, bloquear alisamento e priorizar recuperação.
-4. Cruzar apenas com alisamentos do catálogo informado. Se múltiplos compatíveis, priorizar o de menor risco estrutural. Se nenhum, manter restringidos.
-4.1 Proibido inventar ou citar exemplos/apelidos/nome genérico de alisamento (ex.: "alisamento progressivo", selagem, progressiva, semi definitiva, orgânica). Use somente o nome exato do catálogo; se não houver compatibilidade, deixe vazio/restrito e justifique.
-4.2 Somente utilizar alisamentos com critérios técnicos completos (hairTypes, structures, volume, damageLevel, tolerâncias). Se faltarem dados obrigatórios, considerar o item indisponível, não recomendar e registrar em restricted/restrições com motivo "critérios incompletos".
-5. Neutralizacao/pH: obrigatoria quando houver processo alcalino, cuticula aberta, elasticidade alterada (<40) ou instabilidade pos-quimica. Dispensar somente com acidificação adequada; sempre justificar e incluir produto + tempo quando obrigatoria=true. Se risco de dano moderado/alto, incluir mecha-teste ou prova de toque antes do procedimento.
-6. Integrar sinais de couro cabeludo (oleosidade, descamação, sensibilidade) na análise: se houver sinais, incluir scalpTreatments e homeCare específicos para couro com frequencia; não deixar couro vazio.
-7. Protocolo personalizado deve ter: etapa pré-química (se necessário), etapa de alisamento (quando apto), etapa pós-química e cronograma de 4 semanas com frequências claras.
-8. Nunca inventar dados. Se algo faltar, use linguagem de incerteza e reduza confiança.
-9. Nao usar termos clínicos. Nao prescrever medicamento. Escopo estetico apenas.
-10. Evitar extrapolação entre modos: manter foco em haste; couro cabeludo apenas em perspectiva estética/funcional.
-11. Saída obrigatória em JSON válido, sem markdown.
+2. Calcular coeficiente de absorção (volume/tempo) e etiquetar em baixa|media|alta; se ausente, não inventar. Calcular IPT (cutícula) somando toque, brilho, elasticidade e histórico químico; reportar score e label baixa|media|alta.
+3. Calcular risco de quebra (%) combinando porosidade e elasticidade. Se risco de quebra > 70%, bloquear alisamento (classificar como nao_apto) e registrar justificativa de bloqueio. Se > 40% elevar risco de quebra para pelo menos "elevado".
+4. Calcular índices de risco segmentados: termico, quimico, quebra, elasticidade, sensibilidade (quando aplicável). Classificar em: baixo | moderado | elevado | critico, sempre com justificativa.
+5. Classificar aptidão para alisamento: apto | apto_com_restricoes | nao_apto. Se nao_apto ou risco de quebra > 70%, bloquear alisamento e priorizar recuperação.
+6. Cruzar apenas com alisamentos do catálogo informado. Se múltiplos compatíveis, priorizar o de menor risco estrutural. Se nenhum, manter restringidos.
+6.1 Proibido inventar ou citar exemplos/apelidos/nome genérico de alisamento (ex.: "alisamento progressivo", selagem, progressiva, semi definitiva, orgânica). Use somente o nome exato do catálogo; se não houver compatibilidade, deixe vazio/restrito e justifique.
+6.2 Somente utilizar alisamentos com critérios técnicos completos (hairTypes, structures, volume, damageLevel, tolerâncias). Se faltarem dados obrigatórios, considerar o item indisponível, não recomendar e registrar em restricted/restrições com motivo "critérios incompletos".
+7. Neutralizacao/pH: obrigatoria quando houver processo alcalino, cuticula aberta, elasticidade alterada (<40) ou instabilidade pos-quimica. Dispensar somente com acidificação adequada; sempre justificar e incluir produto + tempo quando obrigatoria=true. Se risco de dano moderado/alto, incluir mecha-teste ou prova de toque antes do procedimento.
+8. Integrar sinais de couro cabeludo (oleosidade, descamação, sensibilidade) na análise: se houver sinais, incluir scalpTreatments e homeCare específicos para couro com frequencia; não deixar couro vazio.
+9. Protocolo personalizado deve ter: etapa pré-química (se necessário), etapa de alisamento (quando apto), etapa pós-química, cronograma de 4 semanas com frequências claras e baseTratamento (foco/descrição) derivada da porosidade consolidada.
+10. Nunca inventar dados. Se algo faltar, use linguagem de incerteza e reduza confiança.
+11. Nao usar termos clínicos. Nao prescrever medicamento. Escopo estetico apenas.
+12. Evitar extrapolação entre modos: manter foco em haste; couro cabeludo apenas em perspectiva estética/funcional.
+13. Saída obrigatória em JSON válido, sem markdown.
 
 FORMATO DE SAIDA (JSON)
 {
   "resumoTecnico": "Resumo objetivo com estado da fibra e couro cabeludo (quando informado)",
   "scoreIntegridade": 0,
+  "absorptionCoefficient": { "index": 0, "label": "baixa|media|alta" },
+  "cuticleDiagnostic": {
+    "ipt": 0,
+    "label": "baixa|media|alta",
+    "toque": 0,
+    "brilho": 0,
+    "elasticidade": 0,
+    "historico": 0
+  },
+  "breakRiskPercentual": 0,
   "indicesRisco": {
     "termico": "baixo|moderado|elevado|critico",
     "quimico": "baixo|moderado|elevado|critico",
@@ -122,6 +134,7 @@ FORMATO DE SAIDA (JSON)
     "justificativa": "motivo tecnico da escolha ou restrição"
   },
   "protocoloPersonalizado": {
+    "baseTratamento": { "foco": "baixa|media|alta", "descricao": "texto" },
     "preQuimica": ["etapas e frequencia"],
     "alisamento": {
       "produto": "nome exato do catalogo ou 'nao aplicavel'",

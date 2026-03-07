@@ -12,12 +12,14 @@ import AnalysisResultDetails from "@/components/analysis/AnalysisResultDetails";
 import ProfessionalDecisionPanel from "@/components/analysis/ProfessionalDecisionPanel";
 import AnalysisProcessingSkeleton from "@/components/analysis/AnalysisProcessingSkeleton";
 import HighTechIntegrityPanel from "@/components/analysis/HighTechIntegrityPanel";
+import DecisionMatrix from "@/components/analysis/DecisionMatrix";
 import ActiveClientSessionBar from "@/components/analysis/ActiveClientSessionBar";
 import AnalysisStepProgress from "@/components/analysis/AnalysisStepProgress";
 import { FlowTimeline, FlowTimelineStep } from "@/components/analysis/FlowTimeline";
 import { obterClientePorId } from "@/core/cliente/cliente.service";
 import { salvarVisionBackend } from "@/services/visionApi";
 import { getHistoryPdf } from "@/services/history.service";
+import { postAestheticDecision, type AestheticDecisionResponseFrontend } from "@/services/aestheticDecision.service";
 import PageHero from "@/components/ui/PageHero";
 import SectionToolbar from "@/components/ui/SectionToolbar";
 import Modal from "@/components/ui/Modal";
@@ -44,7 +46,7 @@ const API = (
 type AnalysisMode = "imagem" | "video" | "tempo-real";
 type AnalysisStep = "config" | "capture" | "analyzing" | "processing" | "results";
 
-interface AnalysisResult {
+export interface AnalysisResult {
   score: number;
   flags: string[];
   signals: Record<string, any>;
@@ -60,6 +62,8 @@ interface AnalysisResult {
     compatibilidade?: number;
   }>;
   historyId?: string;
+  aesthetic?: AestheticDecisionResponseFrontend | null;
+  chemicalProfile?: any;
 }
 
 const normalizeAnalysisSource = (mode: AnalysisMode): "imagem" | "video" | "tempo-real" => {
@@ -90,6 +94,14 @@ type CaptureShot = {
 type CaptureEnvironmentCard = {
   label: string;
   value: string;
+};
+
+type ChemicalProfileInput = {
+  acidicOrOrganic: boolean;
+  alkaline: boolean;
+  relaxation: boolean;
+  bleaching: boolean;
+  thermalFrequency: 'eventual' | 'semanal' | 'diaria';
 };
 
 const CAPTURE_REQUIRED_SHOTS: CaptureShot[] = [
@@ -151,9 +163,9 @@ function fixMojibake(text: string) {
     .replace(/Ã /g, "à")
     .replace(/Ã£/g, "ã")
     .replace(/Ã¢/g, "â")
-    .replace(/Ã©/g, "é")
+    .replace(/Ãé/g, "é")
     .replace(/Ãª/g, "ê")
-    .replace(/Ãí/g, "í")
+    .replace(/Ã­/g, "í")
     .replace(/Ã³/g, "ó")
     .replace(/Ã´/g, "ô")
     .replace(/Ãµ/g, "õ")
@@ -167,11 +179,11 @@ function fixMojibake(text: string) {
     .replace(/Ã‡/g, "Ç")
     .replace(/Ã/g, "Á")
     .replace(/Ã/g, "Â")
-    .replace(/Ã/g, "É")
+    .replace(/Ã‰/g, "É")
     .replace(/ÃŠ/g, "Ê")
     .replace(/Ã/g, "Í")
-    .replace(/Ã/g, "Ó")
-    .replace(/Ã/g, "Õ")
+    .replace(/Ã“/g, "Ó")
+    .replace(/Ã•/g, "Õ")
     .replace(/Ãº/g, "ú");
 }
 
@@ -194,7 +206,16 @@ function sanitizeProfessionalAlert(text: string) {
   return cleaned;
 }
 
-export default function AnaliseCapilar() {
+const toNumberOrNull = (value: string) => {
+  const n = Number(value.replace(',', '.'));
+  return Number.isFinite(n) ? n : null;
+};
+
+type AnaliseCapilarProps = {
+  testInitialResult?: AnalysisResult;
+};
+
+export default function AnaliseCapilar({ testInitialResult }: AnaliseCapilarProps = {}) {
   const navigate = useNavigate();
   const { token, user } = useAuth();
   const {
@@ -204,6 +225,7 @@ export default function AnaliseCapilar() {
     endSession: endClientSession,
     flowState,
     setFlowMode,
+    setTricologicaOverride,
     markAnalysisCompleted,
     nextRequiredStep,
     isCompleteProtocolReady,
@@ -215,9 +237,19 @@ export default function AnaliseCapilar() {
   const [step, setStep] = useState<AnalysisStep>("config");
   const [preview, setPreview] = useState<string | null>(null);
   const [result, setResult] = useState<AnalysisResult | null>(null);
+  const [aestheticLoading, setAestheticLoading] = useState(false);
   const [mode, setMode] = useState<AnalysisMode>("imagem");
-  const [observacoes, setObservacoes] = useState("");
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
+  const [observacoes, setObservacoes] = useState("");
+  const [chemicalProfile, setChemicalProfile] = useState<ChemicalProfileInput>({
+    acidicOrOrganic: false,
+    alkaline: false,
+    relaxation: false,
+    bleaching: false,
+    thermalFrequency: 'eventual',
+  });
   const [fullscreenStatus, setFullscreenStatus] = useState<{ show: boolean; message: string }>({
     show: false,
     message: "",
@@ -231,12 +263,19 @@ export default function AnaliseCapilar() {
     telefone?: string;
     email?: string;
   } | null>(null);
+  const [absorptionForm, setAbsorptionForm] = useState({ volumeMl: "", timeSeconds: "" });
+  const [cuticleForm, setCuticleForm] = useState({ toquePoints: "", brilhoPoints: "", elasticidadePoints: "", chemicalEvents: "" });
+  const [riskContext, setRiskContext] = useState({ porosityPercent: "", elasticityPercent: "" });
+
   const [savedHistoryId, setSavedHistoryId] = useState<string | null>(null);
-  const [downloadingPdf, setDownloadingPdf] = useState(false);
   const [analysisProgress, setAnalysisProgress] = useState(0);
   const [fallbackProgress, setFallbackProgress] = useState(0);
   const [confirmEndSessionOpen, setConfirmEndSessionOpen] = useState(false);
+  const [showTricoBypassModal, setShowTricoBypassModal] = useState(false);
+  const [allowCapilarOverride, setAllowCapilarOverride] = useState(false);
+  const [bypassAcknowledged, setBypassAcknowledged] = useState(false);
   const autoSessionInitRef = useRef<string | null>(null);
+  const pendingCapilarCaptureRef = useRef<File | null>(null);
   const premiumGoal = searchParams.get("premiumGoal");
   const premiumNote = searchParams.get("premiumNote");
   const clientIdParam = searchParams.get("clientId");
@@ -272,6 +311,13 @@ export default function AnaliseCapilar() {
   const tricologicaDone = isIntegratedFlow ? flowState.tricologicaDone : true;
   const capilarDone = isIntegratedFlow ? flowState.capilarDone : Boolean(result);
   const protocolReady = isIntegratedFlow ? isCompleteProtocolReady : Boolean(result);
+  const tricologicaOverrideActive = useMemo(
+    () =>
+      isIntegratedFlow &&
+      !flowState.tricologicaDone &&
+      (allowCapilarOverride || flowState.tricologicaOverride),
+    [allowCapilarOverride, flowState.tricologicaDone, flowState.tricologicaOverride, isIntegratedFlow],
+  );
   const nextStepLabel =
     nextRequiredStep === "tricologica"
       ? "Tricologia"
@@ -387,6 +433,23 @@ export default function AnaliseCapilar() {
   const wizardStep = step === "processing" || step === "results" ? "analyzing" : step;
 
   useEffect(() => {
+    setAllowCapilarOverride(flowState.tricologicaOverride);
+  }, [flowState.tricologicaOverride]);
+
+  useEffect(() => {
+    if (testInitialResult) {
+      setResult(testInitialResult);
+      setStep("results");
+    }
+  }, [testInitialResult]);
+
+  useEffect(() => {
+    if (!showTricoBypassModal) {
+      setBypassAcknowledged(false);
+    }
+  }, [showTricoBypassModal]);
+
+  useEffect(() => {
     if (wizardStep !== "analyzing" || result) return;
     if (!sessionId) return;
 
@@ -490,6 +553,50 @@ export default function AnaliseCapilar() {
     }
   }
 
+  async function handleCapture(file: File) {
+    if (!sessionId) {
+      notify("Inicie ou recupere uma sessão ativa antes da captura.", "error");
+      return;
+    }
+
+    if (!token) {
+      notify("Token de autenticação não encontrado. Faça login novamente.", "error");
+      setStep("capture");
+      return;
+    }
+
+    if (
+      flowState.mode === "completo" &&
+      !flowState.tricologicaDone &&
+      !(allowCapilarOverride || flowState.tricologicaOverride)
+    ) {
+      pendingCapilarCaptureRef.current = file;
+      setShowTricoBypassModal(true);
+      return;
+    }
+
+    await runCapturePipeline(file);
+  }
+
+  const handleBypassCancel = () => {
+    pendingCapilarCaptureRef.current = null;
+    setShowTricoBypassModal(false);
+    setBypassAcknowledged(false);
+  };
+
+  const handleBypassConfirm = () => {
+    setShowTricoBypassModal(false);
+    setAllowCapilarOverride(true);
+    setTricologicaOverride(true);
+    setBypassAcknowledged(false);
+    const pendingFile = pendingCapilarCaptureRef.current;
+    pendingCapilarCaptureRef.current = null;
+    if (pendingFile) {
+      notify("Fluxo completo liberado manualmente. Registre a tricologia posteriormente para consistência.", "info");
+      void runCapturePipeline(pendingFile);
+    }
+  };
+
   async function handleDownloadPdf(historyId: string) {
     try {
       setDownloadingPdf(true);
@@ -584,24 +691,14 @@ export default function AnaliseCapilar() {
 
   // ================= CAPTURE =================
 
-  async function handleCapture(file: File) {
+  async function runCapturePipeline(file: File) {
     if (!sessionId) {
-      notify("Inicie ou recupere uma sessão ativa antes da captura.", "error");
+      notify("Sessão não encontrada. Reinicie a análise antes de capturar.", "error");
+      setStep("config");
       return;
     }
 
-    if (!token) {
-      notify("Token de autenticação não encontrado. Faça login novamente.", "error");
-      setStep("capture");
-      return;
-    }
-
-    if (flowState.mode === "completo" && !flowState.tricologicaDone) {
-      notify("Finalize a análise tricológica antes de iniciar a capilar.", "error");
-      navigate(buildFlowUrl("/analise-tricologica", { forceFlow: true }));
-      return;
-    }
-
+    const activeSessionId = sessionId;
     setPreview(URL.createObjectURL(file));
     setStep("analyzing");
     setIsLoading(true);
@@ -611,10 +708,11 @@ export default function AnaliseCapilar() {
     try {
       const formData = new FormData();
       formData.append("file", file);
-      formData.append("sessionId", sessionId);
+      formData.append("sessionId", activeSessionId);
       formData.append("type", "capilar");
       formData.append("source", source);
       formData.append("notes", observacoes);
+      formData.append("chemicalProfile", JSON.stringify(chemicalProfile));
 
       const controller = new AbortController();
       const timeoutId = window.setTimeout(() => controller.abort(), 25000);
@@ -671,7 +769,7 @@ export default function AnaliseCapilar() {
         selectedClient?.id ||
         activeClient?.id ||
         searchParams.get("clientId") ||
-        null;
+        "cliente_demo";
       const uploadHistoryId =
         raw?.historyId ||
         raw?.history?.id ||
@@ -692,6 +790,7 @@ export default function AnaliseCapilar() {
         savedHistory = await salvarVisionBackend(clientIdToPersist, {
           type: persistedAnalysisType,
           analysisType: persistedAnalysisType,
+          chemicalProfile,
         });
         setSavedHistoryId(savedHistory?.id ?? null);
       } catch (e: any) {
@@ -702,7 +801,7 @@ export default function AnaliseCapilar() {
         );
       }
 
-      setResult({
+      const baseResult: AnalysisResult = {
         score: Number(savedHistory?.visionResult?.score) || Number(data.score) || 0,
         flags: Array.isArray(savedHistory?.visionResult?.flags)
           ? savedHistory.visionResult.flags
@@ -735,7 +834,42 @@ export default function AnaliseCapilar() {
               ? savedHistory.visionResult.recomendacoes
               : data.recomendacoes || [],
         historyId: savedHistory?.id || uploadHistoryId || undefined,
-      });
+        aesthetic: null,
+        chemicalProfile: savedHistory?.chemicalProfile || null,
+      };
+
+      setResult(baseResult);
+
+      // Acionar decisão estética usando sinais já obtidos
+      try {
+        setAestheticLoading(true);
+        const aesthetic = await postAestheticDecision({
+          structuredData: baseResult.signals,
+          imageSignals: baseResult.signals,
+          absorptionTest: {
+            volumeMl: toNumberOrNull(absorptionForm.volumeMl),
+            timeSeconds: toNumberOrNull(absorptionForm.timeSeconds),
+          },
+          cuticleDiagnostic: {
+            toquePoints: toNumberOrNull(cuticleForm.toquePoints),
+            brilhoPoints: toNumberOrNull(cuticleForm.brilhoPoints),
+            elasticidadePoints: toNumberOrNull(cuticleForm.elasticidadePoints),
+            chemicalEvents: toNumberOrNull(cuticleForm.chemicalEvents),
+          },
+          straighteningRiskContext: {
+            porosityPercent: toNumberOrNull(riskContext.porosityPercent),
+            elasticityPercent: toNumberOrNull(riskContext.elasticityPercent),
+          },
+        });
+        setResult((prev) => (prev ? { ...prev, aesthetic } : prev));
+      } catch (err: any) {
+        notify(
+          err?.response?.data?.message || err?.message || "Falha ao obter decisão estética.",
+          "warning",
+        );
+      } finally {
+        setAestheticLoading(false);
+      }
 
       markAnalysisCompleted("capilar", savedHistory?.id);
 
@@ -1194,17 +1328,71 @@ export default function AnaliseCapilar() {
           </div>
         </div>
 
+        {/* Inputs técnicos opcionais para coeficiente/IPT/risco */}
+        <div className="rounded-xl border p-5" style={{ borderColor: "var(--color-border)", backgroundColor: "var(--color-surface)", boxShadow: "var(--shadow-card)" }}>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--color-text-muted)" }}>
+            Dados técnicos para decisão estética
+          </p>
+          <div className="mt-3 grid gap-3 md:grid-cols-3">
+            <div className="space-y-2">
+              <p className="text-[11px] uppercase tracking-[0.14em]" style={{ color: "var(--color-text-muted)" }}>Coeficiente de absorção</p>
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                  className="rounded-lg border px-2 py-1 text-sm"
+                  style={{ borderColor: "var(--color-border)", color: "var(--color-text)", backgroundColor: "var(--bg-primary)" }}
+                  placeholder="Volume (mL)"
+                  value={absorptionForm.volumeMl}
+                  onChange={(e) => setAbsorptionForm((p) => ({ ...p, volumeMl: e.target.value }))}
+                />
+                <input
+                  className="rounded-lg border px-2 py-1 text-sm"
+                  style={{ borderColor: "var(--color-border)", color: "var(--color-text)", backgroundColor: "var(--bg-primary)" }}
+                  placeholder="Tempo (s)"
+                  value={absorptionForm.timeSeconds}
+                  onChange={(e) => setAbsorptionForm((p) => ({ ...p, timeSeconds: e.target.value }))}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <p className="text-[11px] uppercase tracking-[0.14em]" style={{ color: "var(--color-text-muted)" }}>Diagnóstico de cutícula (IPT)</p>
+              <div className="grid grid-cols-2 gap-2">
+                <input className="rounded-lg border px-2 py-1 text-sm" style={{ borderColor: "var(--color-border)", color: "var(--color-text)", backgroundColor: "var(--bg-primary)" }} placeholder="Toque" value={cuticleForm.toquePoints} onChange={(e) => setCuticleForm((p) => ({ ...p, toquePoints: e.target.value }))} />
+                <input className="rounded-lg border px-2 py-1 text-sm" style={{ borderColor: "var(--color-border)", color: "var(--color-text)", backgroundColor: "var(--bg-primary)" }} placeholder="Brilho" value={cuticleForm.brilhoPoints} onChange={(e) => setCuticleForm((p) => ({ ...p, brilhoPoints: e.target.value }))} />
+                <input className="rounded-lg border px-2 py-1 text-sm" style={{ borderColor: "var(--color-border)", color: "var(--color-text)", backgroundColor: "var(--bg-primary)" }} placeholder="Elasticidade" value={cuticleForm.elasticidadePoints} onChange={(e) => setCuticleForm((p) => ({ ...p, elasticidadePoints: e.target.value }))} />
+                <input className="rounded-lg border px-2 py-1 text-sm" style={{ borderColor: "var(--color-border)", color: "var(--color-text)", backgroundColor: "var(--bg-primary)" }} placeholder="Eventos químicos" value={cuticleForm.chemicalEvents} onChange={(e) => setCuticleForm((p) => ({ ...p, chemicalEvents: e.target.value }))} />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <p className="text-[11px] uppercase tracking-[0.14em]" style={{ color: "var(--color-text-muted)" }}>Contexto de risco</p>
+              <div className="grid grid-cols-2 gap-2">
+                <input className="rounded-lg border px-2 py-1 text-sm" style={{ borderColor: "var(--color-border)", color: "var(--color-text)", backgroundColor: "var(--bg-primary)" }} placeholder="Porosidade %" value={riskContext.porosityPercent} onChange={(e) => setRiskContext((p) => ({ ...p, porosityPercent: e.target.value }))} />
+                <input className="rounded-lg border px-2 py-1 text-sm" style={{ borderColor: "var(--color-border)", color: "var(--color-text)", backgroundColor: "var(--bg-primary)" }} placeholder="Elasticidade %" value={riskContext.elasticityPercent} onChange={(e) => setRiskContext((p) => ({ ...p, elasticityPercent: e.target.value }))} />
+              </div>
+            </div>
+          </div>
+        </div>
+
         <ProfessionalDecisionPanel
           score={result.score}
           flags={result.flags}
           recommendations={result.recommendations}
           interpretation={result.interpretation}
+          aesthetic={result.aesthetic || null}
         />
         <AnalysisResultDetails
           kind="capilar"
           signals={result.signals}
           flags={result.flags}
           recommendations={result.recommendations}
+          aesthetic={result.aesthetic}
+          chemicalProfile={(result as any)?.chemicalProfile || null}
+        />
+        <DecisionMatrix
+          recommendations={result.recommendations}
+          flags={result.flags}
+          breakRiskPercentual={result.aesthetic?.breakRiskPercentual ?? null}
         />
         <HighTechIntegrityPanel
           score={result.score}
@@ -1224,6 +1412,11 @@ export default function AnaliseCapilar() {
             <p className="mt-3 text-sm whitespace-pre-line" style={{ color: "var(--color-text)" }}>
               {premium.summary}
             </p>
+            {aestheticLoading && (
+              <p className="mt-2 text-xs" style={{ color: "var(--color-text-muted)" }}>
+                Refinando decisão estética...
+              </p>
+            )}
           </div>
         )}
 
@@ -1682,9 +1875,57 @@ export default function AnaliseCapilar() {
         onSelect={(c) => {
           startClientSession(c);
           setSelectedClient(c);
-          notify("Cliente selecionado", "success");
+          notify(`Sessão iniciada\n${c.nome || "Cliente"}`, "success");
         }}
       />
+
+      <Modal
+        title="Ignorar tricologia nesta captura?"
+        isOpen={showTricoBypassModal}
+        onClose={handleBypassCancel}
+      >
+        <div className="space-y-4 text-sm" style={{ color: "var(--color-text)" }}>
+          <div className="rounded-xl border p-3" style={{ borderColor: "#fbbf24", backgroundColor: "#fffbeb", color: "#92400e" }}>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em]">Fluxo completo em risco</p>
+            <p className="mt-1 text-sm">
+              A análise tricológica ainda não foi concluída. Prosseguir força o segundo passo do protocolo completo e exige retorno posterior ao couro
+              cabeludo para manter rastreabilidade clínica.
+            </p>
+          </div>
+
+          <ul className="space-y-2 text-sm" style={{ color: "var(--color-text)" }}>
+            <li className="flex items-start gap-2">
+              <AlertTriangle size={16} className="mt-0.5 text-amber-500" />
+              <span>Os achados capilares ficarão sinalizados como "aguardando tricologia" no hub.</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <AlertTriangle size={16} className="mt-0.5 text-amber-500" />
+              <span>É obrigatório registrar a tricologia antes de emitir recomendações finais.</span>
+            </li>
+          </ul>
+
+          <label className="flex items-start gap-3 rounded-xl border px-3 py-2 text-sm" style={{ borderColor: "var(--color-border)", backgroundColor: "var(--bg-primary)", color: "var(--color-text)" }}>
+            <input
+              type="checkbox"
+              className="mt-1 accent-[color:var(--color-primary)]"
+              checked={bypassAcknowledged}
+              onChange={(event) => setBypassAcknowledged(event.target.checked)}
+            />
+            <span>
+              Reconheço o risco de prosseguir sem tricologia e assumo o compromisso de retomar o couro cabeludo para fechar o protocolo completo.
+            </span>
+          </label>
+
+          <div className="flex flex-wrap justify-end gap-2">
+            <button className="btn-secondary" onClick={handleBypassCancel}>
+              Cancelar
+            </button>
+            <button className="btn-primary" onClick={handleBypassConfirm} disabled={!bypassAcknowledged}>
+              Prosseguir
+            </button>
+          </div>
+        </div>
+      </Modal>
 
       <Modal
         title="Encerrar sessão da cliente"
@@ -1702,11 +1943,12 @@ export default function AnaliseCapilar() {
             className="btn-primary"
             onClick={() => {
               try {
+                const clientName = activeClient?.nome || selectedClient?.nome;
                 endClientSession();
                 setSelectedClient(null);
                 setStep("config");
                 setConfirmEndSessionOpen(false);
-                notify("Sessão do cliente encerrada.", "success");
+                notify(clientName ? `Sessão encerrada\n${clientName}` : "Sessão encerrada.", "success");
               } catch (e: any) {
                 notify(e?.message || "Não foi possível encerrar a sessão.", "error");
               }

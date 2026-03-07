@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import PrivateRoute from "./PrivateRoute";
@@ -26,22 +26,45 @@ const SalonBranding = lazy(() => import("@/pages/SalonBranding"));
 
 export default function AppRoutes() {
   const { token, isReady } = useAuth();
+  const [showSplash, setShowSplash] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowSplash(false), 3000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const splashFallback = (
+    <div className="flex min-h-screen items-center justify-center bg-white px-4">
+      <div className="flex flex-col items-center gap-4 text-center">
+        <img
+          src="/Sistema-de-Análise-Capilar.png"
+          alt="Sistema de Análise Capilar"
+          className="h-24 w-auto drop-shadow-sm"
+        />
+        <p className="text-lg md:text-xl font-semibold text-slate-600 animate-pulse">
+          Carregando página...
+        </p>
+      </div>
+    </div>
+  );
 
   // ⛔ NÃO renderiza rotas até o auth estar pronto
   if (!isReady) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
+      <div className="flex min-h-screen items-center justify-center bg-white px-4">
         <p className="text-sm font-medium text-slate-600">Carregando autenticação...</p>
       </div>
     );
   }
 
+  if (showSplash) {
+    return splashFallback;
+  }
+
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
-          <p className="text-sm font-medium text-slate-600">Carregando página...</p>
-        </div>
+        splashFallback
       }
     >
       <Routes>

@@ -44,28 +44,6 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                 warning: "toast-card toast-warning",
                 info: "toast-card toast-info",
               };
-              const toneStyles: Record<ToastType, React.CSSProperties> = {
-                success: {
-                  background: "linear-gradient(135deg, #16a34a, #22c55e)",
-                  color: "#f8fff5",
-                  borderColor: "rgba(255,255,255,0.16)",
-                },
-                error: {
-                  background: "linear-gradient(135deg, #dc2626, #ef4444)",
-                  color: "#fff8f8",
-                  borderColor: "rgba(255,255,255,0.16)",
-                },
-                warning: {
-                  background: "linear-gradient(135deg, #f59e0b, #fbbf24)",
-                  color: "#2d1c07",
-                  borderColor: "rgba(255,255,255,0.2)",
-                },
-                info: {
-                  background: "linear-gradient(135deg, #3b82f6, #6366f1)",
-                  color: "#f6f8ff",
-                  borderColor: "rgba(255,255,255,0.16)",
-                },
-              };
               const icons: Record<ToastType, JSX.Element> = {
                 success: <CheckCircle2 size={18} />,
                 error: <XCircle size={18} />,
@@ -77,11 +55,20 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                 <div
                   key={toast.id}
                   className={toneClasses[tone]}
-                  style={{ pointerEvents: "auto", ...toneStyles[tone] }}
+                  style={{ pointerEvents: "auto" }}
                 >
                   <div className="toast-icon">{icons[tone]}</div>
                   <div className="toast-body">
-                    <p>{toast.message}</p>
+                    {(() => {
+                      const [title, ...rest] = toast.message.split("\n").map((part) => part.trim()).filter(Boolean);
+                      const subtitle = rest.join(" ");
+                      return (
+                        <>
+                          <p>{title || toast.message}</p>
+                          {subtitle && <small>{subtitle}</small>}
+                        </>
+                      );
+                    })()}
                   </div>
                   <button
                     className="toast-close"

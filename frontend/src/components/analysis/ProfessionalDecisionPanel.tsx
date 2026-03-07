@@ -1,10 +1,28 @@
 ﻿import { formatTreatmentCombo, normalizePeriodText } from "@/utils/treatmentText";
 
+type AestheticDecision = {
+  absorptionCoefficient?: { index: number; label: string };
+  cuticleDiagnostic?: {
+    ipt: number;
+    label: string;
+    toque?: number;
+    brilho?: number;
+    elasticidade?: number;
+    historico?: number;
+  };
+  breakRiskPercentual?: number;
+  classificacaoAptidao?: "apto" | "apto_com_restricoes" | "nao_apto";
+  protocoloPersonalizado?: {
+    baseTratamento?: { foco: string; descricao: string };
+  };
+};
+
 type ProfessionalDecisionPanelProps = {
   score: number;
   flags?: string[] | null;
   recommendations?: any;
   interpretation?: string;
+  aesthetic?: AestheticDecision | null;
 };
 
 type ScheduleItem = {
@@ -107,6 +125,7 @@ export default function ProfessionalDecisionPanel({
   flags,
   recommendations,
   interpretation,
+  aesthetic,
 }: ProfessionalDecisionPanelProps) {
   const safeFlags = Array.isArray(flags) ? flags : [];
   const textPool = [normalizeText(interpretation), ...safeFlags.map(normalizeText)].join(" ");
@@ -244,7 +263,20 @@ export default function ProfessionalDecisionPanel({
     { label: "Tratamentos", value: `${treatments.length}` },
     { label: "Home care", value: `${homeCare.length}` },
     { label: "Restrições", value: `${restrictedProcedures.length}` },
-  ];
+    aesthetic?.breakRiskPercentual !== undefined
+      ? { label: "Quebra", value: `${aesthetic.breakRiskPercentual}%` }
+      : null,
+  ].filter(Boolean) as { label: string; value: string }[];
+
+  const absorptionText = aesthetic?.absorptionCoefficient
+    ? `${aesthetic.absorptionCoefficient.index} (${aesthetic.absorptionCoefficient.label})`
+    : null;
+  const cuticleText = aesthetic?.cuticleDiagnostic
+    ? `${aesthetic.cuticleDiagnostic.ipt} (${aesthetic.cuticleDiagnostic.label})`
+    : null;
+  const baseTratamento = aesthetic?.protocoloPersonalizado?.baseTratamento;
+  const straighteningBlockedByRisk =
+    typeof aesthetic?.breakRiskPercentual === "number" && aesthetic.breakRiskPercentual > 70;
 
   const treatmentCombos = (() => {
     const generated: string[] = [];
@@ -284,7 +316,8 @@ export default function ProfessionalDecisionPanel({
     homeCare,
   );
 
-  const hasCautiousStraightening = !straighteningBlockedByAlert && hasStraightening;
+  const hasCautiousStraightening =
+    !straighteningBlockedByAlert && !straighteningBlockedByRisk && hasStraightening;
 
   return (
     <div className="panel relative overflow-hidden p-6" style={{ borderRadius: "1.25rem" }}>
@@ -300,8 +333,8 @@ export default function ProfessionalDecisionPanel({
             Equilibramos risco clínico-estético, protocolos técnicos e agenda inteligente em um painel único e acionável.
           </p>
           <div className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold" style={{ borderColor: "var(--color-border)", color: "var(--color-text)", backgroundColor: "var(--bg-primary)" }}>
-            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: straighteningBlockedByAlert ? "#dc2626" : hasStraightening ? "#16a34a" : "#f59e0b" }} />
-            {straighteningStatus}
+            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: straighteningBlockedByAlert || straighteningBlockedByRisk ? "#dc2626" : hasStraightening ? "#16a34a" : "#f59e0b" }} />
+            {straighteningBlockedByRisk ? "Bloqueado por risco" : straighteningStatus}
           </div>
         </div>
 
@@ -340,6 +373,43 @@ export default function ProfessionalDecisionPanel({
 
       <div className="relative mt-6 grid gap-4 xl:grid-cols-[1.2fr,1fr]">
         <div className="space-y-3">
+          {(absorptionText || cuticleText || baseTratamento) && (
+            <div
+              className="rounded-2xl border p-4"
+              style={{ borderColor: "var(--color-border)", background: "var(--color-surface)", boxShadow: "var(--shadow-card)" }}
+            >
+              <p className="text-[11px] uppercase tracking-[0.22em]" style={{ color: "var(--color-text-muted)" }}>
+                Métricas estruturais
+              </p>
+              <div className="mt-3 grid gap-2 md:grid-cols-2">
+                {absorptionText && (
+                  <div className="rounded-xl border px-3 py-2" style={{ borderColor: "var(--color-border)", backgroundColor: "var(--bg-primary)" }}>
+                    <p className="text-[11px] uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>Coef. absorção</p>
+                    <p className="text-sm font-semibold" style={{ color: "var(--color-text)" }}>{absorptionText}</p>
+                  </div>
+                )}
+                {cuticleText && (
+                  <div className="rounded-xl border px-3 py-2" style={{ borderColor: "var(--color-border)", backgroundColor: "var(--bg-primary)" }}>
+                    <p className="text-[11px] uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>IPT (cutícula)</p>
+                    <p className="text-sm font-semibold" style={{ color: "var(--color-text)" }}>{cuticleText}</p>
+                  </div>
+                )}
+                {typeof aesthetic?.breakRiskPercentual === "number" && (
+                  <div className="rounded-xl border px-3 py-2" style={{ borderColor: aesthetic.breakRiskPercentual > 70 ? "#fecaca" : "var(--color-border)", backgroundColor: aesthetic.breakRiskPercentual > 70 ? "#fff1f2" : "var(--bg-primary)" }}>
+                    <p className="text-[11px] uppercase tracking-[0.16em]" style={{ color: aesthetic.breakRiskPercentual > 70 ? "#b91c1c" : "var(--color-text-muted)" }}>Risco de quebra</p>
+                    <p className="text-sm font-semibold" style={{ color: aesthetic.breakRiskPercentual > 70 ? "#b91c1c" : "var(--color-text)" }}>{aesthetic.breakRiskPercentual}%</p>
+                  </div>
+                )}
+                {baseTratamento && (
+                  <div className="rounded-xl border px-3 py-2 md:col-span-2" style={{ borderColor: "var(--color-border)", backgroundColor: "var(--bg-primary)" }}>
+                    <p className="text-[11px] uppercase tracking-[0.16em]" style={{ color: "var(--color-text-muted)" }}>Base de tratamento</p>
+                    <p className="text-sm font-semibold" style={{ color: "var(--color-text)" }}>{baseTratamento.foco.toUpperCase()} • {baseTratamento.descricao}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           <div
             className="rounded-2xl border p-4"
             style={{ borderColor: "var(--color-border)", background: "var(--color-surface)", boxShadow: "var(--shadow-card)" }}

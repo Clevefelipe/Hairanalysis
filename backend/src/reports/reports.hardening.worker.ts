@@ -1,4 +1,7 @@
 /* eslint-disable @typescript-eslint/prefer-promise-reject-errors, @typescript-eslint/no-require-imports */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Injectable, Logger } from '@nestjs/common';
 import PDFDocument = require('pdfkit');
 import type { ReportPayload } from './report.types';

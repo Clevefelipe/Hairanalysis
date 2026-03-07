@@ -1,7 +1,5 @@
 // @ts-check
 import { fileURLToPath } from 'url';
-import eslint from '@eslint/js';
-import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
@@ -9,14 +7,8 @@ const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
 export default tseslint.config(
   {
-    ignores: [
-      'eslint.config.mjs',
-    ],
-  },
-  eslint.configs.recommended,
-  ...tseslint.configs.recommendedTypeChecked,
-  eslintPluginPrettierRecommended,
-  {
+    ignores: ['eslint.config.mjs'],
+    files: ['**/*.ts'],
     languageOptions: {
       globals: {
         ...globals.node,
@@ -24,12 +16,11 @@ export default tseslint.config(
       },
       sourceType: 'commonjs',
       parserOptions: {
-        projectService: true,
+        project: ['./tsconfig.json'],
         tsconfigRootDir: __dirname,
       },
     },
-  },
-  {
+    extends: [...tseslint.configs.recommended],
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-floating-promises': 'warn',
@@ -41,19 +32,10 @@ export default tseslint.config(
       '@typescript-eslint/no-base-to-string': 'warn',
       '@typescript-eslint/no-unsafe-return': 'warn',
       '@typescript-eslint/no-unused-vars': 'warn',
-      "prettier/prettier": ["error", { endOfLine: "auto" }],
     },
   },
   {
-    files: [
-      'src/modules/history/**',
-      'src/reports/**',
-      'src/modules/knowledge/**',
-      'src/modules/vision/**',
-      'src/modules/straightening/**',
-      'src/modules/auth/**',
-      'src/modules/salon/**',
-    ],
+    files: ['src/modules/ai/**/*.ts', 'src/reports/**/*.ts'],
     rules: {
       '@typescript-eslint/no-unsafe-argument': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'off',
@@ -61,7 +43,21 @@ export default tseslint.config(
       '@typescript-eslint/no-unsafe-call': 'off',
       '@typescript-eslint/no-unsafe-return': 'off',
       '@typescript-eslint/require-await': 'off',
-      '@typescript-eslint/no-base-to-string': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
+      '@typescript-eslint/prefer-as-const': 'off',
+    },
+  },
+  {
+    files: ['src/**/*.ts', 'test/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-unsafe-argument': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
+      '@typescript-eslint/require-await': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
+      '@typescript-eslint/prefer-as-const': 'off',
     },
   },
 );

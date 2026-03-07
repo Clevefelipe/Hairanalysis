@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return */
 import OpenAI from 'openai';
 import { buildHairAnalysisPrompt } from './builders/build-hair-analysis.prompt';
 import { buildHairAnalysisPremiumPrompt } from './builders/build-hair-analysis-premium.prompt';
@@ -251,6 +251,46 @@ function validateAestheticDecisionResponse(
   }
   obj.scoreIntegridade = clamp(Math.round(normalizedScore), 0, 100);
 
+  // Normalizar coeficiente de absorção
+  if (obj.absorptionCoefficient) {
+    const coef = obj.absorptionCoefficient as any;
+    const idx = Number(coef.index);
+    const label = typeof coef.label === 'string' ? coef.label.trim().toLowerCase() : '';
+    if (!Number.isFinite(idx)) delete (obj as any).absorptionCoefficient;
+    else if (!riskSet.has(label) && !['baixa', 'media', 'alta'].includes(label)) {
+      delete (obj as any).absorptionCoefficient;
+    } else {
+      obj.absorptionCoefficient = { index: Math.round(idx), label } as any;
+    }
+  }
+
+  // Normalizar diagnóstico de cutícula (IPT)
+  if (obj.cuticleDiagnostic) {
+    const diag = obj.cuticleDiagnostic as any;
+    const ipt = Number(diag.ipt ?? diag.score);
+    const label = typeof diag.label === 'string' ? diag.label.trim().toLowerCase() : '';
+    if (!Number.isFinite(ipt) || !['baixa', 'media', 'alta'].includes(label)) {
+      delete (obj as any).cuticleDiagnostic;
+    } else {
+      obj.cuticleDiagnostic = {
+        ipt: Math.round(ipt),
+        label,
+        toque: Number.isFinite(diag.toque) ? Number(diag.toque) : undefined,
+        brilho: Number.isFinite(diag.brilho) ? Number(diag.brilho) : undefined,
+        elasticidade: Number.isFinite(diag.elasticidade)
+          ? Number(diag.elasticidade)
+          : undefined,
+        historico: Number.isFinite(diag.historico) ? Number(diag.historico) : undefined,
+      } as any;
+    }
+  }
+
+  // Normalizar risco de quebra
+  if (obj.breakRiskPercentual !== undefined && obj.breakRiskPercentual !== null) {
+    const br = Number(obj.breakRiskPercentual);
+    obj.breakRiskPercentual = Number.isFinite(br) ? clamp(Math.round(br), 0, 100) : undefined;
+  }
+
   const indicesRaw = obj.indicesRisco;
   if (!indicesRaw || typeof indicesRaw !== 'object') {
     throw new Error('IA estética: indicesRisco ausente');
@@ -330,6 +370,21 @@ function validateAestheticDecisionResponse(
 
   if (!Array.isArray(obj.alertasTecnicos)) {
     obj.alertasTecnicos = [];
+  }
+
+  // Base de tratamento opcional
+  if (obj.protocoloPersonalizado?.baseTratamento) {
+    const base = obj.protocoloPersonalizado.baseTratamento as any;
+    const foco = typeof base.foco === 'string' ? base.foco.trim().toLowerCase() : '';
+    const descricao = typeof base.descricao === 'string' ? base.descricao.trim() : '';
+    if (!descricao || !['baixa', 'media', 'alta'].includes(foco)) {
+      delete (obj.protocoloPersonalizado as any).baseTratamento;
+    } else {
+      obj.protocoloPersonalizado.baseTratamento = {
+        foco: foco as any,
+        descricao,
+      };
+    }
   }
 
   obj.confiancaAnalise = clamp(
