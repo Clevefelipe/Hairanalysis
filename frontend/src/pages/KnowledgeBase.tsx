@@ -231,13 +231,22 @@ export default function KnowledgeBase() {
 
   return (
     <section className="section-stack animate-page-in w-full">
-      <div className="panel-tight">
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+      <div
+        className="rounded-2xl border px-4 py-5 md:px-6 md:py-5 shadow-card"
+        style={{ borderColor: "var(--color-border)", backgroundColor: "var(--color-surface)", boxShadow: "var(--shadow-card)" }}
+      >
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="space-y-2">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">Gestão técnica</p>
-            <div>
-              <h1 className="text-[22px] font-semibold text-slate-900">Base de Conhecimento IA</h1>
-              <p className="text-sm text-slate-600">
+            <div
+              className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em]"
+              style={{ borderColor: "var(--color-border)", color: "var(--color-primary)", backgroundColor: "color-mix(in srgb, var(--color-primary) 6%, var(--color-surface))" }}
+            >
+              <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-primary)]" />
+              Gestão técnica
+            </div>
+            <div className="space-y-1">
+              <h1 className="text-2xl font-semibold" style={{ color: "var(--color-text)" }}>Base de Conhecimento IA</h1>
+              <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
                 Curadoria de protocolos, alertas técnicos e materiais para a IA.
               </p>
             </div>
@@ -264,8 +273,8 @@ export default function KnowledgeBase() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="panel-tight">
-          <h2 className="mb-6 text-lg font-semibold text-slate-900">Configuração</h2>
+        <div className="panel-tight space-y-5">
+          <h2 className="text-lg font-semibold text-slate-900">Configuração</h2>
           <div className="space-y-4">
             <div>
               <label className="mb-2 block text-sm font-medium text-slate-600">Domínio</label>
@@ -290,10 +299,10 @@ export default function KnowledgeBase() {
           </div>
         </div>
 
-        <div className="panel-tight">
-          <div className="mb-6">
+        <div className="panel-tight space-y-5">
+          <div className="space-y-1">
             <h2 className="text-lg font-semibold text-slate-900">Importar arquivo</h2>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="text-sm text-slate-500">
               Envie documentos técnicos para indexação na base selecionada.
             </p>
           </div>
@@ -345,8 +354,8 @@ export default function KnowledgeBase() {
         </div>
       </div>
 
-      <div className="panel-tight">
-        <h2 className="mb-6 text-lg font-semibold text-slate-900">Inserir texto manual</h2>
+      <div className="panel-tight space-y-4">
+        <h2 className="text-lg font-semibold text-slate-900">Inserir texto manual</h2>
         <form onSubmit={handleTextSubmit} className="space-y-4">
           <div>
             <label className="mb-2 block text-sm font-medium text-slate-600">Conteúdo</label>
@@ -396,8 +405,8 @@ export default function KnowledgeBase() {
         )}
       </div>
 
-      <div className="panel-tight">
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+      <div className="panel-tight space-y-5">
+        <div className="flex flex-wrap items-center justify-between gap-4">
           <h2 className="text-lg font-semibold text-slate-900">Materiais importados</h2>
           <button
             className="btn-outline inline-flex items-center gap-2"

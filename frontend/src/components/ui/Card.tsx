@@ -11,10 +11,10 @@ interface CardProps {
   className?: string;
 }
 
-const variantBorderClasses: Record<CardVariant, string> = {
-  default: "border-l-primary",
-  attention: "border-l-secondary",
-  alert: "border-l-status-error",
+const variantAccentClasses: Record<CardVariant, string> = {
+  default: "",
+  attention: "ring-1 ring-amber-100",
+  alert: "ring-1 ring-rose-100",
 };
 
 export default function Card({
@@ -28,18 +28,18 @@ export default function Card({
   return (
     <div
       className={[
-        "bg-surface rounded-xl border border-border border-l-4 p-4 md:p-5 shadow-card",
-        variantBorderClasses[variant],
+        "rounded-lg border border-[#e5e7eb] bg-white p-4 shadow-card",
+        variantAccentClasses[variant],
         className,
       ].join(" ")}
     >
-      <div className="mb-3">
-        <h3 className="text-lg font-semibold text-text-main">
+      <div className="mb-2">
+        <h3 className="text-sm font-semibold text-slate-700">
           {title}
         </h3>
 
         {description && (
-          <p className="mt-1 text-sm text-text-muted">
+          <p className="mt-1 text-xs text-slate-500">
             {description}
           </p>
         )}

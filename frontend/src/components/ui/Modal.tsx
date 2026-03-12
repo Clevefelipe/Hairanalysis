@@ -37,7 +37,7 @@ export default function Modal({
         role="dialog"
         aria-modal="true"
         onClick={(event) => event.stopPropagation()}
-        style={{ backgroundColor: "var(--color-surface, #ffffff)" }}
+        style={{ backgroundColor: "var(--color-modal-surface, var(--color-surface, #f8f6f0))" }}
       >
         <div
           className={`flex items-center justify-between gap-3 border-b border-slate-900/45 bg-slate-900 px-4 py-2 sm:px-5 sm:py-2.5 ${
@@ -66,7 +66,7 @@ export default function Modal({
 
         <div
           className="flex-1 overflow-auto px-5 py-5 sm:px-6 sm:py-6"
-          style={{ backgroundColor: "var(--color-surface, #ffffff)" }}
+          style={{ backgroundColor: "var(--color-modal-surface, var(--color-surface, #f8f6f0))" }}
         >
           {children}
         </div>

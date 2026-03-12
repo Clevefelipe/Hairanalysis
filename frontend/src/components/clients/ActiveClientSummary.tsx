@@ -5,14 +5,23 @@ export type ActiveClientSummaryProps = {
 };
 
 function formatPhone(value?: string | null) {
-  const digits = (value || "").replace(/\D/g, "").slice(0, 11);
-  if (!digits) return "—";
-  const ddd = digits.slice(0, 2);
-  const rest = digits.slice(2);
-  if (!rest) return `(${ddd})`;
-  if (rest.length <= 4) return `(${ddd}) ${rest}`;
-  if (rest.length <= 5) return `(${ddd}) ${rest}`;
-  return `(${ddd}) ${rest.slice(0, 5)}-${rest.slice(5)}`;
+  const raw = (value || "").replace(/\D/g, "");
+  if (!raw) return "—";
+
+  // Se veio com DDI, preserva. Assume até 11 dígitos locais (DDD + número de 9 dígitos).
+  let ddi = "";
+  let local = raw;
+  if (raw.length > 11) {
+    ddi = raw.slice(0, raw.length - 11);
+    local = raw.slice(-11);
+  }
+
+  const ddd = local.slice(0, 2);
+  const rest = local.slice(2);
+  if (!rest) return `${ddi ? `+${ddi} ` : ""}${ddd ? `(${ddd})` : ""}`.trim() || "—";
+  if (rest.length <= 4) return `${ddi ? `+${ddi} ` : ""}(${ddd}) ${rest}`;
+  const split = rest.length - 4;
+  return `${ddi ? `+${ddi} ` : ""}(${ddd}) ${rest.slice(0, split)}-${rest.slice(split)}`;
 }
 
 function formatCpf(value?: string | null) {

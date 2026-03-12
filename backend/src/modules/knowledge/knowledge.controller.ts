@@ -124,4 +124,10 @@ export class KnowledgeController {
         : undefined;
     return this.service.semanticSearch(String(q), salonId, domain, parsedLimit);
   }
+
+  @Post('reload')
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  async reload() {
+    return this.service.reload();
+  }
 }

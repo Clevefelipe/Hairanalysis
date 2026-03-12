@@ -12,7 +12,10 @@ export default function Layout() {
   const sidebarWidth = sidebarCollapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_EXPANDED_WIDTH;
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-[var(--color-bg)] text-[var(--color-text)] tracking-tight">
+    <div
+      className="flex h-screen w-full overflow-hidden text-[var(--color-text)] tracking-tight"
+      style={{ background: "var(--surface-dashboard)", color: "var(--color-text)" }}
+    >
       <div className="h-full flex-shrink-0" style={{ width: sidebarWidth }}>
         <Sidebar
           collapsed={sidebarCollapsed}
@@ -22,13 +25,13 @@ export default function Layout() {
         />
       </div>
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-w-0 flex-1 flex-col" style={{ backgroundColor: "transparent" }}>
         <div className="flex-shrink-0" style={{ height: TOPBAR_HEIGHT }}>
           <TopBar onOpenSidebar={() => setSidebarMobileOpen(true)} fullWidth />
         </div>
 
-        <main className="flex min-h-0 flex-1 flex-col overflow-hidden bg-[var(--color-bg)]">
-          <div className="flex-1 overflow-y-auto overflow-x-hidden p-6">
+        <main className="flex min-h-0 flex-1 flex-col overflow-hidden" style={{ background: "var(--surface-dashboard)" }}>
+          <div className="flex-1 overflow-y-auto overflow-x-hidden p-6" style={{ background: "var(--surface-dashboard-secondary)" }}>
             <Outlet />
           </div>
         </main>

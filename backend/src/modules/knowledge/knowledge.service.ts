@@ -308,7 +308,7 @@ export class KnowledgeService implements OnModuleInit {
     return { success: true };
   }
 
-  async loadFromDatabase() {
+  async loadFromDatabase(): Promise<number> {
     EmbeddingStore.reset();
     const docs = await this.knowledgeRepo.find();
     for (const doc of docs) {
@@ -322,6 +322,12 @@ export class KnowledgeService implements OnModuleInit {
         embedding,
       });
     }
+    return docs.length;
+  }
+
+  async reload(): Promise<{ success: boolean; loaded: number }> {
+    const loaded = await this.loadFromDatabase();
+    return { success: true, loaded };
   }
 
   async semanticSearch(

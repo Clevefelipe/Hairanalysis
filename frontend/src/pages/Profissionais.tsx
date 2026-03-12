@@ -222,17 +222,28 @@ export default function Profissionais() {
 
   return (
     <section className="section-stack animate-page-in w-full">
-      <Section className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+      <Section className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-400">Administração</p>
-          <h1 className="text-2xl font-semibold text-slate-900">Profissionais</h1>
-          <p className="text-sm text-slate-500">Gerencie os profissionais do salão.</p>
+          <div
+            className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em]"
+            style={{ borderColor: "var(--color-border)", color: "var(--color-primary)", backgroundColor: "color-mix(in srgb, var(--color-primary) 6%, var(--color-surface))" }}
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-primary)]" />
+            Administração
+          </div>
+          <div className="space-y-1">
+            <h1 className="text-2xl font-semibold" style={{ color: "var(--color-text)" }}>Profissionais</h1>
+            <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
+              Gerencie os profissionais do salão.
+            </p>
+          </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center gap-2 rounded-full bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600 ring-1 ring-slate-100">
-            <Sparkles size={14} className="text-[color:var(--color-success-600)]" /> Gestão de equipe
+        <div className="flex flex-wrap items-center gap-2 md:justify-end">
+          <span className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[12px] font-semibold" style={{ borderColor: "var(--color-border)", color: "var(--color-text)" }}>
+            <Sparkles size={14} className="text-[color:var(--color-success-600)]" />
+            Gestão de equipe
           </span>
-          <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700 shadow-sm">
+          <span className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[12px] font-semibold" style={{ borderColor: "var(--color-border)", color: "var(--color-text)" }}>
             <Users size={14} /> {items.length} ativos
           </span>
         </div>
@@ -247,12 +258,12 @@ export default function Profissionais() {
           Nenhum salão associado ao seu usuário. Vincule-se a um salão para habilitar o cadastro.
         </div>
       ) : (
-        <div className="panel-tight space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="panel-tight space-y-5">
+          <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Equipe</p>
-              <h2 className="text-2xl font-semibold text-slate-900">Profissionais cadastrados</h2>
-              <p className="text-sm text-slate-500">Gerencie a equipe com busca, filtro e paginação.</p>
+              <p className="text-xs uppercase tracking-[0.25em]" style={{ color: "var(--color-text-muted)" }}>Equipe</p>
+              <h2 className="text-2xl font-semibold" style={{ color: "var(--color-text)" }}>Profissionais cadastrados</h2>
+              <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>Gerencie a equipe com busca, filtro e paginação.</p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold text-slate-900">
@@ -270,7 +281,7 @@ export default function Profissionais() {
             </div>
           </div>
 
-          <div className="grid gap-3 md:grid-cols-4">
+          <div className="grid gap-4 md:grid-cols-4">
             <input
               className={inputClass}
               placeholder="Buscar por nome ou e-mail"

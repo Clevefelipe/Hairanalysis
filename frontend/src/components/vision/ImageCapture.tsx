@@ -1,5 +1,5 @@
 import { Camera, ImagePlus, Loader2, ShieldCheck, Sparkles, Upload } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useToast } from "@/components/ui/ToastProvider";
 
 interface Props {
@@ -7,6 +7,9 @@ interface Props {
   isProcessing?: boolean;
   title?: string;
   subtitle?: string;
+  allowQuickCapture?: boolean;
+  quickCaptureLabel?: string;
+  quickCaptureHint?: string;
   requiredShots?: Array<{
     key: string;
     label: string;
@@ -19,6 +22,9 @@ export default function ImageCapture({
   isProcessing = false,
   title = "Capture de alta precisão",
   subtitle = "Use câmera traseira ou envie imagem da galeria com foco técnico.",
+  allowQuickCapture = false,
+  quickCaptureLabel = "Modo rápido (1 captura)",
+  quickCaptureHint = "Reduz a exigência da sequência, com precisão levemente menor.",
   requiredShots,
 }: Props) {
   const cameraInputRef = useRef<HTMLInputElement | null>(null);
@@ -27,16 +33,33 @@ export default function ImageCapture({
   const [dragging, setDragging] = useState(false);
   const [shotFiles, setShotFiles] = useState<Array<File | null>>([]);
   const [lastError, setLastError] = useState<string>("");
+  const [quickMode, setQuickMode] = useState(false);
   const { notify } = useToast();
 
   const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
 
+  const hasSequence = Array.isArray(requiredShots) && requiredShots.length > 1;
+
   const sequence = useMemo(() => {
-    if (Array.isArray(requiredShots) && requiredShots.length > 1) {
+    if (quickMode) return null;
+    if (hasSequence) {
       return requiredShots;
     }
     return null;
-  }, [requiredShots]);
+  }, [hasSequence, quickMode, requiredShots]);
+
+  useEffect(() => {
+    if (!allowQuickCapture && quickMode) {
+      setQuickMode(false);
+    }
+  }, [allowQuickCapture, quickMode]);
+
+  useEffect(() => {
+    if (!quickMode) return;
+    setShotFiles([]);
+    setSelectedFileName("");
+    setLastError("");
+  }, [quickMode]);
 
   const safeShotFiles = useMemo(() => {
     if (!sequence) return [];
@@ -55,11 +78,16 @@ export default function ImageCapture({
     : false;
 
   async function validateImageQuality(file: File): Promise<{ ok: boolean; message?: string }> {
-    if (file.size < 90 * 1024) {
+    const minSize = quickMode ? 50 * 1024 : 90 * 1024;
+    const minDim = quickMode ? 600 : 900;
+
+    if (file.size < minSize) {
       return {
         ok: false,
         message:
-          "Imagem com baixa qualidade (arquivo muito pequeno). Recapture com mais nitidez e iluminação frontal.",
+          quickMode
+            ? "Imagem muito pequena para o modo rápido. Capture com mais nitidez e luz frontal."
+            : "Imagem com baixa qualidade (arquivo muito pequeno). Recapture com mais nitidez e iluminação frontal.",
       };
     }
 
@@ -73,11 +101,13 @@ export default function ImageCapture({
       });
       URL.revokeObjectURL(url);
 
-      if (loaded.width < 900 || loaded.height < 900) {
+      if (loaded.width < minDim || loaded.height < minDim) {
         return {
           ok: false,
           message:
-            "Resolução insuficiente para análise precisa. Use imagem com pelo menos 900x900 px.",
+            quickMode
+              ? "Resolução insuficiente mesmo no modo rápido. Use pelo menos 600x600 px."
+              : "Resolução insuficiente para análise precisa. Use imagem com pelo menos 900x900 px.",
         };
       }
     } catch {
@@ -210,10 +240,6 @@ export default function ImageCapture({
           <p className="mt-1 text-lg font-semibold text-slate-900">{title}</p>
           <p className="mt-1 text-sm text-slate-500">{subtitle}</p>
         </div>
-        <span className="inline-flex items-center gap-2 rounded-full border border-[color:var(--color-success-200)] bg-[color:var(--color-success-50)] px-3 py-1 text-[11px] font-semibold text-[color:var(--color-success-700)]">
-          <ShieldCheck size={13} />
-          Protocolo guiado
-        </span>
       </div>
 
       {lastError && (
@@ -270,6 +296,27 @@ export default function ImageCapture({
           Sem reflexo forte
         </span>
       </div>
+
+      {allowQuickCapture && hasSequence && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">{quickCaptureLabel}</p>
+            <p className="mt-1 text-[11px] text-slate-500">{quickCaptureHint}</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setQuickMode((prev) => !prev)}
+            className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
+              quickMode
+                ? "bg-slate-900 text-white"
+                : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+            }`}
+            disabled={isProcessing}
+          >
+            {quickMode ? "Ativo" : "Ativar"}
+          </button>
+        </div>
+      )}
 
       {sequence && (
         <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
@@ -385,6 +432,8 @@ export default function ImageCapture({
           </span>
         ) : selectedFileName ? (
           `Arquivo selecionado: ${selectedFileName}`
+        ) : quickMode ? (
+          "Modo rápido ativo: 1 captura. Recomendado: luz frontal difusa, 20-30 cm e foco em áreas críticas."
         ) : (
           "Recomendado: luz frontal difusa, distância de 20-30 cm e foco em áreas críticas."
         )}

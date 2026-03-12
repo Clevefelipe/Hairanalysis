@@ -26,15 +26,15 @@
 .dashboard-deep-slate .card-premium-soft,
 .dashboard-deep-slate .premium-card,
 .dashboard-deep-slate .card-clickable {
-  background-color: rgba(15, 23, 42, 0.9) !important;
-  border: 1px solid var(--deep-border) !important;
-  box-shadow: none !important;
+  background-color: var(--color-surface, #ffffff) !important;
+  border: 1px solid rgba(226, 232, 240, 0.85) !important;
+  box-shadow: 0 18px 40px -30px rgba(15, 23, 42, 0.2) !important;
 }
 
 .dashboard-deep-slate .dashboard-hero-surface {
-  background-color: rgba(15, 23, 42, 0.92) !important;
-  border-color: rgba(51, 65, 85, 0.95) !important;
-  box-shadow: none !important;
+  background-color: color-mix(in srgb, var(--color-surface, #ffffff) 96%, #f8fafc) !important;
+  border-color: rgba(226, 232, 240, 0.85) !important;
+  box-shadow: var(--shadow-card, 0 18px 40px -28px rgba(15, 23, 42, 0.22)) !important;
   isolation: isolate;
 }
 
@@ -83,17 +83,17 @@
 .dashboard-deep-slate [class*="bg-slate-50"],
 .dashboard-deep-slate [class*="bg-slate-100"],
 .dashboard-deep-slate [class*="bg-slate-200"] {
-  background-color: rgba(15, 23, 42, 0.72) !important;
+  background-color: var(--color-surface, #ffffff) !important;
 }
 
 .dashboard-deep-slate [class*="border-slate-100"],
 .dashboard-deep-slate [class*="border-slate-200"],
 .dashboard-deep-slate [class*="border-slate-300"] {
-  border-color: var(--deep-border) !important;
+  border-color: rgba(226, 232, 240, 0.85) !important;
 }
 
 .dashboard-deep-slate [class*="shadow-"] {
-  box-shadow: none !important;
+  box-shadow: var(--shadow-card, 0 18px 40px -28px rgba(15, 23, 42, 0.22)) !important;
 }
 
 .dashboard-deep-slate .badge-critical {

@@ -1,44 +1,49 @@
+import ZeroBadge from "@/components/ui/ZeroBadge";
 import "./dashboard-geral.css";
+
+const cards = [
+  { title: "Análises realizadas", description: "Volume total de análises" },
+  { title: "Retornos vencidos", description: "Clientes que exigem acompanhamento" },
+  { title: "Riscos ativos", description: "Histórico crítico detectado" },
+  { title: "Status geral", description: "Base atual de análises" },
+];
 
 export default function DashboardGeral() {
   return (
     <div className="dashboard-geral">
       <header className="dashboard-header">
-        <h1>Dashboard</h1>
-        <p>Visão geral das análises e pontos de atenção</p>
+        <div>
+          <p className="header-kicker">Painel auxiliar</p>
+          <h1>Dashboard</h1>
+          <p>Visão geral das análises e pontos de atenção</p>
+        </div>
       </header>
 
       <section className="dashboard-cards">
-        <div className="card card-green">
-          <h3>Análises realizadas</h3>
-          <strong>Sem dados</strong>
-          <span>Volume total de análises</span>
-        </div>
-
-        <div className="card card-orange">
-          <h3>Retornos vencidos</h3>
-          <strong>Sem dados</strong>
-          <span>Clientes que exigem acompanhamento</span>
-        </div>
-
-        <div className="card card-red">
-          <h3>Riscos ativos</h3>
-          <strong>Sem dados</strong>
-          <span>Histórico crítico detectado</span>
-        </div>
-
-        <div className="card card-neutral">
-          <h3>Status geral</h3>
-          <strong>OK</strong>
-          <span>Base atual de análises</span>
-        </div>
+        {cards.map((card) => (
+          <div key={card.title} className="card">
+            <div>
+              <h3>{card.title}</h3>
+              <ZeroBadge helper="Sem dados registrados" size="compact" />
+            </div>
+            <span>{card.description}</span>
+          </div>
+        ))}
       </section>
 
       <section className="dashboard-graficos">
-        <div className="grafico-box">Análises por período</div>
-        <div className="grafico-box">Riscos ativos</div>
-        <div className="grafico-box">Protocolos aplicados</div>
-        <div className="grafico-box">Retornos previstos</div>
+        <div className="grafico-box">
+          <ZeroBadge helper="Análises por período" size="compact" />
+        </div>
+        <div className="grafico-box">
+          <ZeroBadge helper="Riscos ativos" size="compact" />
+        </div>
+        <div className="grafico-box">
+          <ZeroBadge helper="Protocolos aplicados" size="compact" />
+        </div>
+        <div className="grafico-box">
+          <ZeroBadge helper="Retornos previstos" size="compact" />
+        </div>
       </section>
     </div>
   );

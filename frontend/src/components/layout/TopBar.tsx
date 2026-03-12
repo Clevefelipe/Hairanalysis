@@ -198,9 +198,9 @@ export default function TopBar({ onOpenSidebar, fullWidth = false }: TopBarProps
           className="pointer-events-none absolute inset-x-0 bottom-0 h-[1.5px]"
           style={{
             background:
-              "linear-gradient(90deg, var(--color-success-500, #22c55e) 0%, color-mix(in srgb, var(--color-success-500, #22c55e) 72%, transparent) 32%, color-mix(in srgb, var(--color-success-400, #34d399) 30%, transparent) 68%, transparent 100%)",
-            boxShadow: "0 -2px 12px color-mix(in srgb, var(--color-success-500, #22c55e) 42%, transparent)",
-            opacity: 1,
+              "linear-gradient(90deg, color-mix(in srgb, var(--color-primary) 78%, transparent) 0%, color-mix(in srgb, var(--color-success-400, #34d399) 55%, transparent) 45%, transparent 100%)",
+            boxShadow: "0 -1px 8px color-mix(in srgb, var(--color-primary) 28%, transparent)",
+            opacity: 0.9,
           }}
         />
         <span aria-hidden="true" className="noise-layer pointer-events-none absolute inset-0 opacity-[0.22]" />
@@ -219,17 +219,17 @@ export default function TopBar({ onOpenSidebar, fullWidth = false }: TopBarProps
             <button
               type="button"
               onClick={() => navigate("/dashboard")}
-              className="relative inline-flex min-h-20 items-center gap-1 overflow-hidden rounded-lg px-0 transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]/40 focus-visible:ring-offset-2"
+              className="relative inline-flex min-h-20 items-center gap-3 overflow-hidden rounded-lg px-2 py-1 transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]/40 focus-visible:ring-offset-2"
               style={{ backgroundColor: "transparent", color: "var(--color-text)" }}
               aria-label="Ir para o painel"
             >
               <span
-                className="inline-flex h-10 w-10 items-center justify-center overflow-hidden rounded-md"
+                className="inline-flex h-12 w-12 items-center justify-center overflow-hidden rounded-md"
               >
                 <img
                   src="/Logo - 2.png"
                   alt="Hair Analysis System"
-                  className="h-14 w-14 object-contain"
+                  className="h-12 w-12 object-contain"
                   onError={(event) => {
                     const target = event.currentTarget;
                     if (!target.src.endsWith("/Logo - 2.png")) {
@@ -238,15 +238,19 @@ export default function TopBar({ onOpenSidebar, fullWidth = false }: TopBarProps
                   }}
                 />
               </span>
-              <span
-                className="hidden text-lg font-semibold uppercase tracking-[0.2em] sm:inline"
-                style={{
-                  color: "var(--color-text)",
-                  letterSpacing: "0.18em",
-                  textShadow: "0 1px 8px rgba(34,197,94,0.18)",
-                }}
-              >
-                Hair Analysis
+              <span className="hidden sm:inline leading-tight text-left self-center">
+                <span
+                  className="block text-lg font-semibold uppercase tracking-[0.22em]"
+                  style={{ color: "var(--color-text)", letterSpacing: "0.2em" }}
+                >
+                  Hair Analysis
+                </span>
+                <span
+                  className="block text-xs font-semibold uppercase tracking-[0.26em] opacity-80"
+                  style={{ color: "var(--color-success-500, #22c55e)" }}
+                >
+                  System
+                </span>
               </span>
             </button>
 

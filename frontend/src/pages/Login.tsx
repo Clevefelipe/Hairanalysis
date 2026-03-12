@@ -89,7 +89,7 @@ export default function Login() {
 
   return (
     <div className="min-h-screen grid grid-cols-1 lg:grid-cols-[52%_48%] bg-[#020611] text-slate-900">
-      <div className="relative overflow-hidden bg-black text-white flex items-center justify-center px-8 py-16 lg:px-16">
+      <div className="relative overflow-hidden bg-black text-white flex items-center justify-center px-10 py-16 md:px-12 lg:px-20">
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0">
           <div className="absolute inset-12 rounded-3xl border border-white/15" />
           <div className="noise-layer absolute inset-0 opacity-50" />
@@ -108,9 +108,12 @@ export default function Login() {
             </p>
 
             <h1 className="text-4xl lg:text-5xl font-semibold leading-tight text-white font-[Sora]">
-             Técnologia e Segurança.
-             Inteligência aplicada à estética capilar profissional.
-              <span className="block text-[color:var(--color-success-200)]">pare de operar no escuro: laudos claros, seguros e acionáveis.</span>
+             A ciência que seu olhar não alcança,
+             a precisão que seu salão merece.
+              <span className="block text-[color:var(--color-success-200)] font-normal">
+                Saia da suposição: entregue laudos precisos e seguros.
+                <span className="font-semibold"> Laudos claros, seguros e acionáveis.</span>
+              </span>
             </h1>
 
             <p className="text-sm md:text-base leading-relaxed text-slate-100/80 font-[Manrope] max-w-lg">
@@ -129,19 +132,11 @@ export default function Login() {
             </li>
             <li className="flex items-center gap-3">
               <span className="h-2 w-10 rounded-full bg-[color:var(--color-success-400)]" />
-              Pipelines proprietários de visão computacional certificável
+              Tecnologia de visão computacional certificada.
             </li>
           </ul>
 
           <div className="text-xs text-slate-100/80 border-t border-white/15 pt-4 font-[Manrope] flex items-center gap-3 flex-wrap">
-            <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-3 py-1 border border-white/20">
-              <span className="h-2 w-2 rounded-full bg-[color:var(--color-success-300)]" />
-              SOC 2-ready
-            </span>
-            <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-3 py-1 border border-white/20">
-              <span className="h-2 w-2 rounded-full bg-cyan-300" />
-              Logs auditáveis
-            </span>
             <span className="text-slate-100/80">Uso exclusivo para salões e clínicas especializadas.</span>
           </div>
         </div>
@@ -300,7 +295,7 @@ export default function Login() {
           <button
             type="submit"
             disabled={loading}
-            className="btn-primary mt-6 flex w-full items-center justify-center gap-2 text-base disabled:cursor-not-allowed disabled:opacity-60"
+            className="btn-primary mt-6 flex w-full items-center justify-center gap-2 text-base text-white disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loading && (
               <svg className="h-5 w-5 animate-spin text-white" viewBox="0 0 24 24" fill="none">
@@ -311,7 +306,7 @@ export default function Login() {
             {loading ? "Validando acesso" : "Entrar"}
           </button>
 
-          <ul className="mt-6 space-y-2 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-xs font-[Manrope] text-slate-600">
+          <ul className="mt-6 space-y-2 px-1 text-xs font-[Manrope] text-slate-600">
             <li className="flex items-center gap-2">
               <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[color:var(--color-success-50)] text-[color:var(--color-success-500)]">🔒</span>
               Conexão segura e criptografada
@@ -325,6 +320,24 @@ export default function Login() {
               Dados armazenados com proteção LGPD
             </li>
           </ul>
+
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+            <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 shadow-sm">
+              <svg aria-hidden="true" className="h-4 w-4 text-[color:var(--color-success-600)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+                <path d="M6 10.5V8a6 6 0 1 1 12 0v2.5" />
+                <rect x="5" y="10.5" width="14" height="9" rx="2" />
+                <path d="M12 14v2.5" />
+              </svg>
+              SOC 2 Ready
+            </span>
+            <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 shadow-sm">
+              <svg aria-hidden="true" className="h-4 w-4 text-sky-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+                <path d="M4 9.5 12 4l8 5.5-8 5.5-8-5.5Z" />
+                <path d="M6 14.5 12 19l6-4.5" />
+              </svg>
+              LGPD Compliance
+            </span>
+          </div>
 
           <p className="mt-4 text-xs text-slate-400 font-[Manrope] text-center">
             Problemas de acesso? Contate o administrador do salão.

@@ -5,11 +5,18 @@
     "test:backend": "npm test --prefix backend",
     "test:e2e": "npm run test:e2e --prefix backend",
     "test:frontend": "npm test --prefix frontend",
-    "typecheck:frontend": "npm run typecheck --prefix frontend"
+    "typecheck:frontend": "npm run typecheck --prefix frontend",
+    "lint:all": "npm run lint:backend && npm run lint --prefix frontend",
+    "test:all": "npm run test:backend && npm run test:frontend",
+    "typecheck:all": "npm run typecheck:frontend",
+    "prepare": "husky install"
   },
   "dependencies": {
     "@nestjs/terminus": "^11.0.0",
     "@willsoto/nestjs-prometheus": "^6.0.2",
     "recharts": "^3.7.0"
+  },
+  "devDependencies": {
+    "husky": "^9.1.6"
   }
 }

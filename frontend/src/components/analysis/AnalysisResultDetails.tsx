@@ -29,6 +29,7 @@ type AnalysisResultDetailsProps = {
   recommendations?: any;
   aesthetic?: AnalysisAesthetic;
   chemicalProfile?: ChemicalProfileSummary;
+  dataTestId?: string;
 };
 
 function flattenSignals(source: Record<string, any> | undefined | null): Record<string, any> {
@@ -90,6 +91,7 @@ export default function AnalysisResultDetails({
   recommendations,
   aesthetic,
   chemicalProfile,
+  dataTestId,
 }: AnalysisResultDetailsProps) {
   const flat = flattenSignals(signals);
 
@@ -166,7 +168,7 @@ export default function AnalysisResultDetails({
     : null;
 
   return (
-    <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
+    <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm" data-testid={dataTestId}>
       <div className="flex items-center justify-between gap-3">
         <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-500">Resultado técnico</p>
         <span className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold text-slate-600">Leitura estruturada</span>

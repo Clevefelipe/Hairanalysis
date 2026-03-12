@@ -1,4 +1,5 @@
-﻿import { ChangeEvent, useEffect, useState } from "react";
+﻿import { ChangeEvent, useEffect, useRef, useState } from "react";
+import ReactCountryFlag from "react-country-flag";
 import { criarCliente, atualizarCliente, type Cliente } from "@/core/cliente/cliente.service";
 import { useToast } from "@/components/ui/ToastProvider";
 import Modal from "@/components/ui/Modal";
@@ -78,6 +79,17 @@ const buildPhoneString = (ddi?: string, ddd?: string, number?: string) => {
   return parts.join(" ");
 };
 
+const buildLocalPhoneString = (ddd?: string, number?: string) => {
+  const dddDigits = (ddd ?? "").replace(/\D/g, "").slice(0, 2);
+  const numberDigits = (number ?? "").replace(/\D/g, "").slice(0, 9);
+
+  if (!dddDigits && !numberDigits) return "";
+
+  const formattedNumber = formatNumberDigits(numberDigits);
+  const parts = [dddDigits ? `(${dddDigits})` : null, formattedNumber].filter(Boolean);
+  return parts.join(" ");
+};
+
 type Props = {
   onClose: () => void;
   onSaved?: (cliente: Cliente) => void;
@@ -87,6 +99,20 @@ type Props = {
 type Tab = "dados" | "endereco" | "adicionais";
 
 type PhoneParts = ReturnType<typeof parsePhoneParts>;
+
+const DDI_OPTIONS = [
+  { code: "55", country: "Brasil", iso: "BR" },
+  { code: "1", country: "EUA / Canadá", iso: "US" },
+  { code: "351", country: "Portugal", iso: "PT" },
+  { code: "34", country: "Espanha", iso: "ES" },
+  { code: "33", country: "França", iso: "FR" },
+  { code: "39", country: "Itália", iso: "IT" },
+  { code: "44", country: "Reino Unido", iso: "GB" },
+  { code: "49", country: "Alemanha", iso: "DE" },
+  { code: "81", country: "Japão", iso: "JP" },
+  { code: "54", country: "Argentina", iso: "AR" },
+  { code: "52", country: "México", iso: "MX" },
+];
 
 export default function CadastroClienteModal({
   onClose,
@@ -111,7 +137,11 @@ export default function CadastroClienteModal({
     codigo: clienteInicial?.codigo ?? "",
     observacoes: clienteInicial?.observacoes ?? "",
   });
-  const [phoneParts, setPhoneParts] = useState<PhoneParts>(initialPhoneParts);
+  const [phoneParts, setPhoneParts] = useState<PhoneParts>({ ddi: PHONE_DEFAULT_DDI, ddd: "", number: "" });
+  const [ddiOpen, setDdiOpen] = useState(false);
+  const ddiButtonRef = useRef<HTMLButtonElement | null>(null);
+  const [ddiPosition, setDdiPosition] = useState<{ top: number; left: number; width: number } | null>(null);
+  const ddiRef = useRef<HTMLDivElement>(null);
 
   const modoEdicao = Boolean(clienteInicial);
 
@@ -143,6 +173,66 @@ export default function CadastroClienteModal({
         return next;
       });
     };
+
+  const handleFullPhoneInput = (value: string) => {
+    const parsed = parsePhoneParts(value);
+    const merged = {
+      ...parsed,
+      ddi: parsed.ddi || phoneParts.ddi || PHONE_DEFAULT_DDI,
+    } as PhoneParts;
+
+    setPhoneParts(merged);
+    setForm((prevForm) => ({
+      ...prevForm,
+      telefone: buildPhoneString(merged.ddi, merged.ddd, merged.number),
+    }));
+  };
+
+  const handleSelectDdi = (code: string) => {
+    setPhoneParts((prev) => {
+      const next = { ...prev, ddi: code };
+      setForm((prevForm) => ({
+        ...prevForm,
+        telefone: buildPhoneString(next.ddi, next.ddd, next.number),
+      }));
+      return next;
+    });
+    setDdiOpen(false);
+    setDdiPosition(null);
+  };
+
+  useEffect(() => {
+    if (!ddiOpen) return;
+    const updatePosition = () => {
+      const rect = ddiButtonRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      setDdiPosition({
+        top: rect.bottom + window.scrollY + 8,
+        left: rect.left + window.scrollX,
+        width: Math.max(rect.width + 40, 220),
+      });
+    };
+    updatePosition();
+    const onScroll = () => updatePosition();
+    window.addEventListener("scroll", onScroll, true);
+    window.addEventListener("resize", updatePosition);
+    return () => {
+      window.removeEventListener("scroll", onScroll, true);
+      window.removeEventListener("resize", updatePosition);
+    };
+  }, [ddiOpen]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!ddiRef.current || ddiRef.current.contains(event.target as Node)) return;
+      setDdiOpen(false);
+    };
+
+    document.addEventListener("click", handleClickOutside);
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, []);
 
   const handleSave = async () => {
     const nome = form.nome.trim();
@@ -224,62 +314,98 @@ export default function CadastroClienteModal({
           </div>
 
           {tabAtiva === "dados" && (
-            <div className="grid gap-3 md:grid-cols-2">
+            <div className="grid gap-3 md:grid-cols-2 md:items-center">
               <input
-                className="input-base rounded-lg"
+                className="input-base h-10 rounded-lg px-3 py-2 text-sm"
                 placeholder="Nome completo *"
                 value={form.nome}
                 onChange={(e) => setForm((prev) => ({ ...prev, nome: e.target.value }))}
               />
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
-                  <span>Telefone *</span>
-                  <span className="text-[10px] tracking-[0.15em] text-[color:var(--color-success-500)]">
-                    {form.telefone || "+55 (__) _____-____"}
-                  </span>
-                </div>
-                <div className="flex flex-col gap-2 sm:flex-row">
-                  <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm focus-within:border-[color:var(--color-success-300)] focus-within:ring-2 focus-within:ring-[color:var(--color-success-100)]">
-                    <span className="text-[11px] font-semibold uppercase text-slate-400">DDI</span>
-                    <div className="flex items-center gap-1">
-                      <span className="text-slate-400">+</span>
-                      <input
-                        type="text"
-                        value={phoneParts.ddi}
-                        onChange={handlePhonePartChange("ddi", 3)}
-                        className="w-12 border-none bg-transparent text-sm font-semibold text-slate-700 placeholder:text-slate-300 focus:outline-none focus:ring-0"
-                        inputMode="numeric"
-                      />
+              <div className="flex items-center gap-3 text-sm font-semibold text-slate-700">
+                <span>Telefone *</span>
+                <span className="text-xs font-normal text-slate-400">
+                  {form.telefone || `+${phoneParts.ddi || PHONE_DEFAULT_DDI} (__) _____-____`}
+                </span>
+              </div>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+                <div ref={ddiRef} className="relative w-full sm:w-auto" style={{ overflow: "visible" }}>
+                  <div
+                    className={`relative z-10 flex h-10 min-w-[160px] items-center gap-2 rounded-lg border bg-white px-2.5 py-1.5 text-sm text-slate-800 shadow-sm transition ${ddiOpen ? "border-slate-400 ring-2 ring-slate-200" : "border-slate-200 hover:border-slate-300"}`}
+                  >
+                    <button
+                      type="button"
+                      className="flex w-full items-center justify-between gap-3 text-left text-sm font-semibold text-slate-800 focus:outline-none"
+                      onClick={() => setDdiOpen((prev) => !prev)}
+                      ref={ddiButtonRef}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-[11px] font-semibold uppercase text-slate-500">DDI</span>
+                        <span className="flex items-center gap-2 rounded-md px-2 py-0.5 text-sm font-semibold text-slate-800">
+                          <span className="flex h-5 w-8 items-center justify-center rounded bg-white text-lg leading-none shadow-sm">
+                            <ReactCountryFlag
+                              countryCode={DDI_OPTIONS.find((item) => item.code === phoneParts.ddi)?.iso ?? "BR"}
+                              svg
+                              style={{ width: "18px", height: "12px" }}
+                              title={DDI_OPTIONS.find((item) => item.code === phoneParts.ddi)?.country ?? ""}
+                            />
+                          </span>
+                        </span>
+                        <span className="text-slate-700">+{phoneParts.ddi || PHONE_DEFAULT_DDI}</span>
+                      </div>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                        className={`h-4 w-4 text-slate-300 transition ${ddiOpen ? "rotate-180" : ""}`}
+                        aria-hidden
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+
+                  {ddiOpen && ddiPosition && (
+                    <div
+                      className="fixed z-50 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-md"
+                      style={{ top: ddiPosition.top, left: ddiPosition.left, width: ddiPosition.width }}
+                    >
+                      <div className="max-h-60 overflow-y-auto p-1">
+                        {DDI_OPTIONS.map((item) => {
+                          const selected = item.code === phoneParts.ddi;
+                          return (
+                            <button
+                              key={item.code + item.country}
+                              type="button"
+                              className={`flex w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-left text-sm transition hover:bg-slate-50 ${selected ? "bg-[color:var(--color-success-30,#f3f9f5)] text-slate-800" : "text-slate-800"}`}
+                              onClick={() => handleSelectDdi(item.code)}
+                            >
+                              <div className="flex items-center gap-3">
+                                <ReactCountryFlag countryCode={item.iso} svg style={{ width: "20px", height: "14px" }} title={item.country} />
+                                <span className="text-sm font-semibold">+{item.code}</span>
+                              </div>
+                              <span className="text-xs text-slate-500">{item.country}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex flex-1 gap-2">
-                    <input
-                      type="text"
-                      placeholder="DDD"
-                      value={phoneParts.ddd}
-                      onChange={handlePhonePartChange("ddd", 2)}
-                      className="w-20 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 placeholder:text-slate-400 shadow-sm focus:border-[color:var(--color-success-300)] focus:outline-none focus:ring-2 focus:ring-[color:var(--color-success-100)]"
-                      inputMode="numeric"
-                    />
-                    <input
-                      type="text"
-                      placeholder={phoneParts.number.length >= 5 ? "_____-____" : "____-____"}
-                      value={formatNumberDigits(phoneParts.number)}
-                      onChange={handlePhonePartChange("number", 9)}
-                      className="flex-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 placeholder:text-slate-400 shadow-sm focus:border-[color:var(--color-success-300)] focus:outline-none focus:ring-2 focus:ring-[color:var(--color-success-100)]"
-                      inputMode="numeric"
-                    />
-                  </div>
+                  )}
                 </div>
+
+                <input
+                  type="text"
+                  placeholder="(__) _____-____"
+                  value={buildLocalPhoneString(phoneParts.ddd, phoneParts.number)}
+                  onChange={(e) => handleFullPhoneInput(e.target.value)}
+                  className="h-10 min-w-[200px] flex-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 placeholder:text-slate-400 shadow-sm focus:border-[color:var(--color-success-300)] focus:outline-none focus:ring-2 focus:ring-[color:var(--color-success-100)]"
+                />
               </div>
               <input
-                className="input-base rounded-lg"
-                placeholder="Email"
-                value={form.email}
-                onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
-              />
-              <input
-                className="input-base rounded-lg"
+                className="input-base h-10 rounded-lg px-3 py-2 text-sm"
                 placeholder="Data de nascimento"
                 value={form.dataNascimento}
                 onChange={(e) =>
@@ -288,14 +414,14 @@ export default function CadastroClienteModal({
                 inputMode="numeric"
               />
               <input
-                className="input-base rounded-lg"
+                className="input-base h-10 rounded-lg px-3 py-2 text-sm"
                 placeholder="CPF (opcional)"
                 value={form.cpf}
                 onChange={(e) => setForm((prev) => ({ ...prev, cpf: formatCpfDigits(e.target.value) }))}
                 inputMode="numeric"
               />
               <textarea
-                className="input-base rounded-lg md:col-span-2"
+                className="input-base rounded-lg px-3 py-2 text-sm md:col-span-2"
                 placeholder="Observações técnicas"
                 rows={3}
                 value={form.observacoes}

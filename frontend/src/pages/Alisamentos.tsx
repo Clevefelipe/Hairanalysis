@@ -246,41 +246,54 @@ export default function Alisamentos() {
 
   return (
     <section className="section-stack animate-page-in w-full">
-      <div className="flex flex-col gap-6 rounded-3xl border border-slate-100 bg-white/70 p-6 shadow-sm ring-1 ring-slate-100 md:flex-row md:items-center md:justify-between">
-        <div className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-400">
-            Gestão técnica
-          </p>
-          <div>
-            <h1 className="text-2xl font-semibold text-slate-900">Protocolos de alisamento</h1>
-            <p className="text-sm text-slate-500">
-              Cadastre e valide procedimentos compatíveis com as análises IA.
-            </p>
+      <div
+        className="rounded-2xl border px-4 py-5 md:px-6 md:py-5 shadow-card"
+        style={{ borderColor: "var(--color-border)", backgroundColor: "var(--color-surface)", boxShadow: "var(--shadow-card)" }}
+      >
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="space-y-2">
+            <div
+              className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em]"
+              style={{ borderColor: "var(--color-border)", color: "var(--color-primary)", backgroundColor: "color-mix(in srgb, var(--color-primary) 6%, var(--color-surface))" }}
+            >
+              <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-primary)]" />
+              Gestão técnica
+            </div>
+            <div className="space-y-1">
+              <h1 className="text-2xl font-semibold" style={{ color: "var(--color-text)" }}>Protocolos de alisamento</h1>
+              <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
+                Cadastre e valide procedimentos compatíveis com as análises IA.
+              </p>
+            </div>
           </div>
-        </div>
-        <div className="flex items-center justify-end">
-          <button className="btn-primary" onClick={openCreateModal}>
-            <PlusCircle size={16} />
-            Cadastrar alisamento
-          </button>
+
+          <div className="flex items-center justify-end">
+            <button className="btn-primary" onClick={openCreateModal}>
+              <PlusCircle size={16} />
+              Cadastrar alisamento
+            </button>
+          </div>
         </div>
       </div>
 
-      <div className="mt-8 overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm">
-        <div className="flex flex-col gap-4 border-b border-slate-100 px-6 py-5 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
+      <div
+        className="mt-8 overflow-hidden rounded-3xl border shadow-sm space-y-4"
+        style={{ borderColor: "var(--color-border)", backgroundColor: "var(--color-surface)", boxShadow: "var(--shadow-card)" }}
+      >
+        <div className="flex flex-col gap-4 border-b px-6 py-5 lg:flex-row lg:items-center lg:justify-between" style={{ borderColor: "var(--color-border)" }}>
+          <div className="space-y-1">
+            <p className="text-xs font-semibold uppercase tracking-[0.26em]" style={{ color: "var(--color-text-muted)" }}>
               Protocolos
             </p>
-            <p className="text-lg font-semibold text-slate-900">
+            <p className="text-lg font-semibold" style={{ color: "var(--color-text)" }}>
               {sorted.length} fórmulas cadastradas
             </p>
           </div>
-          <div className="inline-flex items-center gap-2 rounded-full bg-slate-50 px-3 py-1 text-xs font-medium text-slate-500">
-            <Sparkles size={14} /> compatibilidade baseada no último resumo de análise
+          <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium" style={{ backgroundColor: "color-mix(in srgb, var(--color-primary) 6%, var(--color-surface))", color: "var(--color-text)" }}>
+            <Sparkles size={14} className="text-[color:var(--color-success-600)]" /> compatibilidade baseada no último resumo de análise
           </div>
         </div>
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto px-1 pb-4">
           <table className="min-w-full divide-y divide-slate-100 text-sm">
             <thead className="bg-slate-50/80 text-xs font-semibold uppercase tracking-[0.25em] text-slate-400">
               <tr>

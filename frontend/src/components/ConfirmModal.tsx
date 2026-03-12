@@ -29,7 +29,7 @@ export default function ConfirmModal({
         aria-modal="true"
         style={{
           borderColor: "var(--color-border)",
-          backgroundColor: "var(--color-surface)",
+          backgroundColor: "var(--color-modal-surface, var(--color-surface))",
           boxShadow: "var(--shadow-2xl)",
         }}
       >

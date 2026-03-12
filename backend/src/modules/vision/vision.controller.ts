@@ -1287,7 +1287,7 @@ export class VisionController {
     };
     aiResult.signals = normalizedSignals;
 
-    if (quality.completeness < 60) {
+    if (quality.completeness < 40) {
       const existingFlags = Array.isArray(aiResult.flags) ? aiResult.flags : [];
       if (
         !existingFlags.some((flag: string) =>

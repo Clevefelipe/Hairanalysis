@@ -16,7 +16,18 @@ export default function Section({
 
   return (
     <Component
-      className={["panel-tight", "section-stack", className].filter(Boolean).join(" ")}
+      className={[
+        "section-stack",
+        "rounded-2xl border px-4 py-5 md:px-6 md:py-5 shadow-card",
+        className,
+      ]
+        .filter(Boolean)
+        .join(" ")}
+      style={{
+        borderColor: "var(--color-border)",
+        backgroundColor: "var(--color-surface)",
+        boxShadow: "var(--shadow-card)",
+      }}
       {...props}
     >
       {children}

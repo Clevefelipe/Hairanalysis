@@ -32,6 +32,7 @@ type AiAttentionCardProps = {
   onOpenAnalysis: (item: AnalysisHistory) => void;
   onNavigateHistory: () => void;
   dateFormatter: Intl.DateTimeFormat;
+  cardGradient?: string;
 };
 
 function clampScore(value: number, min = 0, max = 100) {
@@ -131,11 +132,21 @@ export default function AiAttentionCard({
   onOpenAnalysis,
   onNavigateHistory,
   dateFormatter,
+  cardGradient,
 }: AiAttentionCardProps) {
   const reviewTarget = activeClientStats?.alertsList?.[0] ?? null;
 
   return (
-    <div className="premium-card relative overflow-hidden p-5 text-[color:var(--color-text)]">
+    <div
+      className="premium-card relative overflow-hidden rounded-xl p-5 text-[color:var(--color-text)]"
+      style={{
+        background:
+          cardGradient ||
+          "linear-gradient(135deg, rgba(248, 250, 252, 0.98) 0%, rgba(237, 242, 247, 0.94) 60%, rgba(250, 250, 250, 0.92) 100%)",
+        border: "1px solid rgba(148, 163, 184, 0.24)",
+        boxShadow: "0 18px 38px -26px rgba(15,23,42,0.4)",
+      }}
+    >
       <div className={`absolute left-0 top-0 h-full w-1.5 ${severityVisual.bar}`} />
       <div className="flex items-center justify-between text-[color:var(--color-text-muted)]">
         <div className="flex items-center gap-3">
@@ -183,14 +194,14 @@ export default function AiAttentionCard({
         )}
       </div>
       {activeClientStats?.alertsList?.length ? (
-        <div className="mt-3 space-y-2 rounded-2xl border border-[color:var(--color-error-200,#fecaca)] bg-[color:var(--color-error-50,#fef2f2)] p-3 text-sm text-[color:var(--color-error-700,#b91c1c)]">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[color:var(--color-error-700,#b91c1c)]">Alertas desta cliente</p>
+        <div className="mt-3 space-y-2 rounded-2xl border border-[color:var(--status-rose-300,#f8b4c0)] bg-[color:var(--color-error-50,#fef2f2)] p-3 text-sm" style={{ color: "var(--status-rose-600,#d1556f)" }}>
+          <p className="text-xs font-semibold uppercase tracking-[0.24em]" style={{ color: "var(--status-rose-600,#d1556f)" }}>Alertas desta cliente</p>
           {activeClientStats.alertsList.slice(0, 3).map((alert) => (
             <div key={alert.id} className="flex items-start gap-3">
-              <span className="w-20 shrink-0 text-xs font-semibold text-[color:var(--color-error-600,#dc2626)]">
+              <span className="w-20 shrink-0 text-xs font-semibold" style={{ color: "var(--status-rose-500,#f38ba0)" }}>
                 {dateFormatter.format(new Date(alert.createdAt))}
               </span>
-              <p className="flex-1 text-[color:var(--color-error-700,#b91c1c)] leading-snug line-clamp-3">{alert.interpretation}</p>
+              <p className="flex-1 leading-snug line-clamp-3" style={{ color: "var(--status-rose-600,#d1556f)" }}>{alert.interpretation}</p>
             </div>
           ))}
         </div>

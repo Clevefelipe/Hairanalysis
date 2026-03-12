@@ -78,6 +78,7 @@ export class VisionService {
     payload: any,
   ) {
     const { visionResult, aiExplanation, recommendations } = payload || {};
+    const riskAssessment = this.computeRisk(payload?.chemicalProfile);
     const deterministicScore = this.normalizeScore(
       payload?.deterministicResult?.score ?? recommendations?.score,
     );
@@ -107,6 +108,7 @@ export class VisionService {
       deterministicResult: payload?.deterministicResult || null,
       legalAudit: payload?.legalAudit || null,
       analysisQuality: payload?.analysisQuality || null,
+      riskAssessment,
     };
 
     const recommendationsToSave = {
@@ -117,6 +119,7 @@ export class VisionService {
       aptitudeText: payload?.deterministicResult?.aptitudeMessage,
       weightProfileVersion: payload?.deterministicResult?.weightProfileVersion,
       weightProfileId: payload?.deterministicResult?.weightProfileId,
+      riskAssessment,
     };
 
     return this.historyService.save({
@@ -178,14 +181,61 @@ export class VisionService {
 
   private getActiveSession(sessionId: string) {
     const session = this.sessions.get(sessionId);
-    if (!session) {
-      return null;
+    if (!session) return null;
+    this.pruneExpiredSessions();
+    return this.sessions.get(sessionId) || null;
+  }
+
+  private computeRisk(chemicalProfile: any): {
+    level: 'low' | 'medium' | 'high';
+    reasons: string[];
+  } {
+    const reasons: string[] = [];
+    let score = 0; // 0=low, 1=medium, 2=high
+
+    if (!chemicalProfile) {
+      return { level: 'medium', reasons: ['dados_insuficientes'] };
     }
-    if (session.expiresAt <= Date.now()) {
-      this.sessions.delete(sessionId);
-      return null;
+
+    const scalp = chemicalProfile.scalp || chemicalProfile.couro || {};
+    const fiber = chemicalProfile.fiber || chemicalProfile.fio || {};
+    const chemistry = chemicalProfile.chemistry || chemicalProfile.quimica || {};
+
+    if (scalp.lesions || scalp.lesoes || scalp.eritema || scalp.inflamacao || scalp.sensivel) {
+      reasons.push('couro_sensivel_ou_lesao');
+      score = Math.max(score, 2);
     }
-    return session;
+
+    if (fiber.elasticity === 'borrachuda' || fiber.elasticidade === 'borrachuda') {
+      reasons.push('elasticidade_comprometida');
+      score = Math.max(score, 2);
+    }
+
+    if (fiber.porosidade === 'alta' || fiber.porosity === 'alta') {
+      reasons.push('porosidade_alta');
+      score = Math.max(score, 1);
+    }
+
+    if (chemistry.incompatibility || chemistry.incompatibilidade) {
+      reasons.push('incompatibilidade_quimica');
+      score = Math.max(score, 2);
+    }
+
+    const recentDays = chemistry.recentDays ?? chemistry.diasDesdeUltimaQuimica;
+    if (typeof recentDays === 'number' && recentDays < 30) {
+      reasons.push('quimica_recente');
+      score = Math.max(score, 1);
+    }
+
+    const aggressive = chemistry.aggressiveAction || chemistry.acaoAgressiva;
+    const testMechaDone = chemistry.testMechaFeito ?? chemistry.mechaTestada;
+    if (aggressive && testMechaDone === false) {
+      reasons.push('sem_teste_de_mecha_para_acao_agressiva');
+      score = Math.max(score, 2);
+    }
+
+    const level = score === 0 ? 'low' : score === 1 ? 'medium' : 'high';
+    return { level, reasons };
   }
 
   private normalizeAnalysisType(type: string | undefined | null) {

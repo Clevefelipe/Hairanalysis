@@ -44,9 +44,14 @@ export default function Sidebar({
   onMobileClose,
   topOffset = 0,
 }: SidebarProps) {
-  const sidebarBorderColor = "rgba(255, 255, 255, 0.16)";
-  const sidebarMutedColor = "rgba(255, 255, 255, 0.68)";
+  const sidebarBackground = "#1A202C";
+  const sidebarBorderColor = "rgba(255, 255, 255, 0.08)";
+  const sidebarMutedColor = "rgba(226, 232, 240, 0.72)";
   const sidebarAccentColor = "var(--color-success-500, #22c55e)";
+  const sidebarCategoryColor = "rgba(255, 255, 255, 0.45)";
+  const sidebarDividerColor = "rgba(255, 255, 255, 0.1)";
+  const activeItemBackground = "rgba(255, 255, 255, 0.09)";
+  const hoverItemBackground = "rgba(255, 255, 255, 0.04)";
   const { role } = useAuth();
   const [internalCollapsed, setInternalCollapsed] = useState<boolean>(() => {
     try {
@@ -144,23 +149,21 @@ export default function Sidebar({
             "group relative flex min-h-10 items-center overflow-hidden rounded-lg border text-sm transition-all duration-200",
             paddingClasses,
             shouldCollapse ? "justify-center" : "gap-2.5",
-            isActive
-              ? "text-white"
-              : "text-white hover:text-white",
+            isActive ? "text-white" : "text-white hover:text-white",
           ].join(" ")
         }
         style={({ isActive }) => ({
-          borderColor: isActive ? sidebarBorderColor : "transparent",
-          backgroundColor: isActive ? "rgba(248, 250, 252, 0.12)" : "transparent",
+          borderColor: "transparent",
+          backgroundColor: isActive ? activeItemBackground : hoverItemBackground,
           color: "white",
-          boxShadow: isActive ? "var(--shadow-card)" : "none",
+          boxShadow: isActive ? "0 18px 32px -24px rgba(0,0,0,0.65)" : "none",
         })}
       >
         {({ isActive }) => (
           <>
             <motion.span
               className="absolute left-0 top-1/2 h-8 w-[3px] -translate-y-1/2 rounded-r-sm"
-              style={{ backgroundColor: "var(--color-primary)" }}
+              style={{ backgroundColor: sidebarAccentColor }}
               initial={false}
               animate={{
                 opacity: isActive ? 1 : 0,
@@ -174,12 +177,12 @@ export default function Sidebar({
               <span
                 className={`inline-flex ${iconBoxClasses} items-center justify-center rounded-lg border transition`}
                 style={{
-                  borderColor: "transparent",
-                  backgroundColor: "transparent",
-                  color: isActive ? "var(--color-success-500, #22c55e)" : "white",
+                  borderColor: "rgba(255,255,255,0.08)",
+                  backgroundColor: isActive ? "rgba(255,255,255,0.08)" : "transparent",
+                  color: isActive ? sidebarAccentColor : "rgba(226,232,240,0.9)",
                 }}
               >
-                <item.icon size={18} />
+                <item.icon size={18} strokeWidth={1.5} />
               </span>
             )}
 
@@ -194,7 +197,7 @@ export default function Sidebar({
                   transition={{ duration: 0.15, ease: "easeOut" }}
                 >
                   <div className="flex min-w-0 flex-col">
-                    <span className={`${labelClasses} truncate font-bold tracking-tight text-white`}>
+                    <span className={`${labelClasses} truncate font-semibold tracking-tight text-white/90`}>
                       {item.label}
                     </span>
                     {item.badge && (
@@ -214,13 +217,13 @@ export default function Sidebar({
                       isFavorite ? "text-[var(--color-primary)]" : "text-white"
                     }`}
                     style={{
-                      color: "white",
+                      color: isFavorite ? sidebarAccentColor : "white",
                       borderColor: isFavorite ? sidebarBorderColor : "transparent",
                       backgroundColor: isFavorite ? "rgba(248, 250, 252, 0.08)" : "transparent",
                     }}
                     aria-label="Favoritar atalho"
                   >
-                    <Star size={12} fill={isFavorite ? "currentColor" : "none"} />
+                    <Star size={12} strokeWidth={1.75} fill={isFavorite ? "currentColor" : "none"} />
                   </button>
                 </motion.div>
               )}
@@ -256,7 +259,7 @@ export default function Sidebar({
     return (
       <div className="relative flex h-full flex-col gap-3 px-3 py-3 overflow-hidden">
         <span aria-hidden="true" className="noise-layer pointer-events-none absolute inset-0 opacity-30" />
-        <div className="relative flex min-h-10 items-center rounded-lg border px-2 py-1.5" style={{ borderColor: sidebarBorderColor, backgroundColor: "rgba(248, 250, 252, 0.06)" }}>
+        <div className="relative flex min-h-10 items-center rounded-lg border px-2 py-1.5" style={{ borderColor: sidebarBorderColor, backgroundColor: "rgba(15, 23, 42, 0.35)" }}>
           <div
             className={`flex min-w-0 flex-1 items-center overflow-hidden pr-14 transition-all duration-200 ${
               shouldCollapse ? "justify-center gap-0" : "justify-start gap-2"
@@ -264,10 +267,9 @@ export default function Sidebar({
           >
             <span
               className={`inline-block shrink-0 overflow-hidden whitespace-nowrap text-[11px] font-semibold uppercase tracking-[0.22em] text-white transition-all duration-200 ${
-                shouldCollapse
-                  ? "w-0 max-w-0 opacity-0 pointer-events-none"
-                  : "w-[11rem] max-w-[11rem] opacity-100 pointer-events-auto"
+                shouldCollapse ? "w-0 max-w-0 opacity-0 pointer-events-none" : "w-[11rem] max-w-[11rem] opacity-80 pointer-events-auto"
               }`}
+              style={{ color: sidebarCategoryColor }}
             >
               NAVEGAÇÃO
             </span>
@@ -291,7 +293,11 @@ export default function Sidebar({
               style={{ borderColor: sidebarBorderColor, backgroundColor: "rgba(248, 250, 252, 0.06)", color: "white" }}
               aria-label="Alternar tamanho do menu"
             >
-              {shouldCollapse ? <PanelLeftOpen size={17} /> : <PanelLeftClose size={17} />}
+              {shouldCollapse ? (
+                <PanelLeftOpen size={17} strokeWidth={1.75} />
+              ) : (
+                <PanelLeftClose size={17} strokeWidth={1.75} />
+              )}
             </button>
           )}
         </div>
@@ -307,9 +313,11 @@ export default function Sidebar({
                 exit={{ opacity: 0, height: 0 }}
                 transition={{ duration: 0.15, ease: "easeOut" }}
               >
-                <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.2em] text-white">
+                <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.2em]" style={{ color: sidebarCategoryColor }}>
                   <span>Atalhos fixados</span>
-                  <span className="text-[9px] text-white">{favoriteItems.length}</span>
+                  <span className="text-[9px]" style={{ color: sidebarMutedColor }}>
+                    {favoriteItems.length}
+                  </span>
                 </div>
                 <div className="space-y-1">
                   {favoriteItems.map((item) => renderItem(item, mobile))}
@@ -322,9 +330,9 @@ export default function Sidebar({
             {groups.map((group, index) => (
               <div key={group.title} className="space-y-2">
                 {!shouldCollapse && (
-                  <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.22em]" style={{ color: sidebarAccentColor }}>
-                    <span>{group.title}</span>
-                    <span className="ml-3 h-px flex-1 rounded-full" style={{ backgroundColor: "var(--color-success-400)" }} />
+                  <div className="flex items-center justify-between text-[9px] uppercase tracking-[0.28em]" style={{ color: sidebarCategoryColor }}>
+                    <span className="opacity-70">{group.title}</span>
+                    <span className="ml-3 h-px flex-1 rounded-full" style={{ backgroundColor: sidebarDividerColor }} />
                   </div>
                 )}
                 <div className="space-y-1">
@@ -354,7 +362,7 @@ export default function Sidebar({
         style={{
           ...desktopSidebarStyle,
           borderColor: sidebarBorderColor,
-          backgroundColor: "rgba(10,10,10,0.92)",
+          backgroundColor: sidebarBackground,
           color: "#f8fafc",
         }}
       >
@@ -389,11 +397,7 @@ export default function Sidebar({
             />
             <motion.aside
               className="absolute inset-y-0 left-0 w-[min(88vw,320px)] border-r overflow-hidden"
-              style={{
-                borderColor: sidebarBorderColor,
-                backgroundColor: "rgba(10,10,10,0.92)",
-                color: "#f8fafc",
-              }}
+              style={{ borderColor: sidebarBorderColor, backgroundColor: sidebarBackground, color: "#f8fafc" }}
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}

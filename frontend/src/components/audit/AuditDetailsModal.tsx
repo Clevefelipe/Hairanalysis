@@ -28,7 +28,7 @@ export default function AuditDetailsModal({ open, onClose, log }: Props) {
 
       <div className="mt-4 space-y-2">
         <strong className="text-sm text-slate-900">Metadata:</strong>
-        <pre className="max-h-64 overflow-auto rounded-2xl bg-slate-50 p-3 text-xs font-mono text-slate-700 shadow-inner">
+        <pre className="max-h-64 overflow-auto rounded-2xl bg-[color:var(--color-modal-surface,var(--color-surface,#f8f6f0))] p-3 text-xs font-mono text-slate-700 shadow-inner">
           {JSON.stringify(log.metadata ?? {}, null, 2)}
         </pre>
       </div>

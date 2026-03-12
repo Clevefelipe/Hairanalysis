@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState, useCallback, useRef } from "react";
+﻿import { useEffect, useMemo, useState, useCallback, useRef, ReactNode } from "react";
 import type { JSX } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { createPortal } from "react-dom";
@@ -15,10 +15,15 @@ import HighTechIntegrityPanel from "@/components/analysis/HighTechIntegrityPanel
 import DecisionMatrix from "@/components/analysis/DecisionMatrix";
 import ActiveClientSessionBar from "@/components/analysis/ActiveClientSessionBar";
 import AnalysisStepProgress from "@/components/analysis/AnalysisStepProgress";
+import AnalysisHero from "@/components/analysis/AnalysisHero";
+import AnalysisContextPanel from "@/components/analysis/AnalysisContextPanel";
+import AnalysisWizardLayout from "@/components/analysis/AnalysisWizardLayout";
+import ChemicalProfileForm, {
+  ChemicalProfileFormState,
+} from "@/components/analysis/ChemicalProfileForm";
 import { obterClientePorId } from "@/core/cliente/cliente.service";
 import { salvarVisionBackend } from "@/services/visionApi";
 import { getHistoryPdf } from "@/services/history.service";
-import PageHero from "@/components/ui/PageHero";
 import Modal from "@/components/ui/Modal";
 import {
   AlertTriangle,
@@ -50,6 +55,10 @@ interface AnalysisResult {
   microscopyAlerts?: string[];
   aiExplanation?: any;
   recommendations?: any;
+  riskAssessment?: {
+    level: 'low' | 'medium' | 'high';
+    reasons: string[];
+  } | null;
   professionalAlert?: string;
   recomendacoes?: Array<{ titulo: string; descricao: string }>;
   historyId?: string;
@@ -72,14 +81,6 @@ const MICRO_ALERTS = [
   "Descamação localizada",
   "Fio sensibilizado",
 ];
-
-type OverviewCard = {
-  id: string;
-  label: string;
-  value: string;
-  helper: string;
-  helperClass?: string;
-};
 
 const CAPTURE_ENVIRONMENT_CARDS = [
   { label: "Região", value: "Couro cabeludo" },
@@ -245,6 +246,21 @@ export default function AnaliseTricologica() {
   const [microscopeAlerts, setMicroscopeAlerts] = useState<string[]>([]);
   const [analysisProgress, setAnalysisProgress] = useState(0);
   const [fallbackProgress, setFallbackProgress] = useState(0);
+  const [chemicalProfile, setChemicalProfile] = useState<ChemicalProfileFormState>({
+    scalp: {},
+    fiber: {},
+    chemistry: {},
+    neutralizacao: {},
+    evidencias: [],
+    followUp: {},
+  });
+  const [riskAssessment, setRiskAssessment] = useState<
+    | {
+        level: 'low' | 'medium' | 'high';
+        reasons: string[];
+      }
+    | null
+  >(null);
 
   const [lookupOpen, setLookupOpen] = useState(false);
 
@@ -262,14 +278,43 @@ export default function AnaliseTricologica() {
     | "capilar_individual"
     | "tricologica_individual"
     | null;
-  const isCompleteFlow = flowParam === "completo" || flowState.mode === "completo";
+  const isCompleteFlow = flowParam === "completo" || (flowState.mode === "completo" && hasSession);
   const manualJourney = searchParams.get("journey") === "manual";
   const manualTricologica = searchParams.get("tricologica") === "1";
   const manualCapilar = searchParams.get("capilar") === "1";
   const journeyStepParam = searchParams.get("journeyStep");
   const wizardStep = step === "processing" || step === "results" ? "analyzing" : step;
 
-  // ================= SESSION =================
+  function validateChemicalProfile(): boolean {
+    const aggressive = chemicalProfile.chemistry.acaoAgressiva;
+    const testDone = chemicalProfile.chemistry.testMechaFeito;
+    if (aggressive && testDone === false) {
+      notify("Para ações agressivas (alisamento/descoloração), realize o teste de mecha antes de continuar.", "error");
+      return false;
+    }
+
+    const needsNeutralization = Boolean(
+      chemicalProfile.neutralizacao.exigida ||
+        chemicalProfile.chemistry.sistemaAtual === "hidroxido" ||
+        chemicalProfile.chemistry.sistemaAtual === "tioglicolato" ||
+        chemicalProfile.chemistry.sistemaAtual === "persulfato" ||
+        chemicalProfile.chemistry.sistemaAtual === "coloracaoOx" ||
+        chemicalProfile.fiber.elasticidade === "borrachuda",
+    );
+
+    if (needsNeutralization) {
+      const hasProduct = Boolean(chemicalProfile.neutralizacao.produto?.trim());
+      const hasTime =
+        typeof chemicalProfile.neutralizacao.tempoMinutos === "number" &&
+        Number.isFinite(chemicalProfile.neutralizacao.tempoMinutos);
+      if (!hasProduct || !hasTime) {
+        notify("Neutralização exigida: informe produto e tempo (minutos).", "warning");
+        return false;
+      }
+    }
+
+    return true;
+  }
 
   async function startSession(clientId?: string) {
     if (!token) {
@@ -349,15 +394,6 @@ export default function AnaliseTricologica() {
   }, [observacoes, premiumNote]);
 
   useEffect(() => {
-    if (mode !== "tempo-real") return;
-    if (!microscopeOn) {
-      setMicroscopeOn(true);
-    }
-  }, [microscopeOn, mode]);
-
-  useEffect(() => {
-    if (!setFlowMode) return;
-    
     // Se não há parâmetro flow, assume modo individual (acesso direto pelo sidebar)
     if (!flowParam) {
       const targetMode: "tricologica_individual" = "tricologica_individual";
@@ -366,7 +402,7 @@ export default function AnaliseTricologica() {
       }
       return;
     }
-    
+
     if (flowParam === "completo") {
       if (flowState.mode !== "completo") {
         setFlowMode("completo");
@@ -374,7 +410,11 @@ export default function AnaliseTricologica() {
       return;
     }
 
-    if (flowState.mode === "completo") {
+    if (flowParam === "capilar_individual") {
+      const targetMode: "capilar_individual" = "capilar_individual";
+      if (flowState.mode !== targetMode) {
+        setFlowMode(targetMode);
+      }
       return;
     }
 
@@ -383,6 +423,13 @@ export default function AnaliseTricologica() {
       setFlowMode(targetMode);
     }
   }, [flowParam, flowState.mode, setFlowMode]);
+
+  useEffect(() => {
+    if (mode !== "tempo-real") return;
+    if (!microscopeOn) {
+      setMicroscopeOn(true);
+    }
+  }, [microscopeOn, mode]);
 
   const buildFlowUrl = useCallback(
     (path: string, opts?: { forceFlow?: boolean }) => {
@@ -585,7 +632,7 @@ export default function AnaliseTricologica() {
         (data.signals as any)?.analysis_quality?.criticalCompleteness ??
           (raw?.analysis_quality as any)?.criticalCompleteness,
       );
-      const isLowQuality = Number.isFinite(criticalCompleteness) && criticalCompleteness < 60;
+      const isLowQuality = Number.isFinite(criticalCompleteness) && criticalCompleteness < 40;
       if (isLowQuality) {
         notify(
           `Captura inconclusiva (${Math.max(0, Math.round(criticalCompleteness))}% de completude crítica). Refaça com foco e luz frontal difusa.`,
@@ -605,10 +652,15 @@ export default function AnaliseTricologica() {
           searchParams.get("clientId") ||
           "cliente_demo";
 
+        if (!validateChemicalProfile()) {
+          return;
+        }
+
         savedHistory = await salvarVisionBackend(finalClientId, {
           type: "tricologica",
           source,
           sourceLabel,
+          chemicalProfile,
           visionResult: {
             type: "tricologica",
             source,
@@ -630,6 +682,11 @@ export default function AnaliseTricologica() {
 
         setSavedClientId(finalClientId);
         setSavedHistoryId(savedHistory?.id ?? null);
+        if (savedHistory?.recommendations?.riskAssessment || savedHistory?.visionResult?.riskAssessment) {
+          setRiskAssessment(
+            savedHistory.recommendations?.riskAssessment || savedHistory.visionResult?.riskAssessment,
+          );
+        }
       } catch (e: any) {
         notify(
           e?.message ||
@@ -658,6 +715,10 @@ export default function AnaliseTricologica() {
         microscopyAlerts: microscopeAlerts,
         aiExplanation: savedHistory?.aiExplanation || null,
         recommendations: savedHistory?.recommendations || null,
+        riskAssessment:
+          savedHistory?.recommendations?.riskAssessment ||
+          savedHistory?.visionResult?.riskAssessment ||
+          null,
         professionalAlert:
           (typeof savedHistory?.professionalAlert === "string" &&
           savedHistory.professionalAlert.trim()
@@ -781,9 +842,16 @@ export default function AnaliseTricologica() {
 
   const heroActions = [
     flowState.mode === "completo" && {
-      label: "Voltar à central integrada",
-      variant: "ghost" as const,
+      label: "Central integrada",
+      icon: <Sparkles size={16} />,
+      variant: "secondary" as const,
       onClick: () => navigate("/analises"),
+    },
+    {
+      label: "Histórico",
+      icon: <Clock size={16} />,
+      variant: "ghost" as const,
+      onClick: () => navigate("/historico"),
     },
   ].filter(Boolean) as {
     label: string;
@@ -799,20 +867,34 @@ export default function AnaliseTricologica() {
   const advancedSignalsActive = uvMode || microscopeOn;
   const advancedSignalsRequired = isCompleteFlow || mode === "tempo-real";
   const showAdvancedAlert = advancedSignalsRequired && !advancedSignalsActive;
-  const heroMeta = [
-    { label: "Modo", value: modeUiLabel },
-    { label: "Status", value: statusLabel },
+  const progressLabel =
+    wizardStep === "config"
+      ? "Aguardando início"
+      : wizardStep === "capture"
+        ? "Pronto para capturar"
+        : hasResult
+          ? "Resultado gerado"
+          : "Processando";
+
+  const heroChips = [
+    {
+      label: "Modo",
+      value: modeUiLabel,
+      helper: flowState.mode === "completo" ? "Fluxo completo" : "Fluxo individual",
+    },
+    {
+      label: "Status",
+      value: statusLabel,
+      helper: progressLabel,
+      tone: wizardStep === "analyzing" && !result ? "warning" : result ? "success" : "default",
+    },
     flowState.mode === "completo"
       ? {
           label: "Próximo passo",
-          value: pendingCapilar
-            ? "Análise capilar"
-            : readyForProtocol
-              ? "Protocolo"
-              : "",
+          value: pendingCapilar ? "Análise capilar" : readyForProtocol ? "Protocolo" : "",
         }
       : null,
-  ].filter(Boolean) as { label: string; value: string }[];
+  ].filter(Boolean);
   const safetyChecklist = useMemo(
     () => {
       const hasClient = Boolean(selectedClient || activeClient);
@@ -880,30 +962,21 @@ export default function AnaliseTricologica() {
     safetyChecklist.length > 0
       ? Math.round((completedChecklist / safetyChecklist.length) * 100)
       : 0;
-  const progressLabel =
-    wizardStep === "config"
-      ? "Aguardando início"
-      : wizardStep === "capture"
-        ? "Pronto para capturar"
-        : hasResult
-          ? "Resultado gerado"
-          : "Processando";
-  const attentionToneClass =
-    pendingChecklist > 0 ? "text-has-warning" : "text-has-success";
-  const overviewCards = useMemo<OverviewCard[]>(
+  const statsItems = useMemo(
     () => [
       {
         id: "stage",
-        label: "Etapa atual",
+        label: "Etapa",
         value: statusLabel,
         helper: progressLabel,
+        tone: wizardStep === "analyzing" && !result ? "warning" : result ? "success" : "default",
       },
       {
         id: "checklist",
         label: "Checklist técnico",
         value: `${completedChecklist}/${safetyChecklist.length}`,
         helper: pendingChecklist > 0 ? `${pendingChecklist} pendência(s)` : "Tudo validado",
-        helperClass: attentionToneClass,
+        tone: pendingChecklist > 0 ? "warning" : "success",
       },
       {
         id: "client",
@@ -915,10 +988,8 @@ export default function AnaliseTricologica() {
         id: "result",
         label: "Resultado",
         value: hasResult && result ? `${result.score}/100` : "—",
-        helper:
-          hasResult && result
-            ? `${result.flags?.length ?? 0} alerta(s)`
-            : "Sem score ainda",
+        helper: hasResult && result ? `${result.flags?.length ?? 0} alerta(s)` : "Sem score ainda",
+        tone: hasResult && result ? "success" : "default",
       },
     ],
     [
@@ -927,14 +998,98 @@ export default function AnaliseTricologica() {
       completedChecklist,
       safetyChecklist.length,
       pendingChecklist,
-      attentionToneClass,
       selectedClient?.nome,
       activeClient?.nome,
       flowState.mode,
       hasResult,
       result,
+      wizardStep,
     ],
   );
+
+  const readinessPercent =
+    safetyChecklist.length > 0 ? ((completedChecklist / safetyChecklist.length) * 100) : 0;
+
+  const sessionContextCard = (
+    <div className="space-y-2 text-sm" style={{ color: "var(--color-text)" }}>
+      <div className="flex items-center gap-2 text-sm font-semibold" style={{ color: "var(--color-text-muted)" }}>
+        <Clock size={16} />
+        Sessão
+      </div>
+      <p className="text-2xl font-semibold" style={{ color: "var(--color-text)" }}>{sessionId ? "Ativa" : "Aguardando"}</p>
+      <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
+        {sessionId ? "Sessão IA conectada" : "Clique em Iniciar análise"}
+      </p>
+    </div>
+  );
+
+  const extraContextCards = [
+    (
+      <div key="advanced" className="space-y-2 text-sm" style={{ color: "var(--color-text)" }}>
+        <p className="text-sm font-semibold" style={{ color: "var(--color-text)" }}>Modos avançados</p>
+        <div className="space-y-1 text-sm" style={{ color: "var(--color-text-muted)" }}>
+          <p>
+            Luz UV: <span className="font-semibold">{uvMode ? "Ativa" : "Inativa"}</span>
+          </p>
+          <p>
+            Microscópio: <span className="font-semibold">{microscopeOn ? "Capturando" : "Desligado"}</span>
+          </p>
+        </div>
+        {uvMode && uvFlags.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {uvFlags.map((flag) => (
+              <span
+                key={flag}
+                className="rounded-full border px-2 py-1 text-[11px]"
+                style={{ borderColor: "var(--color-border)", backgroundColor: "var(--accent-soft)", color: "var(--color-primary)" }}
+              >
+                {flag}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+    ),
+    hasResult && result
+      ? (
+          <div key="history" className="space-y-3 text-sm" style={{ color: "var(--color-text)" }}>
+            <div className="flex items-center gap-2 text-sm font-semibold">
+              <CheckCircle2 size={16} className="text-has-primary" />
+              Salvo no histórico
+            </div>
+            <p className="text-sm">
+              {lastAnalysisLabel
+                ? `Última análise registrada em ${lastAnalysisLabel}.`
+                : "Análise registrada, mas sem registro de data."}
+            </p>
+            <div className="flex flex-wrap gap-2 text-xs">
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={() => {
+                  const historyIdForNavigation = savedHistoryId || result.historyId;
+                  if (historyIdForNavigation) navigate(`/historico/${historyIdForNavigation}`);
+                }}
+                disabled={!(savedHistoryId || result.historyId)}
+              >
+                Abrir detalhe
+              </button>
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={() => {
+                  const cid = savedClientId || selectedClient?.id || activeClient?.id;
+                  if (cid) navigate(`/historico?clientId=${cid}`);
+                }}
+                disabled={!(savedClientId || selectedClient?.id || activeClient?.id)}
+              >
+                Histórico cliente
+              </button>
+            </div>
+          </div>
+        )
+      : null,
+  ].filter(Boolean) as ReactNode[];
 
   function renderMain() {
     if (wizardStep === "config") {
@@ -953,6 +1108,12 @@ export default function AnaliseTricologica() {
                 </div>
               ) : null
             }
+          />
+
+          <ChemicalProfileForm
+            value={chemicalProfile}
+            onChange={setChemicalProfile}
+            disabled={isLoading || wizardStep !== "config"}
           />
 
           <AnalysisModeSelector
@@ -1050,6 +1211,7 @@ export default function AnaliseTricologica() {
                 notify("Ative luz UV ou microscopia para manter a integridade do protocolo.", "warning");
                 return;
               }
+              if (!validateChemicalProfile()) return;
               const ok = await startSession(selectedClient.id);
               if (ok) {
                 setStep("capture");
@@ -1067,96 +1229,93 @@ export default function AnaliseTricologica() {
     if (wizardStep === "capture") {
       return (
         <div className="space-y-6">
-          <div className="rounded-xl border p-5" style={{ borderColor: "var(--color-border)", backgroundColor: "var(--color-surface)", boxShadow: "var(--shadow-card)" }}>
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="text-xs uppercase tracking-[0.25em]" style={{ color: "var(--color-text-muted)" }}>
-                  Captura tricológica
-                </p>
-                <p className="mt-3 text-2xl font-semibold">
-                  Capture o couro cabeludo com padrão clínico e comparável.
-                </p>
-                <p className="mt-2 text-sm" style={{ color: "var(--color-text-muted)" }}>
-                  Estruture os registros por região para avaliar descamação, sensibilidade e densidade ao longo do tempo.
-                </p>
+          <div className="grid gap-4 lg:grid-cols-2">
+            {/* Coluna esquerda: instruções resumidas */}
+            <div className="space-y-3">
+              <div className="rounded-xl border p-4" style={{ borderColor: "var(--color-border)", backgroundColor: "var(--color-surface)" }}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--color-text-muted)" }}>O que capturar</p>
+                    <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>3 fotos rápidas de couro cabeludo.</p>
+                  </div>
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--color-text-muted)" }}>{SCALP_REQUIRED_SHOTS.length} capturas</span>
+                </div>
+
+                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-lg border p-3" style={{ borderColor: "var(--color-border)", backgroundColor: "var(--bg-primary)" }}>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: "var(--color-text-muted)" }}>Sequência</p>
+                    <ul className="mt-2 space-y-2 text-sm" style={{ color: "var(--color-text)" }}>
+                      {SCALP_REQUIRED_SHOTS.map((shot) => (
+                        <li key={shot.key} className="leading-snug">{shot.label}</li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="rounded-lg border p-3" style={{ borderColor: "var(--color-border)", backgroundColor: "var(--bg-primary)" }}>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: "var(--color-text-muted)" }}>Como capturar</p>
+                    <ul className="mt-2 space-y-2 text-sm" style={{ color: "var(--color-text)" }}>
+                      <li className="flex items-center gap-2"><CheckCircle2 size={14} className="text-has-primary" /> Luz frontal difusa</li>
+                      <li className="flex items-center gap-2"><CheckCircle2 size={14} className="text-has-primary" /> Separação limpa e sem sombra</li>
+                      <li className="flex items-center gap-2"><CheckCircle2 size={14} className="text-has-primary" /> Uma foto por região (frontal, laterais, topo)</li>
+                    </ul>
+                  </div>
+                </div>
               </div>
 
-              <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold">
-                <span className="rounded-full border px-3 py-1" style={{ borderColor: "var(--color-border)", backgroundColor: "var(--bg-primary)", color: "var(--color-text-muted)" }}>
-                  UV: {uvMode ? "Ativa" : "Inativa"}
-                </span>
-                <span className="rounded-full border px-3 py-1" style={{ borderColor: "var(--color-border)", backgroundColor: "var(--bg-primary)", color: "var(--color-text-muted)" }}>
-                  Microscópio: {microscopeOn ? "Ativo" : "Inativo"}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {showAdvancedAlert && (
-            <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm" style={{ color: "#92400e" }}>
-              <div className="flex items-start gap-2">
-                <AlertTriangle size={16} className="mt-0.5 text-amber-500" />
-                <div>
-                  <p className="font-semibold text-amber-700">Sequência incompleta</p>
-                  <p className="text-xs text-amber-700/80">
-                    Reative UV ou microscópio para registrar micro-sinais obrigatórios antes de concluir o laudo integrado.
-                  </p>
+              <div className="rounded-xl border p-4" style={{ borderColor: "var(--color-border)", backgroundColor: "var(--color-surface)" }}>
+                <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--color-text-muted)" }}>Modos</p>
+                <div className="mt-3 grid grid-cols-2 gap-2 text-sm" style={{ color: "var(--color-text)" }}>
+                  <div className="rounded-md border px-3 py-2 text-center" style={{ borderColor: "var(--color-border)", backgroundColor: "var(--bg-primary)" }}>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: "var(--color-text-muted)" }}>Luz UV</p>
+                    <p className="text-sm font-semibold" style={{ color: uvMode ? "var(--color-success-700)" : "var(--color-text-muted)" }}>{uvMode ? "Ativa" : "Inativa"}</p>
+                  </div>
+                  <div className="rounded-md border px-3 py-2 text-center" style={{ borderColor: "var(--color-border)", backgroundColor: "var(--bg-primary)" }}>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: "var(--color-text-muted)" }}>Microscópio</p>
+                    <p className="text-sm font-semibold" style={{ color: microscopeOn ? "var(--color-success-700)" : "var(--color-text-muted)" }}>{microscopeOn ? "Ativo" : "Desligado"}</p>
+                  </div>
                 </div>
               </div>
             </div>
-          )}
 
-          <div className="grid gap-4 xl:grid-cols-[1.6fr,1fr]">
-            <div className="rounded-xl border p-5 capture-card-premium capture-stage-enter capture-stage-enter-delay-1" style={{ borderColor: "var(--color-border)", backgroundColor: "var(--color-surface)", boxShadow: "var(--shadow-card)" }}>
-              <ImageCapture
-                onCapture={handleCapture}
-                isProcessing={isLoading}
-                title="Captura guiada para análise tricológica"
-                subtitle="Foque couro cabeludo, densidade e sinais de sensibilidade para leitura clínica mais assertiva."
-                requiredShots={SCALP_REQUIRED_SHOTS}
-              />
+            {/* Coluna direita: captura + status compacto */}
+            <div className="space-y-3">
+              <div className="rounded-xl border p-4" style={{ borderColor: "var(--color-border)", backgroundColor: "var(--color-surface)" }}>
+                <p className="text-xs uppercase tracking-[0.24em]" style={{ color: "var(--color-text-muted)" }}>Capturar agora</p>
 
-              <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                <div className="rounded-lg border p-3 capture-card-subtle" style={{ borderColor: "var(--color-border)", backgroundColor: "var(--bg-primary)" }}>
-                  <p className="text-[11px] uppercase tracking-[0.2em]" style={{ color: "var(--color-text-muted)" }}>Região</p>
-                  <p className="mt-1 text-sm font-semibold" style={{ color: "var(--color-text)" }}>Couro cabeludo</p>
-                </div>
-                <div className="rounded-lg border p-3 capture-card-subtle" style={{ borderColor: "var(--color-border)", backgroundColor: "var(--bg-primary)" }}>
-                  <p className="text-[11px] uppercase tracking-[0.2em]" style={{ color: "var(--color-text-muted)" }}>Distância</p>
-                  <p className="mt-1 text-sm font-semibold" style={{ color: "var(--color-text)" }}>10-20 cm</p>
-                </div>
-                <div className="rounded-lg border p-3 capture-card-subtle" style={{ borderColor: "var(--color-border)", backgroundColor: "var(--bg-primary)" }}>
-                  <p className="text-[11px] uppercase tracking-[0.2em]" style={{ color: "var(--color-text-muted)" }}>Nitidez</p>
-                  <p className="mt-1 text-sm font-semibold" style={{ color: "var(--color-text)" }}>Raiz e densidade</p>
-                </div>
+                <ImageCapture
+                  onCapture={handleCapture}
+                  isProcessing={isLoading}
+                  title="Captura guiada para análise tricológica"
+                  subtitle="3 fotos rápidas: frontal, laterais e topo."
+                  allowQuickCapture
+                  requiredShots={SCALP_REQUIRED_SHOTS}
+                />
+
+                {!sessionId && (
+                  <div className="mt-2 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
+                    <AlertTriangle size={14} className="mt-0.5" />
+                    <span>Inicie ou recupere uma sessão ativa antes da captura.</span>
+                  </div>
+                )}
               </div>
 
-              <div className="mt-4 rounded-lg border p-4 capture-card-subtle" style={{ borderColor: "var(--color-border)", backgroundColor: "var(--bg-primary)" }}>
-                <p className="text-xs font-semibold uppercase tracking-[0.22em]" style={{ color: "var(--color-text-muted)" }}>Sequência recomendada</p>
-                <ol className="mt-2 space-y-1 text-sm" style={{ color: "var(--color-text)" }}>
-                  <li>1. Frontal da linha do cabelo.</li>
-                  <li>2. Lateral direita e esquerda.</li>
-                  <li>3. Região superior com foco em densidade.</li>
-                </ol>
-              </div>
-            </div>
-
-            <div className="space-y-4 capture-stage-enter capture-stage-enter-delay-2">
-              <div className="rounded-xl border p-5 capture-card-premium" style={{ borderColor: "var(--color-border)", backgroundColor: "var(--color-surface)", boxShadow: "var(--shadow-card)" }}>
-                <p className="text-xs font-semibold uppercase tracking-[0.25em]" style={{ color: "var(--color-text-muted)" }}>Modos ativos</p>
-                <div className="mt-3 space-y-2 text-sm" style={{ color: "var(--color-text)" }}>
-                  <p className="flex items-center gap-2"><CheckCircle2 size={14} className={uvMode ? "text-has-primary" : "text-[var(--color-text-muted)]"} /> Luz UV: <strong>{uvMode ? "Ativa" : "Inativa"}</strong></p>
-                  <p className="flex items-center gap-2"><CheckCircle2 size={14} className={microscopeOn ? "text-has-primary" : "text-[var(--color-text-muted)]"} /> Microscópio: <strong>{microscopeOn ? "Ativo" : "Inativo"}</strong></p>
+              <div className="rounded-xl border p-4" style={{ borderColor: "var(--color-border)", backgroundColor: "var(--bg-primary)" }}>
+                <div className="grid gap-2 text-sm" style={{ color: "var(--color-text)" }}>
+                  <div className="flex items-center justify-between rounded-md border px-3 py-2" style={{ borderColor: "var(--color-border)", backgroundColor: "var(--color-surface)" }}>
+                    <span>Cliente vinculada</span>
+                    <span className="font-semibold" style={{ color: sessionId ? "var(--color-success-700)" : "var(--color-error-600)" }}>{sessionId ? "Sim" : "Não"}</span>
+                  </div>
+                  <div className="flex items-center justify-between rounded-md border px-3 py-2" style={{ borderColor: "var(--color-border)", backgroundColor: "var(--color-surface)" }}>
+                    <span>Modo</span>
+                    <span className="font-semibold" style={{ color: "var(--color-text)" }}>{analysisSourceLabel(normalizeAnalysisSource(mode))}</span>
+                  </div>
+                  <div className="flex items-center justify-between rounded-md border px-3 py-2" style={{ borderColor: "var(--color-border)", backgroundColor: "var(--color-surface)" }}>
+                    <span>Checklist</span>
+                    <span className="font-semibold" style={{ color: pendingChecklist > 0 ? "var(--color-warning)" : "var(--color-success)" }}>
+                      {safetyChecklist.length - pendingChecklist}/{safetyChecklist.length}
+                    </span>
+                  </div>
                 </div>
-              </div>
-
-              <div className="rounded-xl border p-5 capture-card-premium" style={{ borderColor: "var(--color-border)", backgroundColor: "var(--color-surface)", boxShadow: "var(--shadow-card)" }}>
-                <p className="text-xs font-semibold uppercase tracking-[0.25em]" style={{ color: "var(--color-text-muted)" }}>Checklist clínico</p>
-                <ul className="mt-3 space-y-2 text-sm" style={{ color: "var(--color-text)" }}>
-                  <li className="flex items-center gap-2"><CheckCircle2 size={14} className="text-has-primary" /> Separação limpa da região</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 size={14} className="text-has-primary" /> Sem sombra sobre a raiz</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 size={14} className="text-has-primary" /> Registro frontal e lateral</li>
-                </ul>
               </div>
             </div>
           </div>
@@ -1296,6 +1455,27 @@ export default function AnaliseTricologica() {
                   </p>
                 </div>
               </div>
+
+              {riskAssessment && (
+                <div className="rounded-xl border p-5" style={{ borderColor: "var(--color-border)", backgroundColor: "var(--bg-primary)" }}>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                        riskAssessment.level === 'high'
+                          ? 'bg-[color:var(--color-error-50)] text-[color:var(--color-error-700)]'
+                          : riskAssessment.level === 'medium'
+                            ? 'bg-amber-50 text-amber-700'
+                            : 'bg-[color:var(--color-success-50)] text-[color:var(--color-success-700)]'
+                      }`}
+                    >
+                      Risco {riskAssessment.level}
+                    </span>
+                    <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
+                      Motivos: {riskAssessment.reasons.join(', ') || '—'}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -1544,164 +1724,47 @@ export default function AnaliseTricologica() {
         )}
 
       {!isAnalysisModalOpen && (
-        <div className="space-y-3 md:space-y-4">
-          {hasSession && activeClient && (
-            <div className="space-y-3">
-              <ActiveClientSessionBar
-                client={activeClient}
-                onOpenClient={() => navigate(`/clientes?clientId=${activeClient.id}`)}
-                onSwitchClient={() => setLookupOpen(true)}
-                onEndSession={() => setConfirmEndSessionOpen(true)}
-              />
-            </div>
-          )}
-
-          <PageHero
-            title="Análise Tricológica"
-            subtitle="Wizard em 3 etapas com inteligência técnica ativa."
-            meta={heroMeta}
-            actions={heroActions as any}
-          />
-
-          <AnalysisStepProgress
-            steps={steps}
-            currentStepIndex={currentStepIndex}
-          />
-
-          <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            {overviewCards.map((card) => (
-              <article
-                key={card.id}
-                className="panel-tight"
-                style={{ borderColor: "var(--color-border)", backgroundColor: "var(--color-surface)" }}
-              >
-                <p
-                  className="text-[11px] font-semibold uppercase tracking-[0.2em]"
-                  style={{ color: "var(--color-text-muted)" }}
-                >
-                  {card.label}
-                </p>
-                <p className="mt-1 text-lg font-semibold" style={{ color: "var(--color-text)" }}>
-                  {card.value}
-                </p>
-                <p
-                  className={`text-xs ${card.helperClass ?? ""}`.trim()}
-                  style={card.helperClass ? undefined : { color: "var(--color-text-muted)" }}
-                >
-                  {card.helper}
-                </p>
-              </article>
-            ))}
-          </section>
-
-          <section className="grid-dense lg:grid-cols-[2fr,1fr] items-start w-full gap-3 md:gap-4">
-            <div className="panel-tight premium-card p-3 md:p-4" style={{ borderColor: "var(--color-border)", backgroundColor: "var(--color-surface)" }}>
-              <div key={wizardStep} className="analysis-stage-transition">
-                {renderMain()}
-              </div>
-            </div>
-
-            <aside className="section-stack lg:sticky lg:top-2">
-              <div className="panel-tight" style={{ borderColor: "var(--color-border)", backgroundColor: "var(--color-surface)" }}>
-                <div className="flex items-center gap-2 text-sm font-semibold" style={{ color: "var(--color-text-muted)" }}>
-                  <Clock size={16} />
-                  Sessão
-                </div>
-                <p className="mt-2 text-2xl font-semibold" style={{ color: "var(--color-text)" }}>{sessionId ? "Ativa" : "Aguardando"}</p>
-                <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
-                  {sessionId ? "Sessão IA conectada" : "Clique em Iniciar análise"}
-                </p>
-              </div>
-
-              <div className="panel-tight" style={{ borderColor: "var(--color-border)", backgroundColor: "var(--color-surface)" }}>
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-semibold" style={{ color: "var(--color-text)" }}>Prontidão da análise</p>
-                  <span className={`text-xs font-semibold ${attentionToneClass}`}>{checklistProgressPct}%</span>
-                </div>
-                <div className="mt-3 h-2.5 w-full overflow-hidden rounded-full" style={{ backgroundColor: "var(--color-border)" }}>
-                  <div
-                    className="h-full transition-all duration-500"
-                    style={{
-                      width: `${Math.min(100, Math.max(0, checklistProgressPct))}%`,
-                      backgroundColor: "var(--color-primary)",
-                    }}
+        <AnalysisWizardLayout
+          heroSlot={
+            <>
+              {hasSession && activeClient && (
+                <div className="space-y-3">
+                  <ActiveClientSessionBar
+                    client={activeClient}
+                    onOpenClient={() => navigate(`/clientes?clientId=${activeClient.id}`)}
+                    onSwitchClient={() => setLookupOpen(true)}
+                    onEndSession={() => setConfirmEndSessionOpen(true)}
                   />
                 </div>
-                <ul className="mt-3 space-y-2">
-                  {safetyChecklist.map((item) => (
-                    <li key={item.key} className="rounded-lg border px-3 py-2" style={{ borderColor: "var(--color-border)", backgroundColor: "var(--bg-primary)" }}>
-                      <p className="text-xs font-semibold" style={{ color: "var(--color-text)" }}>
-                        {item.complete ? "Concluído" : "Pendente"} • {item.label}
-                      </p>
-                      <p className="mt-1 text-[11px]" style={{ color: "var(--color-text-muted)" }}>
-                        {item.description}
-                      </p>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="panel-tight" style={{ borderColor: "var(--color-border)", backgroundColor: "var(--color-surface)" }}>
-                <p className="text-sm font-semibold" style={{ color: "var(--color-text)" }}>Modos avançados</p>
-                <div className="mt-3 space-y-2 text-sm" style={{ color: "var(--color-text-muted)" }}>
-                  <p>
-                    Luz UV: <span className="font-semibold">{uvMode ? "Ativa" : "Inativa"}</span>
-                  </p>
-                  <p>
-                    Microscópio: <span className="font-semibold">{microscopeOn ? "Capturando" : "Desligado"}</span>
-                  </p>
-                  {uvMode && uvFlags.length > 0 && (
-                    <div className="flex flex-wrap gap-2">
-                      {uvFlags.map((flag) => (
-                        <span key={flag} className="rounded-full border px-2 py-1 text-[11px]" style={{ borderColor: "var(--color-border)", backgroundColor: "var(--accent-soft)", color: "var(--color-primary)" }}>
-                          {flag}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {hasResult && result && (
-                <div className="panel-tight" style={{ borderColor: "var(--color-border)", backgroundColor: "var(--color-surface)", color: "var(--color-text)" }}>
-                  <div className="flex items-center gap-2 text-sm font-semibold">
-                    <CheckCircle2 size={16} className="text-has-primary" />
-                    Salvo no histórico
-                  </div>
-                  <p className="mt-2 text-sm">
-                    {lastAnalysisLabel
-                      ? `Última análise registrada em ${lastAnalysisLabel}.`
-                      : "Análise registrada, mas sem registro de data."}
-                  </p>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      className="btn-secondary text-xs"
-                      onClick={() => {
-                        const historyIdForNavigation = savedHistoryId || result.historyId;
-                        if (historyIdForNavigation) navigate(`/historico/${historyIdForNavigation}`);
-                      }}
-                      disabled={!(savedHistoryId || result.historyId)}
-                    >
-                      Abrir detalhe
-                    </button>
-                    <button
-                      type="button"
-                      className="btn-secondary text-xs"
-                      onClick={() => {
-                        const cid = savedClientId || selectedClient?.id || activeClient?.id;
-                        if (cid) navigate(`/historico?clientId=${cid}`);
-                      }}
-                      disabled={!(savedClientId || selectedClient?.id || activeClient?.id)}
-                    >
-                      Histórico cliente
-                    </button>
-                  </div>
-                </div>
               )}
-            </aside>
-          </section>
-        </div>
+
+              <AnalysisHero
+                title="Análise Tricológica"
+                subtitle="Wizard em 3 etapas com inteligência técnica ativa."
+                chips={heroChips as any}
+                actions={heroActions as any}
+              />
+            </>
+          }
+          steps={
+            <AnalysisStepProgress
+              steps={steps}
+              currentStepIndex={currentStepIndex}
+              onStepClick={(stepItem, index) => {
+                if (index === 0) setStep("config");
+              }}
+            />
+          }
+          stats={statsItems as any}
+          main={<div key={wizardStep} className="analysis-stage-transition">{renderMain()}</div>}
+          sidebar={
+            <AnalysisContextPanel
+              readiness={{ percent: readinessPercent, checklist: safetyChecklist }}
+              sessionCard={sessionContextCard}
+              extraCards={extraContextCards}
+            />
+          }
+        />
       )}
 
       {isAnalysisModalOpen && typeof document !== "undefined" &&

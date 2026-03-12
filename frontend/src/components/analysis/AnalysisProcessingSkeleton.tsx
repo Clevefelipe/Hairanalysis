@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import styles from "./AnalysisProcessingSkeleton.module.css";
 
 interface AnalysisProcessingSkeletonProps {
@@ -38,17 +38,6 @@ export default function AnalysisProcessingSkeleton({
 
   const progressValue = usingExternal ? Math.min(100, Math.max(0, Math.round(progressOverride ?? 0))) : progress;
 
-  const circularProgress = useMemo(() => {
-    const ringSize = 200;
-    const strokeWidth = 12;
-    const radius = (ringSize - strokeWidth) / 2;
-    const circumference = 2 * Math.PI * radius;
-    const strokeDashoffset = circumference - (progressValue / 100) * circumference;
-    const tone = progressValue >= 100 ? "var(--color-success-500, #16a34a)" : "var(--color-primary, #0a84ff)";
-
-    return { ringSize, strokeWidth, radius, circumference, strokeDashoffset, tone };
-  }, [progressValue]);
-
   return (
     <div
       className={`relative flex min-h-[260px] w-full flex-col gap-6 overflow-hidden rounded-3xl border px-6 py-9 shadow-sm sm:px-12 sm:py-12 ${styles.container}`}
@@ -64,47 +53,84 @@ export default function AnalysisProcessingSkeleton({
 
         <div className="relative flex items-center justify-center">
           <svg
-            viewBox={`0 0 ${circularProgress.ringSize} ${circularProgress.ringSize}`}
-            className={`h-52 w-52 ${styles.svgFilter}`}
+            viewBox="0 0 280 360"
+            className={`h-80 w-auto ${styles.svgFilter}`}
             role="img"
-            aria-label={`Progresso ${progressValue}%`}
+            aria-label={`Análise Capilar - Progresso ${progressValue}%`}
           >
-            <circle
-              cx={circularProgress.ringSize / 2}
-              cy={circularProgress.ringSize / 2}
-              r={circularProgress.radius}
-              fill="none"
-              stroke="var(--color-border)"
-              strokeWidth={circularProgress.strokeWidth}
-              strokeDasharray={`${circularProgress.circumference}`}
-              className={styles.backgroundCircle}
+            {/* Ondas/pulsos de varredura animadas */}
+            <defs>
+              <filter id="glow">
+                <feGaussianBlur stdDeviation="1.5" result="coloredBlur"/>
+                <feMerge>
+                  <feMergeNode in="coloredBlur"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+              <linearGradient id="hairGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#0a84ff" stopOpacity="0.8"/>
+                <stop offset="100%" stopColor="#2563eb" stopOpacity="0.6"/>
+              </linearGradient>
+            </defs>
+
+            {/* Ondas de pulso ao redor */}
+            <circle cx="140" cy="140" r="110" fill="none" stroke="rgba(10,132,255,0.2)" strokeWidth="2" className={styles.scanWave1}/>
+            <circle cx="140" cy="140" r="130" fill="none" stroke="rgba(10,132,255,0.15)" strokeWidth="2" className={styles.scanWave2}/>
+            <circle cx="140" cy="140" r="100" fill="none" stroke="rgba(10,132,255,0.25)" strokeWidth="1.5" className={styles.scanWave3}/>
+
+            {/* Linhas conectoras (estilo rede neural) */}
+            <g className={styles.networkLines} opacity="0.4" stroke="rgba(10,132,255,0.5)" strokeWidth="1">
+              <line x1="140" y1="50" x2="90" y2="90"/>
+              <line x1="140" y1="50" x2="190" y2="90"/>
+              <line x1="50" y1="140" x2="90" y2="130"/>
+              <line x1="230" y1="140" x2="190" y2="130"/>
+              <line x1="100" y1="220" x2="120" y2="180"/>
+              <line x1="180" y1="220" x2="160" y2="180"/>
+            </g>
+
+            {/* Cabelo (topo) */}
+            <path
+              d="M 80 120 Q 70 80 100 50 Q 140 20 180 50 Q 210 80 200 120"
+              fill="url(#hairGradient)"
+              opacity="0.9"
+              filter="url(#glow)"
             />
 
+            {/* Fios de cabelo soltos (animados) */}
+            <g className={styles.hairStrands} stroke="rgba(10,132,255,0.6)" strokeWidth="1.5" fill="none">
+              <path d="M 85 55 Q 80 100 85 150" className={styles.strand}/>
+              <path d="M 110 35 Q 105 95 110 155" className={styles.strand}/>
+              <path d="M 140 25 Q 135 90 140 160" className={styles.strand}/>
+              <path d="M 170 35 Q 175 95 170 155" className={styles.strand}/>
+              <path d="M 195 55 Q 200 100 195 150" className={styles.strand}/>
+            </g>
+
+            {/* Cabeça (rosto) */}
+            <circle cx="140" cy="140" r="50" fill="rgba(10,132,255,0.15)" stroke="rgba(10,132,255,0.4)" strokeWidth="2"/>
+
+            {/* Características do rosto */}
+            <circle cx="125" cy="130" r="6" fill="rgba(10,132,255,0.7)"/>
+            <circle cx="155" cy="130" r="6" fill="rgba(10,132,255,0.7)"/>
+            <path d="M 135 155 Q 140 160 145 155" stroke="rgba(10,132,255,0.5)" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+
+            {/* Linha de progresso ao redor da cabeça */}
             <circle
-              cx={circularProgress.ringSize / 2}
-              cy={circularProgress.ringSize / 2}
-              r={circularProgress.radius}
+              cx="140"
+              cy="140"
+              r="62"
               fill="none"
-              stroke="var(--color-primary, #0a84ff)"
-              strokeWidth={circularProgress.strokeWidth}
-              strokeLinecap="round"
-              strokeDasharray={`${circularProgress.circumference}`}
-              strokeDashoffset={circularProgress.strokeDashoffset}
-              transform={`rotate(-90 ${circularProgress.ringSize / 2} ${circularProgress.ringSize / 2})`}
-              className={styles.progressCircle}
+              stroke="rgba(10,132,255,0.3)"
+              strokeWidth="3"
+              strokeDasharray="389.5"
+              strokeDashoffset={389.5 - (progressValue / 100) * 389.5}
+              className={styles.hairProgressRing}
+              opacity="0.8"
             />
-            <circle
-              cx={circularProgress.ringSize / 2}
-              cy={circularProgress.ringSize / 2}
-              r={circularProgress.radius - 10}
-              fill="none"
-              stroke="rgba(10,132,255,0.22)"
-              strokeWidth={4}
-              strokeDasharray={`${circularProgress.circumference * 0.25} ${circularProgress.circumference}`}
-              strokeDashoffset={circularProgress.circumference * 0.1}
-              transform={`rotate(90 ${circularProgress.ringSize / 2} ${circularProgress.ringSize / 2})`}
-              className={styles.glowCircle}
-            />
+
+            {/* Glow final quando completo */}
+            {progressValue >= 90 && (
+              <circle cx="140" cy="140" r="65" fill="none" stroke="rgba(10,132,255,0.4)" strokeWidth="2" className={styles.completionGlow}/>
+            )}
           </svg>
 
           <div className="absolute inset-0 flex items-center justify-center" aria-hidden>
@@ -112,8 +138,8 @@ export default function AnalysisProcessingSkeleton({
               <div className="text-4xl font-semibold tracking-tight text-[color:var(--color-text)]">{progressValue}%</div>
               <div className="text-[12px] text-[color:var(--color-text-muted)]">
                 {mode === "tricologica"
-                  ? "Mapeando couro cabeludo, sinais inflamatórios e microscopia"
-                  : "Lendo textura, porosidade e integridade química"}
+                  ? "Mapeando análise capilar"
+                  : "Processando integridade do fio"}
               </div>
             </div>
           </div>
@@ -127,9 +153,11 @@ export default function AnalysisProcessingSkeleton({
             <span className="tracking-tight">Processando análise</span>
           </div>
           <div className="relative h-2 w-full overflow-hidden rounded-full bg-[color:var(--color-border)]/50">
-            <div
-              className={`absolute inset-y-0 left-0 rounded-full ${styles.progressBar}`}
-              style={{ "--progress-width": `${progressValue}%` } as React.CSSProperties}
+            <progress
+              className={styles.progressBar}
+              value={progressValue}
+              max={100}
+              aria-label="Progresso da anÃ¡lise"
             />
           </div>
           <div className="text-xs leading-relaxed text-[color:var(--color-text-muted)] text-center max-w-xl">

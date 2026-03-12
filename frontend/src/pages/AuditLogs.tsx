@@ -54,17 +54,23 @@ export default function AuditLogs() {
     <section className="section-stack animate-page-in w-full">
       <Section className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-[0.35em]" style={{ color: "var(--color-text-muted)" }}>
+          <div
+            className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em]"
+            style={{ borderColor: "var(--color-border)", color: "var(--color-primary)", backgroundColor: "color-mix(in srgb, var(--color-primary) 6%, var(--color-surface))" }}
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-primary)]" />
             Segurança e compliance
-          </p>
-          <h1 className="text-2xl font-semibold" style={{ color: "var(--color-text)" }}>
-            Audit logs do sistema
-          </h1>
-          <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
-            Monitoramos todas as ações relevantes para garantir rastreabilidade e governança.
-          </p>
+          </div>
+          <div className="space-y-1">
+            <h1 className="text-2xl font-semibold" style={{ color: "var(--color-text)" }}>
+              Audit logs do sistema
+            </h1>
+            <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
+              Monitoramos todas as ações relevantes para garantir rastreabilidade e governança.
+            </p>
+          </div>
         </div>
-        <div className="toolbar justify-end">
+        <div className="toolbar justify-end gap-2">
           <button
             className="btn-secondary"
             disabled={loading || logs.length === 0}
@@ -82,7 +88,7 @@ export default function AuditLogs() {
         </div>
       </Section>
 
-      <Section>
+      <Section className="space-y-3">
         <label className="flex items-center gap-2 text-xs uppercase tracking-[0.3em]" style={{ color: "var(--color-text-muted)" }}>
           <Search size={14} />
           Filtro por ação
@@ -171,7 +177,7 @@ export default function AuditLogs() {
         )}
       </Section>
 
-      <Section className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <Section className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="toolbar">
           <button
             className="btn-secondary"

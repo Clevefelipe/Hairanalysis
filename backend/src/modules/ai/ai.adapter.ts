@@ -13,6 +13,7 @@ import {
   AestheticDecisionResponse,
 } from './types/ai.types';
 import { calculateSic } from './utils/sic-calculator';
+import { sanitizePayload } from '../../common/middleware/legal-terms-sanitizer.middleware';
 
 import {
   VisionImageAnalysisInput,
@@ -442,7 +443,7 @@ export async function runHairAnalysisPremiumAI(
   }
 
   validatePremiumResponse(parsed);
-  return parsed;
+  return sanitizePayload(parsed) as HairAnalysisPremiumResponse;
 }
 
 export async function runAestheticDecisionAI(
@@ -505,7 +506,8 @@ export async function runAestheticDecisionAI(
       parsed.scoreIntegridade = sic.score_final;
     }
   }
-  return parsed;
+
+  return sanitizePayload(parsed) as AestheticDecisionResponse;
 }
 
 export async function runVisionImageAnalysisAI(
@@ -540,7 +542,7 @@ export async function runVisionImageAnalysisAI(
 
   let parsed: any;
   try {
-    parsed = JSON.parse(content);
+    parsed = sanitizePayload(JSON.parse(content));
   } catch {
     throw new Error('IA de visão retornou JSON inválido');
   }
@@ -598,8 +600,6 @@ export async function runVisionImageAnalysisAI(
     if (signalsCount > 8) confidence += 6;
     normalizedConfidence = Math.max(45, Math.min(95, Math.round(confidence)));
   }
-  parsed.analysis_confidence = normalizedConfidence;
-
   if (typeof parsed.interpretation !== 'string') {
     parsed.interpretation = 'Análise concluída.';
   }
@@ -694,10 +694,14 @@ export async function runVisionImageAnalysisAI(
   };
 
   parsed.signals = normalizedSignals;
-  parsed.analysis_confidence = Math.min(
-    Number(parsed.analysis_confidence ?? 0),
-    Math.max(35, criticalCompleteness),
-  );
 
-  return parsed as VisionImageAnalysisOutput;
+  const confidenceFloor = criticalCompleteness > 0 ? 35 : 10;
+  const boundedConfidence = Math.min(
+    normalizedConfidence ?? 0,
+    criticalCompleteness || confidenceFloor,
+    100,
+  );
+  parsed.analysis_confidence = Math.max(confidenceFloor, boundedConfidence);
+
+  return sanitizePayload(parsed) as VisionImageAnalysisOutput;
 }

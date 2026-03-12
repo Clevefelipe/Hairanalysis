@@ -25,13 +25,14 @@ const REPLACEMENTS: Array<{ pattern: RegExp; replacement: string }> = [
 ];
 
 function sanitizeText(text: string): string {
+  const normalized = text.normalize('NFC');
   return REPLACEMENTS.reduce(
     (acc, rule) => acc.replace(rule.pattern, rule.replacement),
-    text,
+    normalized,
   );
 }
 
-function sanitizePayload(value: unknown): unknown {
+export function sanitizePayload(value: unknown): unknown {
   if (typeof value === 'string') {
     return sanitizeText(value);
   }
