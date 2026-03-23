@@ -1,1 +1,0 @@
-import{j as i}from"./index-BtL2prAe.js";function c({as:t="section",className:o="",children:n,...s}){const e=t;return i.jsx(e,{className:["panel-tight","section-stack",o].filter(Boolean).join(" "),...s,children:n})}export{c as S};
