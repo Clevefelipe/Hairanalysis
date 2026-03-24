@@ -65,6 +65,10 @@ export class HistoryService {
     });
   }
 
+  async findById(id: string) {
+    return this.historyRepo.findOne({ where: { id } });
+  }
+
   async createShareToken(historyId: string, salonId: string) {
     return this.jwtService.sign(
       { historyId, salonId, scope: "history_share" },

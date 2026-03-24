@@ -20,6 +20,9 @@ export class User {
   @Column()
   password: string;
 
+  @Column({ nullable: true })
+  fullName?: string;
+
   // ✅ TIPO EXPLÍCITO PARA POSTGRES
   @Column({
     type: "varchar",
@@ -33,7 +36,15 @@ export class User {
   })
   role: UserRole;
 
+  @Column({ nullable: true })
+  salonId?: string;
+
   @ManyToOne(() => Salon, (salon) => salon.users)
   @JoinColumn({ name: "salon_id" })
   salon: Salon;
 }
+
+export const UserEntity = User;
+export type UserEntity = User;
+
+

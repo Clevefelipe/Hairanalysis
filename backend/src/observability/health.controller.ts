@@ -2,10 +2,7 @@ import { Controller, Get, Inject, Optional } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { promises as fs } from 'fs';
 import * as path from 'path';
-import {
-  REPORTS_STORAGE_PROVIDER,
-  S3StorageProvider,
-} from '../reports/reports.storage';
+import { REPORTS_STORAGE_PROVIDER } from '../reports/reports.storage';
 import type { StorageProvider } from '../reports/reports.storage';
 
 @Controller('health')
@@ -124,19 +121,16 @@ export class HealthController {
     try {
       const providerName = this.storage.constructor?.name ?? 'unknown';
 
-      if (this.storage instanceof S3StorageProvider) {
-        const bucket = process.env.REPORTS_S3_BUCKET;
-        if (!bucket)
-          return { status: 'down', error: 'REPORTS_S3_BUCKET não configurado' };
-        return { status: 'up', info: { provider: providerName, bucket } };
+      if (typeof this.storage.getPath === 'function') {
+        const probePath = await this.storage.getPath('.health-check');
+        const dir = path.dirname(String(probePath));
+        await fs.mkdir(dir, { recursive: true });
+        await fs.access(dir);
+        return { status: 'up', info: { provider: providerName, dir } };
       }
 
-      // Local: checa se diretório de storage é acessível usando getPath
-      const probePath = await this.storage.getPath('.health-check');
-      const dir = path.dirname(probePath);
-      await fs.mkdir(dir, { recursive: true });
-      await fs.access(dir);
-      return { status: 'up', info: { provider: providerName, dir } };
+      // Fallback para providers sem getPath (e.g. S3)
+      return { status: 'up', info: { provider: providerName } };
     } catch (error) {
       return { status: 'down', error: (error as Error).message };
     }

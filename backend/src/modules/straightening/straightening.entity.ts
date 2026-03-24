@@ -22,6 +22,15 @@ export class StraighteningEntity {
   @Column({ type: "jsonb", default: {} })
   criteria: Record<string, any>;
 
+  @Column({ type: 'float', nullable: true })
+  maxDamageTolerance?: number;
+
+  @Column({ type: 'float', nullable: true })
+  porositySupport?: number;
+
+  @Column({ type: 'float', nullable: true })
+  elasticitySupport?: number;
+
   @CreateDateColumn()
   createdAt: Date;
 }

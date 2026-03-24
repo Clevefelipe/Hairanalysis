@@ -102,7 +102,7 @@ export class ReportsController {
 
     try {
       const history = await this.historyService.findById(meta.analysisId);
-      if (history.salonId !== salonId) {
+      if (!history || history.salonId !== salonId) {
         return { status: 'not_found' };
       }
     } catch {
@@ -128,7 +128,7 @@ export class ReportsController {
 
     try {
       const history = await this.historyService.findById(meta.analysisId);
-      if (history.salonId !== salonId) {
+      if (!history || history.salonId !== salonId) {
         return { status: 'not_ready' };
       }
     } catch {
@@ -183,7 +183,7 @@ export class ReportsController {
         : 'Cliente não identificado';
     let clienteContato: string | undefined = undefined;
     try {
-      const cliente = await this.clientesService.findOne(history.clientId);
+      const cliente = (await this.clientesService.findOne(history.clientId)) as any;
       if (cliente?.nome) clienteNome = cliente.nome;
       if (cliente?.telefone) clienteContato = cliente.telefone;
     } catch {

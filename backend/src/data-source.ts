@@ -2,7 +2,7 @@ import { DataSource } from 'typeorm';
 import { UserEntity } from './modules/auth/user.entity';
 import { SalonEntity } from './modules/salon/salon.entity';
 import { HistoryEntity } from './modules/history/history.entity';
-import { KnowledgeDocument } from './modules/knowledge/knowledge-document.entity';
+import { KnowledgeEmbedding } from './modules/knowledge/entities/knowledge-embedding.entity';
 import { StraighteningEntity } from './modules/straightening/straightening.entity';
 import { Cliente } from './clientes/entities/cliente.entity';
 import { AuditLogEntity } from './modules/audit/audit-log.entity';
@@ -21,7 +21,7 @@ export const AppDataSource = new DataSource({
     UserEntity,
     SalonEntity,
     HistoryEntity,
-    KnowledgeDocument,
+    KnowledgeEmbedding,
     StraighteningEntity,
     Cliente,
     AuditLogEntity,

@@ -38,6 +38,9 @@ export class HistoryEntity {
   @Column("jsonb", { nullable: true })
   recommendations?: any;
 
+  @Column({ nullable: true })
+  publicToken?: string;
+
   @CreateDateColumn()
   createdAt: Date;
 }

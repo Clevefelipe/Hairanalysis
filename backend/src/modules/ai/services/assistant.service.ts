@@ -66,7 +66,6 @@ export class AssistantService {
 
     const hits = await this.knowledge.semanticSearch(
       queryParts.join(' | '),
-      params.salonId,
       domain,
       4,
     );
@@ -79,7 +78,7 @@ export class AssistantService {
         content.length > 320 ? `${content.slice(0, 320).trim()}...` : content;
       return {
         label: `${idx + 1}. ${clipped}`,
-        reference: hit.groupId,
+        reference: (hit as any).groupId,
       };
     });
 
