@@ -238,6 +238,41 @@ Para manter o ritmo premium e denso do produto, utilizamos um conjunto de util c
 | `.panel-tight`   | Contêiner padrão de cards/painéis. Inclui borda suave, raio 3xl e padding compacto. |
 | `.grid-dense`    | Grid responsivo com `gap-4/5`, usado para cards executivos, métricas e listas compactas. |
 | `.toolbar`       | Barras de ação (filtros + botões) com `flex-wrap` e `gap-2`, ideal para páginas Clientes e Histórico. |
+
+---
+
+## 🗂️ Configuração de armazenamento local de relatórios
+
+Para evitar regressões e garantir que os arquivos PDF de relatório sejam persistidos em local previsível durante desenvolvimento local, a configuração do provider de relatórios foi ajustada para:
+
+- `REPORTS_LOCAL_DIR` (opcional): caminho absoluto específico, se definido.
+- `~/Desktop/HairAnalysisReports` (padrão): diretório no Desktop do usuário, quando não há `REPORTS_LOCAL_DIR`.
+
+### Exemplo (Windows)
+
+ no `.env` do backend:
+
+```env
+REPORTS_LOCAL_DIR=C:\Users\SeuUsuario\Documents\HairAnalysisReports
+```
+
+### Exemplo (Linux / macOS)
+
+```env
+REPORTS_LOCAL_DIR=/home/seuusuario/HairAnalysisReports
+```
+
+### Uso esperado
+
+- Ao gerar relatório (`POST /reports`), o sistema salva em local físico de arquivo.
+- O caminho de retorno (URL assinada) é gerado pelo `PUBLIC_REPORT_BASE_URL`.
+
+### Por que isso evita regressão
+
+- Sempre há um fallback documentado (Desktop) para ambiente local.
+- Evita que a aplicação esteja dependente apenas de storage em memória ou S3 durante desenvolvimento.
+- Permite inspeção manual dos PDFs gerados em um fastpath previsível.
+
 | `.chip-group`    | Coleções de filtros rápidos (chips). Mantém espaçamento de 2 para desktops e mobile. |
 
 ### Boas práticas
