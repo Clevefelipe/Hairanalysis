@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Provider } from '@nestjs/common';
 import { promises as fs } from 'fs';
+import * as os from 'os';
 import * as path from 'path';
 
 export const REPORTS_STORAGE_PROVIDER = 'REPORTS_STORAGE_PROVIDER';
@@ -29,8 +30,10 @@ export class LocalStorageProvider implements StorageProvider {
   private readonly publicBaseUrl: string;
 
   constructor() {
+    const configuredDir = process.env.REPORTS_LOCAL_DIR?.trim();
+    const desktopPath = path.join(os.homedir(), 'Desktop', 'HairAnalysisReports');
     this.baseDir = path.resolve(
-      process.env.REPORTS_LOCAL_DIR || 'storage/reports',
+      configuredDir || desktopPath,
     );
     this.publicBaseUrl =
       process.env.PUBLIC_REPORT_BASE_URL?.trim() || '/storage/reports';
