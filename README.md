@@ -24,6 +24,7 @@ O Hair Analysis System existe para:
 ## 🧩 Principais Funcionalidades
 
 ### 🔍 Análise Capilar Estética
+
 - Avaliação da **haste capilar** (porosidade, elasticidade, resistência, integridade)
 - Interpretação técnica do impacto estético (frizz, volume, alinhamento, quebra)
 - Tradução técnica para linguagem acessível ao cliente
@@ -36,6 +37,7 @@ O Hair Analysis System existe para:
 ---
 
 ### 🧬 Análise Tricológica Estética
+
 - Avaliação do **couro cabeludo e folículo piloso**
 - Identificação de sinais estéticos relevantes:
   - Oleosidade excessiva
@@ -50,12 +52,14 @@ O Hair Analysis System existe para:
 ---
 
 ### 📸 Análise por Imagem e Vídeo
+
 - Captura e análise de imagens e vídeos do couro cabeludo e fios
 - Integração com **microscopia digital**
 - Visualização em tempo real durante a análise
 - Detecção automática de achados visuais relevantes
 
 Quando um sinal relevante é identificado, o sistema:
+
 - Pausa a captura automaticamente
 - Registra o achado
 - Exibe alerta em tela
@@ -88,6 +92,7 @@ O sistema classifica a aptidão para alisamento em:
 - ❌ **Não Apto**
 
 A decisão é:
+
 - Justificada tecnicamente
 - Baseada apenas nos dados disponíveis
 - Sempre priorizando a **segurança da fibra capilar**
@@ -97,15 +102,18 @@ A decisão é:
 ---
 
 ### 💇 Protocolos Personalizados
+
 - Seleção exclusiva entre **serviços cadastrados no salão**
 - Avaliação de compatibilidade por serviço
 - Indicação de cuidados técnicos pré e pós-química
 - Sugestão de combos (alisamento + tratamento)
 - Definição de intervalos seguros entre químicas
 - Montagem de cronograma capilar com intervalos seguros e retorno programado
+
 ---
 
 ### 🧴 Home Care Personalizado
+
 - Cronograma capilar de 4 semanas:
   - Hidratação
   - Nutrição
@@ -117,6 +125,7 @@ A decisão é:
 ---
 
 ### 📊 Histórico e Acompanhamento Evolutivo
+
 - Histórico comparativo entre visitas
 - Gráficos de evolução capilar
 - Registro técnico contínuo
@@ -127,6 +136,7 @@ A decisão é:
 ---
 
 ## 📤 Relatórios Profissionais
+
 - Geração automática de **PDFs premium**
 - Linguagem técnica e profissional
 - Conteúdo claro e responsável
@@ -136,6 +146,7 @@ A decisão é:
 ---
 
 ## 🗣️ Tom de Voz do Sistema
+
 - Profissional
 - Técnico e claro
 - Seguro e não alarmista
@@ -157,6 +168,7 @@ Sempre que os sinais ultrapassarem o escopo estético, o sistema **orienta o pro
 ## 🚀 Arquitetura e Evolução
 
 O Hair Analysis System foi projetado para:
+
 - Escalabilidade
 - Modularidade
 - Uso com dados parciais
@@ -164,6 +176,7 @@ O Hair Analysis System foi projetado para:
 - Expansão global
 
 Ele serve como base para:
+
 - Ranking inteligente de serviços
 - Relatórios avançados
 - IA contextual por salão
@@ -194,9 +207,11 @@ Ele serve como base para:
 
 1. Configure o `.env` do backend com as credenciais do Postgres (veja `.env.example`).
 2. Rode as migrations:
+
    ```bash
    npm run migration:run
    ```
+
 3. (Opcional) Para aplicar migrations futuras: `npm run migration:generate -- <NomeMigration>` e depois `npm run migration:run`.
 
 > Os três endpoints são expostos automaticamente ao iniciar o backend. Em produção, restrinja `/api/metrics` e `/api/health` via firewall, autenticação reversa ou service mesh. A rota `/healthz` pode permanecer pública para balanceadores, desde que esteja atrás do CDN/frontend.
@@ -204,6 +219,7 @@ Ele serve como base para:
 ---
 
 ## 💎 Hair Analysis System
+
 **Tecnologia, segurança e inteligência aplicadas à estética capilar profissional.**
 
 ---
@@ -212,16 +228,17 @@ Ele serve como base para:
 
 Para manter o ritmo premium e denso do produto, utilizamos um conjunto de util classes em `src/index.css`:
 
-| Token            | Uso recomendado |
-| ---------------- | ---------------- |
-| `.layout-shell`  | Padding horizontal/vertical do conteúdo principal. Aplica-se ao `<main>` e garante respiro uniforme em todas as páginas. |
-| `.section-stack` | Agrupador vertical entre seções — substitui `space-y-*`, reduzindo gaps e mantendo ritmo consistente. |
-| `.panel-tight`   | Contêiner padrão de cards/painéis. Inclui borda suave, raio 3xl e padding compacto. |
-| `.grid-dense`    | Grid responsivo com `gap-4/5`, usado para cards executivos, métricas e listas compactas. |
-| `.toolbar`       | Barras de ação (filtros + botões) com `flex-wrap` e `gap-2`, ideal para páginas Clientes e Histórico. |
-| `.chip-group`    | Coleções de filtros rápidos (chips). Mantém espaçamento de 2 para desktops e mobile. |
+|Token|Uso recomendado|
+|---|---|
+|`.layout-shell`|Padding horizontal/vertical do conteúdo principal. Aplica-se ao `<main>` e garante respiro uniforme em todas as páginas.|
+|`.section-stack`|Agrupador vertical entre seções — substitui `space-y-*`, reduzindo gaps e mantendo ritmo consistente.|
+|`.panel-tight`|Contêiner padrão de cards/painéis. Inclui borda suave, raio 3xl e padding compacto.|
+|`.grid-dense`|Grid responsivo com `gap-4/5`, usado para cards executivos, métricas e listas compactas.|
+|`.toolbar`|Barras de ação (filtros + botões) com `flex-wrap` e `gap-2`, ideal para páginas Clientes e Histórico.|
+|`.chip-group`|Coleções de filtros rápidos (chips). Mantém espaçamento de 2 para desktops e mobile.|
 
 ### Boas práticas
+
 1. **Aplicar tokens no nível de seção** antes de estilizar elementos internos (ex.: `<section className="panel-tight">`).
 2. **Usar `grid-dense` + `panel-tight`** para qualquer conjunto de cards executivos, evitando classes ad-hoc.
 3. **Barras com filtros/ações** devem usar `SectionToolbar` ou a util `.toolbar` para garantir quebras suaves em telas menores.
