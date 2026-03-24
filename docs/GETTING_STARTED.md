@@ -61,6 +61,23 @@ description: Passo a passo rápido para rodar o Hair Analysis System
    ```
    Use VITE_API_BASE_URL=http://localhost:3000/api
 
+## Checklist rápido para rodar local (sem branch específica)
+- [ ] Clonar repositório na máquina local.
+- [ ] Entrar na pasta raiz e instalar dependências: `npm install` (pode ser via monorepo ou em `frontend/backend`).
+- [ ] Atualizar `.env` em `backend` com DB e JWT.
+- [ ] Iniciar o backend:
+  - `cd backend`
+  - `npm run start:dev`
+- [ ] Iniciar o frontend:
+  - `cd frontend`
+  - `npm run dev`
+- [ ] Testar endpoints básicos:
+  - `http://localhost:3000/api/health`
+  - `http://localhost:5173`
+- [ ] Gerar um relatório e confirmar que o arquivo aparece em `~/Desktop/HairAnalysisReports` (ou no path de `REPORTS_LOCAL_DIR`).
+- [ ] Confirmar que o frontend está consumindo a API sem erro CORS e com login bem-sucedido.
+
+
 ## Variáveis importantes (backend)
 - JWT_SECRET, JWT_REFRESH_SECRET
 - JWT_ACCESS_EXPIRES_IN, JWT_REFRESH_EXPIRES_IN
