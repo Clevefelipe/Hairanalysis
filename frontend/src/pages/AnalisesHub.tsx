@@ -1,6 +1,6 @@
 ﻿import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, CheckCircle2, Layers, Loader2, Microscope, Sparkles, Timer, User, UserRound, Wand2 } from "lucide-react";
+import { AlertTriangle, ArrowRight, CheckCircle2, Layers, Loader2, Microscope, Sparkles, Timer, User, UserRound, Wand2 } from "lucide-react";
 
 import PageHero from "@/components/ui/PageHero";
 import SectionToolbar from "@/components/ui/SectionToolbar";
@@ -8,10 +8,17 @@ import ClientLookupModal from "@/components/clientes/ClientLookupModal";
 import { useClientSession } from "@/context/ClientSessionContext";
 import { useToast } from "@/components/ui/ToastProvider";
 import { AnalysisHistory, listHistoryByClient } from "@/services/history.service";
+import { formatDateShortBr } from "@/utils/date";
+
+function safeDate(value: string | number | Date | undefined | null) {
+  const d = value ? new Date(value) : null;
+  return d && !Number.isNaN(d.getTime()) ? d : null;
+}
 
 export default function AnalisesHub() {
   const navigate = useNavigate();
   const { activeClient, hasSession, startSession, endSession, flowState, setFlowMode, resetFlowProgress } = useClientSession();
+  const overridePending = flowState.tricologicaOverride && flowState.mode === "completo" && !flowState.tricologicaDone;
   const { notify } = useToast();
 
   const [historyLoading, setHistoryLoading] = useState(false);
@@ -64,20 +71,23 @@ export default function AnalisesHub() {
 
   const latestTricologica = useMemo(() => {
     return [...historyItems]
-      .filter((item) => item.analysisType === "tricologica")
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
+      .map((item) => ({ item, date: safeDate(item.createdAt) }))
+      .filter(({ item, date }) => item.analysisType === "tricologica" && date)
+      .sort((a, b) => (b.date?.getTime() || 0) - (a.date?.getTime() || 0))[0]?.item;
   }, [historyItems]);
 
   const latestCapilar = useMemo(() => {
     return [...historyItems]
-      .filter((item) => item.analysisType === "capilar")
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
+      .map((item) => ({ item, date: safeDate(item.createdAt) }))
+      .filter(({ item, date }) => item.analysisType === "capilar" && date)
+      .sort((a, b) => (b.date?.getTime() || 0) - (a.date?.getTime() || 0))[0]?.item;
   }, [historyItems]);
 
   const latestIntegrated = useMemo(() => {
     return [...historyItems]
-      .filter((item) => item.analysisType === "geral")
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
+      .map((item) => ({ item, date: safeDate(item.createdAt) }))
+      .filter(({ item, date }) => item.analysisType === "geral" && date)
+      .sort((a, b) => (b.date?.getTime() || 0) - (a.date?.getTime() || 0))[0]?.item;
   }, [historyItems]);
 
   const latestTricologicaForCard = latestTricologica ?? latestIntegrated;
@@ -142,21 +152,29 @@ export default function AnalisesHub() {
   const capilarCount = useMemo(() => historyItems.filter((i) => i.analysisType === "capilar").length, [historyItems]);
   const integradaCount = useMemo(() => historyItems.filter((i) => i.analysisType === "geral").length, [historyItems]);
   const latestAny = useMemo(() => {
-    return [...historyItems].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
+    return [...historyItems]
+      .map((item) => ({ item, date: safeDate(item.createdAt) }))
+      .filter(({ date }) => Boolean(date))
+      .sort((a, b) => (b.date?.getTime() || 0) - (a.date?.getTime() || 0))[0]?.item;
   }, [historyItems]);
 
   const recentHistoryFiltered = useMemo(() => {
-    const sorted = [...historyItems].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    const sorted = [...historyItems]
+      .map((item) => ({ item, date: safeDate(item.createdAt) }))
+      .filter(({ date }) => Boolean(date))
+      .sort((a, b) => (b.date?.getTime() || 0) - (a.date?.getTime() || 0));
     const seenKeys = new Set<string>();
 
     return sorted
-      .filter((item) => {
-        const dayKey = new Date(item.createdAt).toISOString().slice(0, 10);
+      .filter(({ item, date }) => {
+        if (!date) return false;
+        const dayKey = date.toISOString().slice(0, 10);
         const key = `${item.analysisType}-${dayKey}`;
         if (seenKeys.has(key)) return false;
         seenKeys.add(key);
         return true;
       })
+      .map(({ item }) => item)
       .slice(0, 5);
   }, [historyItems]);
 
@@ -167,6 +185,12 @@ export default function AnalisesHub() {
 
     if (flowState.mode === "completo") {
       if (!flowState.tricologicaDone) {
+        if (overridePending) {
+          return {
+            label: "Tricologia pendente (override ativo) — retome antes de fechar protocolo",
+            path: `/analise-tricologica?flow=completo&clientId=${activeClient.id}`,
+          };
+        }
         return {
           label: "Inicie pela análise tricológica (protocolo completo)",
           path: `/analise-tricologica?flow=completo&clientId=${activeClient.id}`,
@@ -216,7 +240,18 @@ export default function AnalisesHub() {
         {
           label: "Encerrar sessão",
           variant: "ghost" as const,
-          onClick: endSession,
+          onClick: () => {
+            try {
+              endSession();
+              if (activeClient?.nome) {
+                notify(`Sessão encerrada\n${activeClient.nome}`, "success");
+              } else {
+                notify("Sessão encerrada.", "success");
+              }
+            } catch (e: any) {
+              notify(e?.message || "Não foi possível encerrar a sessão.", "error");
+            }
+          },
         },
       ]
     : undefined;
@@ -238,6 +273,32 @@ export default function AnalisesHub() {
         ]}
         actions={heroActions}
       />
+
+      {overridePending && hasSession && (
+        <section className="panel-tight" style={{ borderColor: "var(--color-border)", backgroundColor: "var(--color-surface)" }}>
+          <div className="flex flex-col gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm" style={{ color: "#92400e" }}>
+            <div className="flex items-center gap-2">
+              <AlertTriangle size={18} className="text-amber-500" />
+              <p className="font-semibold text-amber-700">Protocolo completo em estado parcial</p>
+            </div>
+            <p>
+              A análise capilar foi executada antes do couro cabeludo. Retome a etapa tricológica para liberar o laudo integrado e remover o alerta de override.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <button
+                className="btn-primary flex items-center gap-2 text-sm"
+                onClick={() => navigate(`/analise-tricologica?flow=completo&clientId=${activeClient!.id}`)}
+              >
+                <Microscope size={16} />
+                Reabrir tricologia
+              </button>
+              <button className="btn-secondary text-sm" onClick={() => navigate(`/analise-capilar?flow=completo&clientId=${activeClient!.id}`)}>
+                Revisar análise capilar
+              </button>
+            </div>
+          </div>
+        </section>
+      )}
 
       {sessionGate && (
         <section className="panel-tight" style={{ borderColor: "var(--color-border)", backgroundColor: "var(--color-surface)" }}>
@@ -312,7 +373,7 @@ export default function AnalisesHub() {
                 <p className="text-xs uppercase tracking-[0.2em]" style={{ color: "var(--color-text-muted)" }}>Última análise</p>
                 <Timer size={16} className="text-[color:var(--color-success-600)]" />
               </div>
-              <p className="mt-2 text-sm" style={{ color: "var(--color-text)" }}>{latestAny ? new Date(latestAny.createdAt).toLocaleDateString() : "Sem histórico"}</p>
+              <p className="mt-2 text-sm" style={{ color: "var(--color-text)" }}>{latestAny ? formatDateShortBr(latestAny.createdAt) : "Sem histórico"}</p>
               <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>{latestAny ? analysisTypeLabel(latestAny.analysisType) : "Registre a primeira análise."}</p>
             </article>
             <article className="rounded-xl border p-5 shadow-sm" style={{ borderColor: "var(--color-border)", backgroundColor: "var(--bg-primary)" }}>
@@ -451,7 +512,7 @@ export default function AnalisesHub() {
                   </div>
                 </div>
                 <span className="text-xs" style={{ color: "var(--color-text-muted)" }}>
-                  {latestTricologicaForCard ? new Date(latestTricologicaForCard.createdAt).toLocaleDateString() : "—"}
+                  {latestTricologicaForCard ? formatDateShortBr(latestTricologicaForCard.createdAt) : "—"}
                 </span>
               </div>
 
@@ -487,7 +548,7 @@ export default function AnalisesHub() {
                   </div>
                 </div>
                 <span className="text-xs" style={{ color: "var(--color-text-muted)" }}>
-                  {latestCapilarForCard ? new Date(latestCapilarForCard.createdAt).toLocaleDateString() : "—"}
+                  {latestCapilarForCard ? formatDateShortBr(latestCapilarForCard.createdAt) : "—"}
                 </span>
               </div>
 
@@ -545,7 +606,7 @@ export default function AnalisesHub() {
                     <span className="font-medium" style={{ color: "var(--color-text)" }}>
                       {analysisTypeLabel(item.analysisType)}
                     </span>
-                    <span className="text-xs" style={{ color: "var(--color-text-muted)" }}>{new Date(item.createdAt).toLocaleDateString()}</span>
+                    <span className="text-xs" style={{ color: "var(--color-text-muted)" }}>{formatDateShortBr(item.createdAt)}</span>
                   </div>
                   <p className="mt-1 text-xs line-clamp-2" style={{ color: "var(--color-text-muted)" }}>{item.interpretation || "Sem interpretação disponível."}</p>
                 </div>

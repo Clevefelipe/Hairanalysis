@@ -1,3 +1,5 @@
+import { createPortal } from "react-dom";
+
 interface ConfirmModalProps {
   title?: string;
   message: string;
@@ -17,51 +19,60 @@ export default function ConfirmModal({
   onCancel,
   loading = false,
 }: ConfirmModalProps) {
-  return (
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        backgroundColor: "rgba(0,0,0,0.4)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 9998,
-      }}
-    >
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/55 backdrop-blur-[2px] px-4 py-6 animate-page-in">
       <div
+        className="relative flex w-full max-w-lg max-h-[90vh] flex-col overflow-hidden rounded-2xl border shadow-2xl"
+        role="dialog"
+        aria-modal="true"
         style={{
-          backgroundColor: "#fff",
-          borderRadius: 8,
-          width: 360,
-          padding: 20,
-          boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
+          borderColor: "var(--color-border)",
+          backgroundColor: "var(--color-modal-surface, var(--color-surface))",
+          boxShadow: "var(--shadow-2xl)",
         }}
       >
-        <h3 style={{ marginBottom: 8 }}>{title}</h3>
-        <p style={{ marginBottom: 20, color: "#444" }}>{message}</p>
-
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
-          <button onClick={onCancel} disabled={loading}>
-            {cancelText}
-          </button>
-
-          <button
-            onClick={onConfirm}
-            disabled={loading}
-            style={{
-              backgroundColor: "#dc2626",
-              color: "#fff",
-              border: "none",
-              padding: "6px 12px",
-              borderRadius: 4,
-              cursor: "pointer",
-            }}
+        <div
+          className="border-b px-5 py-4 sm:px-6 sm:py-5"
+          style={{
+            borderColor: "var(--color-border)",
+            backgroundColor: "var(--color-primary, #0f172a)",
+          }}
+        >
+          <p className="text-[11px] font-semibold uppercase tracking-[0.3em]" style={{ color: "var(--color-text-on-strong, #f8fafc)" }}>
+            Confirmação
+          </p>
+          <h3
+            className="mt-1.5 text-lg font-semibold leading-tight uppercase tracking-[0.22em]"
+            style={{ color: "var(--color-text-on-strong, #f8fafc)" }}
           >
-            {loading ? "Excluindo..." : confirmText}
-          </button>
+            {title}
+          </h3>
+        </div>
+
+        <div className="flex-1 overflow-auto px-5 py-5 sm:px-6 sm:py-6" style={{ color: "var(--color-text)" }}>
+          <p className="text-sm whitespace-pre-wrap" style={{ color: "var(--color-text-muted)" }}>{message}</p>
+
+          <div className="mt-6 flex flex-wrap justify-end gap-2.5 border-t pt-3" style={{ borderColor: "var(--color-border)" }}>
+            <button
+              onClick={onCancel}
+              disabled={loading}
+              className="btn-secondary focus-ring-strong"
+            >
+              {cancelText}
+            </button>
+            <button
+              onClick={onConfirm}
+              disabled={loading}
+              className="btn-danger focus-ring-strong"
+            >
+              {loading ? "Processando..." : confirmText}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

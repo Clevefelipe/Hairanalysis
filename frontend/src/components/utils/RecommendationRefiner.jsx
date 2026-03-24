@@ -25,7 +25,6 @@ class RecommendationRefinerEngine {
    * 🔍 Refinar recomendações baseado em histórico
    */
   async refineRecommendations(currentAnalysis, availableServices, clienteId = null) {
-    console.log('🎯 [RecommendationRefiner] Iniciando refinamento...');
 
     try {
       // Buscar histórico relevante
@@ -38,11 +37,9 @@ class RecommendationRefinerEngine {
         historicalData
       );
 
-      console.log('✅ [RecommendationRefiner] Refinamento concluído');
       return refinedRecommendations;
 
     } catch (error) {
-      console.error('❌ [RecommendationRefiner] Erro:', error);
       // Retornar recomendações sem refino em caso de erro
       return {
         alisamento: null,
@@ -78,7 +75,6 @@ class RecommendationRefinerEngine {
       };
 
     } catch (error) {
-      console.error('❌ [RecommendationRefiner] Erro ao buscar histórico:', error);
       return {
         client_history: [],
         similar_profiles: [],

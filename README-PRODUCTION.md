@@ -116,6 +116,13 @@ docker-compose logs -f postgres
 4. **Rate Limiting**: Limite de requisições por IP
 5. **HTTPS**: Configure certificados SSL em produção
 
+### Governança da IA e Versionamento de Prompt
+
+- Escopo estético por modo (Capilar/Tricológico/Geral); modo tricológico bloqueia recomendações de alisamento e evita termos clínicos.
+- Camada IA apenas lê/classifica sinais; score e aptidão são calculados pelo motor determinístico (analysis-engine) com pesos versionados (`weightProfileVersion`).
+- Sanitização jurídica ativa (substitui termos clínicos por linguagem estética) e recomendações de alisamento somente se constarem no catálogo do salão.
+- Prompt mestre atual: **has-prompt-legal-1.2.0**. Pesos determinísticos: **weightProfileVersion: v1.2.0**. Ao ajustar o prompt, registrar nova tag aqui e atualizar `promptVersion` na integração, sem alterar o motor determinístico.
+
 ### Headers de Segurança
 
 O sistema inclui headers de segurança via Helmet.js:

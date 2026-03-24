@@ -3,24 +3,69 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-} from "typeorm";
+} from 'typeorm';
 
-@Entity("straightening_options")
+@Entity('straightenings')
 export class StraighteningEntity {
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ nullable: false })
+  @Column()
   salonId: string;
 
-  @Column({ nullable: false })
+  @Column()
   name: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   description?: string;
 
-  @Column({ type: "jsonb", default: {} })
-  criteria: Record<string, any>;
+  @Column('jsonb', { nullable: true })
+  criteria?: {
+    hairTypes?: string[];
+    /**
+     * Estrutura da fibra (ex.: Fina, Média, Grossa) usada em recomendações da IA
+     */
+    structures?: string[];
+    /**
+     * Nível de volume (ex.: Baixo, Médio, Alto) para scoring de compatibilidade
+     */
+    volume?: string[];
+    damageLevel?: string[];
+    observations?: string;
+  };
+
+  /* =====================================================
+   * STATUS
+   * ===================================================== */
+
+  @Column({ default: true })
+  active: boolean;
+
+  /* =====================================================
+   * CRITÉRIOS TÉCNICOS (IA)
+   * ===================================================== */
+
+  /**
+   * 🔹 Tolerância a dano químico (0–1)
+   */
+  @Column({ type: 'float', default: 0 })
+  maxDamageTolerance: number;
+
+  /**
+   * 🔹 Suporte à porosidade (0–1)
+   */
+  @Column({ type: 'float', default: 0 })
+  porositySupport: number;
+
+  /**
+   * 🔹 Compatibilidade com elasticidade (0–1)
+   */
+  @Column({ type: 'float', default: 0 })
+  elasticitySupport: number;
+
+  /* =====================================================
+   * METADADOS
+   * ===================================================== */
 
   @Column({ type: 'float', nullable: true })
   maxDamageTolerance?: number;

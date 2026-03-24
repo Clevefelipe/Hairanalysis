@@ -1,5 +1,18 @@
 node_modules
 # Keep environment variables out of version control
 .env
+.env.local
 
 /generated/prisma
+frontend/dist
+backend/dist
+coverage
+
+# Logs / temp
+*.log
+npm-debug.log*
+
+# Local backups / temporary files
+*.backup.*
+*.tmp
+*.temp

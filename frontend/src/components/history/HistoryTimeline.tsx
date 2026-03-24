@@ -1,4 +1,5 @@
 import { AnalysisHistory } from "../../services/history.service";
+import { formatDateShortBr } from "@/utils/date";
 
 interface Props {
   items: AnalysisHistory[];
@@ -21,13 +22,11 @@ export default function HistoryTimeline({
           <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm">
             <div className="flex items-center justify-between mb-1">
               <span className="text-xs text-slate-500">
-                {new Date(
-                  item.createdAt
-                ).toLocaleDateString()}
+                {formatDateShortBr(item.createdAt)}
               </span>
 
               <span className="text-xs px-2 py-1 rounded bg-slate-800 text-white">
-                {item.domain.toUpperCase()}
+                {item.analysisType.toUpperCase()}
               </span>
             </div>
 

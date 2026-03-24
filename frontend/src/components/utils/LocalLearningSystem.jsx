@@ -48,16 +48,13 @@ export async function loadLocalLearning(userId) {
     
     if (stored) {
       const data = JSON.parse(stored);
-      console.log('📚 [LocalLearning v3] Dados carregados:', data.metadata);
       return data;
     }
     
     const newData = new LocalLearningData(userId);
     saveLocalLearning(userId, newData);
-    console.log('✨ [LocalLearning v3] Nova estrutura criada');
     return newData;
   } catch (error) {
-    console.error('❌ [LocalLearning] Erro ao carregar:', error);
     return new LocalLearningData(userId);
   }
 }
@@ -66,9 +63,7 @@ export function saveLocalLearning(userId, data) {
   try {
     const storageKey = `${STORAGE_KEY_PREFIX}${userId}`;
     localStorage.setItem(storageKey, JSON.stringify(data));
-    console.log('💾 [LocalLearning v3] Dados salvos');
   } catch (error) {
-    console.error('❌ [LocalLearning] Erro ao salvar:', error);
   }
 }
 
@@ -191,7 +186,6 @@ async function processarFeedbackDetalhado(userId, analise, feedbackDetalhado) {
   });
 
   saveLocalLearning(userId, learning);
-  console.log('✅ [LocalLearning v3] Feedback detalhado processado e regras atualizadas');
 }
 
 export async function registerSuccessfulAnalysis(userId, analise, feedback) {
@@ -226,7 +220,6 @@ export async function registerSuccessfulAnalysis(userId, analise, feedback) {
     saveLocalLearning(userId, learning);
     return learning;
   } catch (error) {
-    console.error('Erro ao registrar:', error);
   }
 }
 
@@ -253,7 +246,6 @@ export async function registerFailedAnalysis(userId, analise, feedback) {
     saveLocalLearning(userId, learning);
     return learning;
   } catch (error) {
-    console.error('Erro ao registrar falha:', error);
   }
 }
 
@@ -357,11 +349,9 @@ export async function gerarInstrucoesAprendizado(userId) {
       }
     }
 
-    console.log('🧠 [LocalLearning v3] Instruções de aprendizado geradas:', instrucoes.length);
     return instrucoes;
 
   } catch (error) {
-    console.error('❌ [LocalLearning] Erro ao gerar instruções:', error);
     return null;
   }
 }
@@ -400,11 +390,9 @@ ${instrucoesTexto}
 
 ═══════════════════════════════════════════════════════════`;
 
-    console.log('✅ [LocalLearning v3] Prompt enriquecido com aprendizado local');
     return promptEnriquecido;
 
   } catch (error) {
-    console.error('❌ [LocalLearning] Erro ao aplicar aprendizado:', error);
     return promptBase;
   }
 }
@@ -497,10 +485,8 @@ export async function generateLocalInsights(userId) {
       });
     }
     
-    console.log('📊 [LocalLearning v3] Insights gerados:', insights);
     return insights;
   } catch (error) {
-    console.error('❌ [LocalLearning] Erro ao gerar insights:', error);
     return null;
   }
 }
@@ -510,7 +496,6 @@ export async function refineRecommendations(userId, analiseData, servicosDisponi
     const learning = await loadLocalLearning(userId);
     
     if (learning.metadata.total_feedbacks < 5) {
-      console.log('⚠️ [LocalLearning v3] Dados insuficientes para refinamento');
       return { refined: false, original: true };
     }
     
@@ -521,7 +506,6 @@ export async function refineRecommendations(userId, analiseData, servicosDisponi
     const colorPattern = learning.patterns.color_patterns[cor];
     
     if (colorPattern && colorPattern.count >= 3) {
-      console.log(`🎨 [LocalLearning v3] Aplicando padrões para cor: ${cor}`);
       
       const servicoAtual = analiseData.recomendacao_alisamento;
       const performance = learning.patterns.service_performance[servicoAtual];
@@ -531,7 +515,6 @@ export async function refineRecommendations(userId, analiseData, servicosDisponi
         const successRate = total > 0 ? (performance.success_count / total) * 100 : 0;
         
         if (successRate < 50 && total >= 3) {
-          console.log(`⚠️ [LocalLearning v3] Serviço "${servicoAtual}" com baixa performance (${successRate.toFixed(1)}%)`);
           
           const melhoresServicos = Object.entries(learning.patterns.service_performance)
             .filter(([_, data]) => {
@@ -544,7 +527,6 @@ export async function refineRecommendations(userId, analiseData, servicosDisponi
             const melhorAlternativa = melhoresServicos[0];
             refinedData.recomendacao_alisamento = melhorAlternativa;
             modificacoes.push(`Alterado alisamento principal para "${melhorAlternativa}" (melhor histórico)`);
-            console.log(`✅ [LocalLearning v3] Refinamento aplicado: ${melhorAlternativa}`);
           }
         }
       }
@@ -569,7 +551,6 @@ export async function refineRecommendations(userId, analiseData, servicosDisponi
     }
     
     if (modificacoes.length > 0) {
-      console.log('✨ [LocalLearning v3] Recomendações refinadas:', modificacoes);
       
       await appApi.entities.LogAuditoria.create({
         tipo_auditoria: 'recomendacao',
@@ -584,33 +565,34 @@ export async function refineRecommendations(userId, analiseData, servicosDisponi
           modificacoes: modificacoes.length
         },
         automatica: true
-      });
-      
-      return { refined: true, data: refinedData, modifications: modificacoes };
-    }
-    
-    return { refined: false, data: analiseData };
-  } catch (error) {
-    console.error('❌ [LocalLearning v3] Erro ao refinar:', error);
-    return { refined: false, data: analiseData, error: error.message };
-  }
 }
 
 export async function checkRefreshNeeded(userId) {
-  try {
+try {
+const learning = await loadLocalLearning(userId);
+const lastRefresh = new Date(learning.metadata.last_refresh);
+const now = new Date();
+const diffDays = Math.floor((now - lastRefresh) / (1000 * 60 * 60 * 24));
+  
+if (diffDays >= REFRESH_INTERVAL_DAYS) {
+return true;
+}
+  
+return false;
+} catch (error) {
+return false;
+}
     const learning = await loadLocalLearning(userId);
     const lastRefresh = new Date(learning.metadata.last_refresh);
     const now = new Date();
     const diffDays = Math.floor((now - lastRefresh) / (1000 * 60 * 60 * 24));
     
     if (diffDays >= REFRESH_INTERVAL_DAYS) {
-      console.log(`🔄 [LocalLearning v3] Refresh necessário (${diffDays} dias)`);
       return true;
     }
     
     return false;
   } catch (error) {
-    console.error('❌ [LocalLearning] Erro ao verificar refresh:', error);
     return false;
   }
 }
@@ -634,8 +616,7 @@ export async function refreshLocalData(userId) {
     learning.metadata.last_refresh = new Date().toISOString();
     saveLocalLearning(userId, learning);
     
-    console.log('🔄 [LocalLearning v3] Dados atualizados');
-    
+    return learning;
     await appApi.entities.LogAuditoria.create({
       tipo_auditoria: 'recomendacao',
       status: 'sucesso',
@@ -651,7 +632,6 @@ export async function refreshLocalData(userId) {
     
     return learning;
   } catch (error) {
-    console.error('❌ [LocalLearning v3] Erro ao refresh:', error);
   }
 }
 
@@ -677,10 +657,8 @@ export async function exportLearningReport(userId) {
       generated_at: new Date().toISOString()
     };
     
-    console.log('📄 [LocalLearning v3] Relatório exportado');
     return report;
   } catch (error) {
-    console.error('❌ [LocalLearning v3] Erro ao exportar:', error);
     return null;
   }
 }
@@ -723,7 +701,6 @@ export async function getDashboardAprendizado(userId) {
                         learning.metadata.total_detailed_feedbacks < 30 ? 'experiente' : 'expert'
     };
   } catch (error) {
-    console.error('❌ [LocalLearning v3] Erro ao gerar dashboard:', error);
     return null;
   }
 }

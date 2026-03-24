@@ -1,22 +1,60 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from "@nestjs/common";
-import { JwtAuthGuard } from "../auth/jwt-auth.guard";
-import type { CreateStraighteningDTO } from "./straightening.service";
-import { StraighteningService } from "./straightening.service";
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Req,
+  UseGuards,
+  Query,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { StraighteningService } from './straightening.service';
 
-@Controller("straightenings")
-@UseGuards(JwtAuthGuard)
+@Controller('straightening')
+@UseGuards(AuthGuard('jwt'))
 export class StraighteningController {
-  constructor(private readonly service: StraighteningService) {}
+  constructor(private readonly straighteningService: StraighteningService) {}
 
   @Get()
-  async list(@Req() req: any) {
-    const salonId = req.user.salonId;
-    return this.service.list(salonId);
+  async list(
+    @Req() req: any,
+    @Query('includeInactive') includeInactive?: string,
+  ) {
+    const withInactive = includeInactive === 'true';
+    return this.straighteningService.listWithFilter(
+      req.user.salonId,
+      withInactive,
+    );
   }
 
   @Post()
-  async create(@Req() req: any, @Body() body: CreateStraighteningDTO) {
-    const salonId = req.user.salonId;
-    return this.service.create(salonId, body);
+  async create(@Req() req: any, @Body() body: any) {
+    return this.straighteningService.create(req.user.salonId, body);
+  }
+
+  @Patch(':id')
+  async update(@Req() req: any, @Param('id') id: string, @Body() body: any) {
+    return this.straighteningService.update(req.user.salonId, id, body);
+  }
+
+  @Delete(':id')
+  async remove(@Req() req: any, @Param('id') id: string) {
+    return this.straighteningService.remove(req.user.salonId, id);
+  }
+
+  @Patch(':id/status')
+  async setStatus(
+    @Req() req: any,
+    @Param('id') id: string,
+    @Body('active') active: boolean,
+  ) {
+    return this.straighteningService.setStatus(
+      req.user.salonId,
+      id,
+      Boolean(active),
+    );
   }
 }

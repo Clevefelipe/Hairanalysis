@@ -1,5 +1,4 @@
 import { createContext, useContext, useState } from "react";
-import Feedback from "../components/Feedback";
 
 type FeedbackType = "success" | "error";
 
@@ -56,12 +55,19 @@ export function FeedbackProvider({
         }}
       >
         {feedbacks.map((feedback) => (
-          <Feedback
+          <button
             key={feedback.id}
-            message={feedback.message}
-            type={feedback.type}
-            onClose={() => removeFeedback(feedback.id)}
-          />
+            onClick={() => removeFeedback(feedback.id)}
+            className={[
+              "mb-2 block w-full rounded-lg border px-4 py-3 text-left text-sm shadow-sm",
+              feedback.type === "success"
+                ? "border-[color:var(--color-success-200)] bg-[color:var(--color-success-50)] text-[color:var(--color-success-700)]"
+                : "border-rose-200 bg-rose-50 text-rose-700",
+            ].join(" ")}
+            type="button"
+          >
+            {feedback.message}
+          </button>
         ))}
       </div>
     </FeedbackContext.Provider>

@@ -1,0 +1,6 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+npx --yes npm@latest run lint:all || exit 1
+npx --yes npm@latest run typecheck:all || exit 1
+npx --yes npm@latest run test:all || exit 1

@@ -1,4 +1,4 @@
-import { api } from './api';
+import api from './api';
 
 export interface AnaliseCapilarPayload {
   couroCabeludo: string;
@@ -22,5 +22,10 @@ export async function listarAnalisesCapilares(
   clienteId: string | number
 ) {
   const response = await api.get(`/clientes/${clienteId}/analises`);
+  return response.data;
+}
+
+export async function submitClinicalAnalysis(payload: Record<string, unknown>) {
+  const response = await api.post("/analysis/clinical", payload);
   return response.data;
 }

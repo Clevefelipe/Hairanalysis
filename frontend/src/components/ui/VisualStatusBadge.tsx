@@ -1,36 +1,26 @@
 type Status = "melhora" | "estavel" | "piora";
 
-const estilos: Record<Status, { bg: string; color: string; label: string }> = {
+const badgeConfigs: Record<Status, { label: string; classes: string }> = {
   melhora: {
-    bg: "#DCFCE7",
-    color: "#166534",
     label: "Evolução positiva",
+    classes: "bg-[color:var(--color-success-50)] text-[color:var(--color-success-700)]",
   },
   estavel: {
-    bg: "#E5E7EB",
-    color: "#374151",
     label: "Condição mantida",
+    classes: "bg-slate-100 text-slate-700",
   },
   piora: {
-    bg: "#FEE2E2",
-    color: "#991B1B",
     label: "Atenção aumentada",
+    classes: "bg-rose-50 text-rose-700",
   },
 };
 
 export default function VisualStatusBadge({ status }: { status: Status }) {
-  const { bg, color, label } = estilos[status];
+  const { label, classes } = badgeConfigs[status];
 
   return (
     <span
-      style={{
-        backgroundColor: bg,
-        color,
-        padding: "6px 12px",
-        borderRadius: "999px",
-        fontSize: "13px",
-        fontWeight: 600,
-      }}
+      className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${classes}`}
     >
       {label}
     </span>

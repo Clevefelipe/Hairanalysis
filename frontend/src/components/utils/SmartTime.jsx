@@ -16,8 +16,6 @@ class SmartTimeManager {
     this.timeFormat = 'HH:mm';
     this.dateTimeFormat = "dd/MM/yyyy 'às' HH:mm";
     
-    console.log('⏰ [SmartTime] Inicializado com timezone:', this.timezone);
-    console.log('⏰ [SmartTime] Hora local atual:', this.formatDateTime(new Date()));
   }
 
   /**
@@ -46,7 +44,6 @@ class SmartTimeManager {
       const formatPattern = pattern || this.dateTimeFormat;
       return format(dateObj, formatPattern, { locale: ptBR });
     } catch (error) {
-      console.error('❌ [SmartTime] Erro ao formatar data:', error, date);
       return 'Data inválida';
     }
   }
@@ -87,7 +84,6 @@ class SmartTimeManager {
       const dateObj = typeof date === 'string' ? new Date(date) : date;
       return dateObj.toISOString();
     } catch (error) {
-      console.error('❌ [SmartTime] Erro ao converter para ISO:', error);
       return null;
     }
   }
@@ -183,13 +179,6 @@ class SmartTimeManager {
    */
   debugDate(date, label = 'Data') {
     const d = typeof date === 'string' ? new Date(date) : date;
-    console.log(`🔍 [SmartTime] ${label}:`, {
-      original: date,
-      formatted: this.formatDateTime(d),
-      iso: d.toISOString(),
-      timestamp: d.getTime(),
-      timezone: this.timezone
-    });
   }
 }
 

@@ -27,9 +27,24 @@ export async function getAuditLogs(
     params.action = action;
   }
 
-  const response = await api.get<AuditResponse>("/audit", {
+  const response = await api.get<AuditResponse | AuditLog[]>("/audit", {
     params,
   });
 
-  return response.data;
+  const payload = response.data as any;
+  if (Array.isArray(payload)) {
+    return {
+      page,
+      limit,
+      total: payload.length,
+      items: payload,
+    };
+  }
+
+  return {
+    page: typeof payload?.page === "number" ? payload.page : page,
+    limit: typeof payload?.limit === "number" ? payload.limit : limit,
+    total: typeof payload?.total === "number" ? payload.total : 0,
+    items: Array.isArray(payload?.items) ? payload.items : [],
+  };
 }

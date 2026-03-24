@@ -29,7 +29,6 @@ export default function ImageUploader({ onResult }: Props) {
 
       onResult(response.data.analysis);
     } catch (err) {
-      console.error(err);
       setError("Erro ao analisar imagem");
     } finally {
       setLoading(false);
@@ -37,26 +36,34 @@ export default function ImageUploader({ onResult }: Props) {
   }
 
   return (
-    <div style={{ padding: 24 }}>
-      <h2>Análise Capilar e Tricológica</h2>
+    <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm space-y-4">
+      <div>
+        <h2 className="text-xl font-semibold text-slate-900">Análise Capilar e Tricológica</h2>
+        <p className="text-sm text-slate-500">
+          Envie uma imagem para gerar insights automáticos da IA.
+        </p>
+      </div>
 
-      <input
-        type="file"
-        accept="image/*"
-        onChange={(e) => setFile(e.target.files?.[0] || null)}
-      />
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-slate-700">Imagem do fio ou couro cabeludo</label>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => setFile(e.target.files?.[0] || null)}
+          className="clientes-input w-full"
+        />
+      </div>
 
-      <br />
-      <br />
-
-      <button onClick={handleAnalyze} disabled={loading}>
+      <button
+        onClick={handleAnalyze}
+        disabled={loading}
+        className="btn-primary w-full shadow-lg hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-60"
+      >
         {loading ? "Analisando..." : "Analisar agora"}
       </button>
 
       {error && (
-        <p style={{ color: "red", marginTop: 12 }}>
-          {error}
-        </p>
+        <p className="text-sm font-medium text-rose-600">{error}</p>
       )}
     </div>
   );

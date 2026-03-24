@@ -284,33 +284,43 @@ export default function SalonBranding() {
 
   return (
     <section className="section-stack animate-page-in w-full">
-      <Section>
-        <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-400">
-          Administracao
-        </p>
-        <h1 className="mt-1 text-2xl font-semibold text-slate-900">
-          Branding do Salão
-        </h1>
-        <p className="mt-2 text-sm text-slate-600">
-          Personalize paleta, tipografia e logo para os PDFs executivos e identidade visual
-          por tenant.
-        </p>
-        <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700 ring-1 ring-slate-100">
-          <Palette size={14} className="text-[color:var(--color-success-600)]" />
-          {salonName}
+      <Section className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="space-y-2">
+          <div
+            className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em]"
+            style={{ borderColor: "var(--color-border)", color: "var(--color-primary)", backgroundColor: "color-mix(in srgb, var(--color-primary) 6%, var(--color-surface))" }}
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-primary)]" />
+            Administração
+          </div>
+          <div className="space-y-1">
+            <h1 className="text-2xl font-semibold" style={{ color: "var(--color-text)" }}>
+              Branding do Salão
+            </h1>
+            <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
+              Personalize paleta, tipografia e logo para os PDFs executivos e identidade visual por tenant.
+            </p>
+          </div>
         </div>
-        <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700">
-          Segmento ativo: {activePresetLabel}
+
+        <div className="flex flex-wrap items-center gap-2 md:justify-end">
+          <span className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[12px] font-semibold" style={{ borderColor: "var(--color-border)", color: "var(--color-text)" }}>
+            <Palette size={14} className="text-[color:var(--color-success-600)]" />
+            {salonName}
+          </span>
+          <span className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[12px] font-semibold" style={{ borderColor: "var(--color-border)", color: "var(--color-text)" }}>
+            Segmento ativo: {activePresetLabel}
+          </span>
         </div>
       </Section>
 
       {presets.length > 0 && (
-        <Section>
+        <Section className="space-y-3">
           <h2 className="text-lg font-semibold text-slate-900">Presets por segmento</h2>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="text-sm text-slate-500">
             Aplique um tema pronto em 1 clique para clínica estética ou salão.
           </p>
-          <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
             {presets.map((preset) => {
               const active = currentPresetId === preset.id;
               return (
@@ -360,7 +370,7 @@ export default function SalonBranding() {
       )}
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.1fr,0.9fr]">
-        <Section>
+        <Section className="space-y-5">
           <h2 className="text-lg font-semibold text-slate-900">Configuracao visual</h2>
 
           <div className="mt-6 space-y-5">
@@ -481,7 +491,7 @@ export default function SalonBranding() {
                 {saving ? "Salvando..." : "Salvar branding"}
               </button>
               <button type="button" onClick={handleResetDefaults} className="btn-secondary">
-                Restaurar padrao visual
+                Restaurar padrão visual
               </button>
             </div>
           </div>
@@ -489,7 +499,7 @@ export default function SalonBranding() {
 
         <Section>
           <h2 className="text-lg font-semibold text-slate-900">Preview executivo</h2>
-          <p className="mt-1 text-sm text-slate-500">Pre-visualizacao do cabecalho aplicado no PDF.</p>
+          <p className="mt-1 text-sm text-slate-500">Pré-visualização do cabeçalho aplicado no PDF.</p>
 
           <div
             className="mt-5 rounded-2xl border p-4"

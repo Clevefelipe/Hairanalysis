@@ -93,93 +93,87 @@ class ImageEnhancementEngine {
       normalizeColors = true,
       targetQuality = 0.92
     } = options;
-
-    try {
-      // Converter para data URL se for File
-      let imageDataUrl: string;
-      if (imageInput instanceof File || imageInput instanceof Blob) {
-        imageDataUrl = await this._fileToDataUrl(imageInput);
-      } else if (typeof imageInput === 'string') {
-        imageDataUrl = imageInput;
-      } else {
-        throw new Error('Tipo de entrada inválido. Use File, Blob ou string (data URL)');
-      }
-
-      // Carregar imagem em canvas
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      if (!ctx) {
-        throw new Error('Não foi possível obter contexto 2D do canvas');
-      }
-      const img = await this._loadImage(imageDataUrl);
-
-      canvas.width = img.width;
-      canvas.height = img.height;
-      ctx.drawImage(img, 0, 0);
-
-      // Obter dados da imagem
-      let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const originalData = new Uint8ClampedArray(imageData.data);
-
-      // Aplicar melhorias em sequência
-      if (adjustLight) {
-        imageData = this._adjustBrightness(imageData);
-        this.enhancements.light_adjustment++;
-      }
-
-      if (adjustContrast) {
-        imageData = this._adjustContrast(imageData);
-        this.enhancements.contrast_boost++;
-      }
-
-      if (reduceNoise) {
-        imageData = this._reduceNoise(imageData);
-        this.enhancements.noise_reduction++;
-      }
-
-      if (enhanceTexture) {
-        imageData = this._enhanceTexture(imageData);
-        this.enhancements.texture_enhancement++;
-      }
-
-      if (normalizeColors) {
-        imageData = this._normalizeColors(imageData);
-        this.enhancements.color_normalization++;
-      }
-
-      // Aplicar sharpen (nitidez)
-      imageData = this._applySharpen(imageData);
-
-      // Colocar dados aprimorados de volta no canvas
-      ctx.putImageData(imageData, 0, 0);
-
-      // Converter para data URL com qualidade alta
-      const enhancedDataUrl = canvas.toDataURL('image/jpeg', targetQuality);
-
-      // Calcular métricas de melhoria
-      const metrics = this._calculateImprovementMetrics(originalData, imageData.data);
-
-      return {
-        enhancedDataUrl,
-        metadata: {
-          ...metrics,
-          enhancements_applied: {
-            light_adjustment: adjustLight,
-            contrast_boost: adjustContrast,
-            noise_reduction: reduceNoise,
-            texture_enhancement: enhanceTexture,
-            color_normalization: normalizeColors
-          },
-          dimensions: {
-            width: canvas.width,
-            height: canvas.height
-          }
-        }
-      };
-
-    } catch (error) {
-      throw error;
+    // Converter para data URL se for File
+    let imageDataUrl: string;
+    if (imageInput instanceof File || imageInput instanceof Blob) {
+      imageDataUrl = await this._fileToDataUrl(imageInput);
+    } else if (typeof imageInput === 'string') {
+      imageDataUrl = imageInput;
+    } else {
+      throw new Error('Tipo de entrada inválido. Use File, Blob ou string (data URL)');
     }
+
+    // Carregar imagem em canvas
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      throw new Error('Não foi possível obter contexto 2D do canvas');
+    }
+    const img = await this._loadImage(imageDataUrl);
+
+    canvas.width = img.width;
+    canvas.height = img.height;
+    ctx.drawImage(img, 0, 0);
+
+    // Obter dados da imagem
+    let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const originalData = new Uint8ClampedArray(imageData.data);
+
+    // Aplicar melhorias em sequência
+    if (adjustLight) {
+      imageData = this._adjustBrightness(imageData);
+      this.enhancements.light_adjustment++;
+    }
+
+    if (adjustContrast) {
+      imageData = this._adjustContrast(imageData);
+      this.enhancements.contrast_boost++;
+    }
+
+    if (reduceNoise) {
+      imageData = this._reduceNoise(imageData);
+      this.enhancements.noise_reduction++;
+    }
+
+    if (enhanceTexture) {
+      imageData = this._enhanceTexture(imageData);
+      this.enhancements.texture_enhancement++;
+    }
+
+    if (normalizeColors) {
+      imageData = this._normalizeColors(imageData);
+      this.enhancements.color_normalization++;
+    }
+
+    // Aplicar sharpen (nitidez)
+    imageData = this._applySharpen(imageData);
+
+    // Colocar dados aprimorados de volta no canvas
+    ctx.putImageData(imageData, 0, 0);
+
+    // Converter para data URL com qualidade alta
+    const enhancedDataUrl = canvas.toDataURL('image/jpeg', targetQuality);
+
+    // Calcular métricas de melhoria
+    const metrics = this._calculateImprovementMetrics(originalData, imageData.data);
+
+    return {
+      enhancedDataUrl,
+      metadata: {
+        ...metrics,
+        enhancements_applied: {
+          light_adjustment: adjustLight,
+          contrast_boost: adjustContrast,
+          noise_reduction: reduceNoise,
+          texture_enhancement: enhanceTexture,
+          color_normalization: normalizeColors
+        },
+        dimensions: {
+          width: canvas.width,
+          height: canvas.height
+        }
+      }
+    };
   }
 
   /**

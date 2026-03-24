@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
+import Button from "@/components/ui/Button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -89,18 +89,14 @@ export default function ClienteForm({ cliente, onSubmit, onCancel, isLoading }) 
       <div className="flex justify-end gap-3 pt-4">
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
           onClick={onCancel}
           disabled={isLoading}
-          className="border-2 border-[#D1D1D6] text-[#1A1A1A] hover:bg-[#E5E5E7]"
+          className="border border-[var(--color-border)] text-[var(--color-text)] hover:bg-[var(--color-surface-50)]"
         >
           Cancelar
         </Button>
-        <Button
-          type="submit"
-          disabled={isLoading}
-          className="bg-[#E5E5E7] text-[#1A1A1A] hover:bg-[#2C2C2E] hover:text-white transition-all duration-200 font-semibold"
-        >
+        <Button type="submit" disabled={isLoading} variant="primary">
           {isLoading ? 'Salvando...' : cliente ? 'Atualizar Cliente' : 'Adicionar Cliente'}
         </Button>
       </div>

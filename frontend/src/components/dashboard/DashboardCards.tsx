@@ -14,42 +14,17 @@ function Card({
   subtitulo?: string;
 }) {
   return (
-    <div
-      style={{
-        backgroundColor: "#ffffff",
-        borderRadius: 8,
-        padding: 20,
-        minWidth: 220,
-        boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-      }}
-    >
-      <p
-        style={{
-          fontSize: 14,
-          color: "#666",
-          marginBottom: 8,
-        }}
-      >
+    <div className="min-w-[220px] rounded-2xl border border-slate-100 bg-white p-5 shadow-sm transition-shadow hover:shadow-md">
+      <p className="mb-2 text-sm font-medium text-slate-500">
         {titulo}
       </p>
 
-      <h2
-        style={{
-          fontSize: 32,
-          margin: 0,
-        }}
-      >
+      <h2 className="text-4xl font-semibold text-slate-900">
         {valor}
       </h2>
 
       {subtitulo && (
-        <p
-          style={{
-            fontSize: 12,
-            color: "#999",
-            marginTop: 6,
-          }}
-        >
+        <p className="mt-2 text-xs uppercase tracking-wide text-slate-400">
           {subtitulo}
         </p>
       )}
@@ -63,13 +38,7 @@ export default function DashboardCards({
   totalEvolucoes,
 }: DashboardCardsProps) {
   return (
-    <div
-      style={{
-        display: "flex",
-        gap: 20,
-        flexWrap: "wrap",
-      }}
-    >
+    <div className="flex flex-wrap gap-5">
       <Card
         titulo="Clientes cadastrados"
         valor={totalClientes}

@@ -1,5 +1,3 @@
-import api from "./api";
-
 export type ApiResult<T> = {
   ok: boolean;
   data: T;

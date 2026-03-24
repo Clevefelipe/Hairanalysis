@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return */
 import OpenAI from 'openai';
 import { buildHairAnalysisPrompt } from './builders/build-hair-analysis.prompt';
 import { buildHairAnalysisPremiumPrompt } from './builders/build-hair-analysis-premium.prompt';
@@ -13,6 +13,7 @@ import {
   AestheticDecisionResponse,
 } from './types/ai.types';
 import { calculateSic } from './utils/sic-calculator';
+import { sanitizePayload } from '../../common/middleware/legal-terms-sanitizer.middleware';
 
 import {
   VisionImageAnalysisInput,
@@ -251,6 +252,46 @@ function validateAestheticDecisionResponse(
   }
   obj.scoreIntegridade = clamp(Math.round(normalizedScore), 0, 100);
 
+  // Normalizar coeficiente de absorção
+  if (obj.absorptionCoefficient) {
+    const coef = obj.absorptionCoefficient as any;
+    const idx = Number(coef.index);
+    const label = typeof coef.label === 'string' ? coef.label.trim().toLowerCase() : '';
+    if (!Number.isFinite(idx)) delete (obj as any).absorptionCoefficient;
+    else if (!riskSet.has(label) && !['baixa', 'media', 'alta'].includes(label)) {
+      delete (obj as any).absorptionCoefficient;
+    } else {
+      obj.absorptionCoefficient = { index: Math.round(idx), label } as any;
+    }
+  }
+
+  // Normalizar diagnóstico de cutícula (IPT)
+  if (obj.cuticleDiagnostic) {
+    const diag = obj.cuticleDiagnostic as any;
+    const ipt = Number(diag.ipt ?? diag.score);
+    const label = typeof diag.label === 'string' ? diag.label.trim().toLowerCase() : '';
+    if (!Number.isFinite(ipt) || !['baixa', 'media', 'alta'].includes(label)) {
+      delete (obj as any).cuticleDiagnostic;
+    } else {
+      obj.cuticleDiagnostic = {
+        ipt: Math.round(ipt),
+        label,
+        toque: Number.isFinite(diag.toque) ? Number(diag.toque) : undefined,
+        brilho: Number.isFinite(diag.brilho) ? Number(diag.brilho) : undefined,
+        elasticidade: Number.isFinite(diag.elasticidade)
+          ? Number(diag.elasticidade)
+          : undefined,
+        historico: Number.isFinite(diag.historico) ? Number(diag.historico) : undefined,
+      } as any;
+    }
+  }
+
+  // Normalizar risco de quebra
+  if (obj.breakRiskPercentual !== undefined && obj.breakRiskPercentual !== null) {
+    const br = Number(obj.breakRiskPercentual);
+    obj.breakRiskPercentual = Number.isFinite(br) ? clamp(Math.round(br), 0, 100) : undefined;
+  }
+
   const indicesRaw = obj.indicesRisco;
   if (!indicesRaw || typeof indicesRaw !== 'object') {
     throw new Error('IA estética: indicesRisco ausente');
@@ -332,6 +373,21 @@ function validateAestheticDecisionResponse(
     obj.alertasTecnicos = [];
   }
 
+  // Base de tratamento opcional
+  if (obj.protocoloPersonalizado?.baseTratamento) {
+    const base = obj.protocoloPersonalizado.baseTratamento as any;
+    const foco = typeof base.foco === 'string' ? base.foco.trim().toLowerCase() : '';
+    const descricao = typeof base.descricao === 'string' ? base.descricao.trim() : '';
+    if (!descricao || !['baixa', 'media', 'alta'].includes(foco)) {
+      delete (obj.protocoloPersonalizado as any).baseTratamento;
+    } else {
+      obj.protocoloPersonalizado.baseTratamento = {
+        foco: foco as any,
+        descricao,
+      };
+    }
+  }
+
   obj.confiancaAnalise = clamp(
     Number(obj.confiancaAnalise) || inferAnalysisConfidence(obj),
     0,
@@ -387,7 +443,7 @@ export async function runHairAnalysisPremiumAI(
   }
 
   validatePremiumResponse(parsed);
-  return parsed;
+  return sanitizePayload(parsed) as HairAnalysisPremiumResponse;
 }
 
 export async function runAestheticDecisionAI(
@@ -450,7 +506,8 @@ export async function runAestheticDecisionAI(
       parsed.scoreIntegridade = sic.score_final;
     }
   }
-  return parsed;
+
+  return sanitizePayload(parsed) as AestheticDecisionResponse;
 }
 
 export async function runVisionImageAnalysisAI(
@@ -485,7 +542,7 @@ export async function runVisionImageAnalysisAI(
 
   let parsed: any;
   try {
-    parsed = JSON.parse(content);
+    parsed = sanitizePayload(JSON.parse(content));
   } catch {
     throw new Error('IA de visão retornou JSON inválido');
   }
@@ -543,8 +600,6 @@ export async function runVisionImageAnalysisAI(
     if (signalsCount > 8) confidence += 6;
     normalizedConfidence = Math.max(45, Math.min(95, Math.round(confidence)));
   }
-  parsed.analysis_confidence = normalizedConfidence;
-
   if (typeof parsed.interpretation !== 'string') {
     parsed.interpretation = 'Análise concluída.';
   }
@@ -639,10 +694,14 @@ export async function runVisionImageAnalysisAI(
   };
 
   parsed.signals = normalizedSignals;
-  parsed.analysis_confidence = Math.min(
-    Number(parsed.analysis_confidence ?? 0),
-    Math.max(35, criticalCompleteness),
-  );
 
-  return parsed as VisionImageAnalysisOutput;
+  const confidenceFloor = criticalCompleteness > 0 ? 35 : 10;
+  const boundedConfidence = Math.min(
+    normalizedConfidence ?? 0,
+    criticalCompleteness || confidenceFloor,
+    100,
+  );
+  parsed.analysis_confidence = Math.max(confidenceFloor, boundedConfidence);
+
+  return sanitizePayload(parsed) as VisionImageAnalysisOutput;
 }

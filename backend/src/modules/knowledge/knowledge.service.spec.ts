@@ -1,10 +1,10 @@
 import { BadRequestException } from '@nestjs/common';
 import { KnowledgeService } from './knowledge.service';
 import { EmbeddingStore } from './store/embedding.store';
-import pdfParse from 'pdf-parse';
+import { PDFParse } from 'pdf-parse';
 import mammoth from 'mammoth';
 
-jest.mock('pdf-parse', () => jest.fn());
+jest.mock('pdf-parse', () => ({ PDFParse: jest.fn() }));
 jest.mock('mammoth', () => ({
   __esModule: true,
   default: {
@@ -13,7 +13,8 @@ jest.mock('mammoth', () => ({
 }));
 
 describe('KnowledgeService', () => {
-  const pdfParseMock = pdfParse as unknown as jest.Mock;
+  const PDFParseMock = PDFParse as unknown as jest.Mock;
+  let pdfGetTextMock: jest.Mock;
   const mammothExtractRawTextMock = (mammoth as any)
     .extractRawText as jest.Mock;
 
@@ -34,6 +35,16 @@ describe('KnowledgeService', () => {
   beforeEach(() => {
     EmbeddingStore.reset();
     jest.clearAllMocks();
+    pdfGetTextMock = jest.fn().mockResolvedValue({
+      pages: [],
+      text: 'conteudo pdf',
+      total: 1,
+      getPageText: jest.fn(),
+    });
+    PDFParseMock.mockImplementation(() => ({
+      getText: pdfGetTextMock,
+      destroy: jest.fn().mockResolvedValue(undefined),
+    }));
     service = new KnowledgeService(
       embeddingServiceMock as any,
       repoMock as any,
@@ -184,7 +195,7 @@ describe('KnowledgeService', () => {
   });
 
   it('throws friendly error when PDF parsing fails', async () => {
-    pdfParseMock.mockRejectedValue(new Error('invalid pdf'));
+    pdfGetTextMock.mockRejectedValue(new Error('invalid pdf'));
 
     await expect(
       service.ingestFile(

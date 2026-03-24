@@ -92,7 +92,7 @@ interface NecessidadesCapilares {
 // Tipos para cache de aprendizado
 interface CacheAprendizado {
   ultimas_analises_sucesso: any[];
-  padroes_fortes: PadroesAprendizado | {};
+  padroes_fortes: PadroesAprendizado | Record<string, never>;
   ultima_atualizacao: string | null;
 }
 

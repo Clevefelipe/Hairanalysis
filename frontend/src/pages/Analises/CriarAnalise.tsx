@@ -31,36 +31,67 @@ export function CriarAnalise({ clienteId }: Props) {
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <input
-        placeholder="Couro cabeludo"
-        value={couroCabeludo}
-        onChange={(e) => setCouroCabeludo(e.target.value)}
-        required
-      />
+    <form onSubmit={handleSubmit} className="space-y-8 p-6 animate-page-in">
+      <div className="text-center">
+        <h1 className="text-4xl font-bold text-slate-900 mb-2">Criar Análise</h1>
+        <p className="text-slate-600">Registre uma nova análise capilar para o cliente</p>
+      </div>
 
-      <input
-        placeholder="Fio"
-        value={fio}
-        onChange={(e) => setFio(e.target.value)}
-        required
-      />
+      <div className="space-y-6 max-w-md mx-auto">
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-2">Couro Cabeludo</label>
+          <input
+            placeholder="Descreva o estado do couro cabeludo"
+            value={couroCabeludo}
+            onChange={(e) => setCouroCabeludo(e.target.value)}
+            required
+            className="w-full border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-slate-900/20 shadow-sm focus:shadow-md transition-shadow"
+          />
+        </div>
 
-      <input
-        placeholder="Observações"
-        value={observacoes}
-        onChange={(e) => setObservacoes(e.target.value)}
-      />
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-2">Tipo de Fio</label>
+          <input
+            placeholder="Descreva o tipo de fio capilar"
+            value={fio}
+            onChange={(e) => setFio(e.target.value)}
+            required
+            className="w-full border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-slate-900/20 shadow-sm focus:shadow-md transition-shadow"
+          />
+        </div>
 
-      <input
-        placeholder="Profissional"
-        value={profissional}
-        onChange={(e) => setProfissional(e.target.value)}
-      />
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-2">Observações</label>
+          <textarea
+            placeholder="Adicione observações importantes sobre a análise"
+            value={observacoes}
+            onChange={(e) => setObservacoes(e.target.value)}
+            rows={4}
+            className="w-full border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-slate-900/20 shadow-sm focus:shadow-md transition-shadow resize-none"
+          />
+        </div>
 
-      <button type="submit" disabled={loading}>
-        {loading ? 'Salvando...' : 'Salvar Análise'}
-      </button>
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-2">Profissional Responsável</label>
+          <input
+            placeholder="Nome do profissional que realizou a análise"
+            value={profissional}
+            onChange={(e) => setProfissional(e.target.value)}
+            required
+            className="w-full border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-slate-900/20 shadow-sm focus:shadow-md transition-shadow"
+          />
+        </div>
+
+        <div className="pt-4">
+          <button
+            type="submit"
+            disabled={loading}
+            className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? "Salvando..." : "Criar Análise"}
+          </button>
+        </div>
+      </div>
     </form>
   );
 }

@@ -1,37 +1,36 @@
-import { Entity, PrimaryColumn, Column, OneToMany } from 'typeorm';
-import { User } from '../auth/user.entity';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  UpdateDateColumn,
+} from 'typeorm';
 
 @Entity('salons')
-export class Salon {
-  @PrimaryColumn()
+export class SalonEntity {
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column()
   name: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   logoUrl?: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', length: 7, nullable: true })
   brandPrimaryColor?: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', length: 7, nullable: true })
   brandSecondaryColor?: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', length: 7, nullable: true })
   brandAccentColor?: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', length: 64, nullable: true })
   brandFontFamily?: string;
 
   @Column({ type: 'jsonb', nullable: true })
   branding?: Record<string, any>;
 
-  @OneToMany(() => User, user => user.salon)
-  users: User[];
+  @UpdateDateColumn({ type: 'timestamp', nullable: true })
+  updatedAt?: Date;
 }
-
-export const SalonEntity = Salon;
-export type SalonEntity = Salon;
-
-

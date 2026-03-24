@@ -1,5 +1,4 @@
-import Card from "../ui/Card";
-import Button from "../ui/Button";
+import Modal from "../ui/Modal";
 
 interface Props {
   open: boolean;
@@ -11,49 +10,34 @@ export default function AuditDetailsModal({ open, onClose, log }: Props) {
   if (!open || !log) return null;
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        background: "rgba(0,0,0,0.4)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 50,
-      }}
-    >
-      <div style={{ width: 520 }}>
-        <Card title="Detalhes do Log">
-          <p><strong>Ação:</strong> {log.action}</p>
-          <p><strong>Usuário:</strong> {log.userId}</p>
-          <p><strong>Salão:</strong> {log.salonId}</p>
-          <p>
-            <strong>Data:</strong>{" "}
-            {new Date(log.createdAt).toLocaleString()}
-          </p>
-
-          <div style={{ marginTop: 12 }}>
-            <strong>Metadata:</strong>
-            <pre
-              style={{
-                background: "#f3f4f6",
-                padding: 12,
-                borderRadius: 6,
-                fontSize: 12,
-                marginTop: 6,
-                maxHeight: 200,
-                overflow: "auto",
-              }}
-            >
-              {JSON.stringify(log.metadata ?? {}, null, 2)}
-            </pre>
-          </div>
-
-          <div style={{ marginTop: 16, textAlign: "right" }}>
-            <Button onClick={onClose}>Fechar</Button>
-          </div>
-        </Card>
+    <Modal title="Detalhes do Log" isOpen={open} onClose={onClose}>
+      <div className="space-y-2 text-sm text-slate-700">
+        <p>
+          <strong className="text-slate-900">Ação:</strong> {log.action}
+        </p>
+        <p>
+          <strong className="text-slate-900">Usuário:</strong> {log.userId}
+        </p>
+        <p>
+          <strong className="text-slate-900">Salão:</strong> {log.salonId}
+        </p>
+        <p>
+          <strong className="text-slate-900">Data:</strong> {new Date(log.createdAt).toLocaleString()}
+        </p>
       </div>
-    </div>
+
+      <div className="mt-4 space-y-2">
+        <strong className="text-sm text-slate-900">Metadata:</strong>
+        <pre className="max-h-64 overflow-auto rounded-2xl bg-[color:var(--color-modal-surface,var(--color-surface,#f8f6f0))] p-3 text-xs font-mono text-slate-700 shadow-inner">
+          {JSON.stringify(log.metadata ?? {}, null, 2)}
+        </pre>
+      </div>
+
+      <div className="mt-6 flex justify-end">
+        <button className="btn-secondary" onClick={onClose}>
+          Fechar
+        </button>
+      </div>
+    </Modal>
   );
 }

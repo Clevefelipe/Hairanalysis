@@ -1,14 +1,6 @@
-import { Outlet } from "react-router-dom";
-import TopBar from "../components/layout/TopBar";
-import "./MainLayout.css";
+import Layout from "@/components/layout/Layout";
 
+// Mantido apenas como ponte para compatibilidade; delega ao Layout global.
 export default function MainLayout() {
-  return (
-    <div className="app-layout">
-      <TopBar />
-      <div className="app-content">
-        <Outlet />
-      </div>
-    </div>
-  );
+  return <Layout />;
 }

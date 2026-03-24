@@ -1,20 +1,20 @@
-import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
-@Entity("knowledge_embeddings")
+@Entity('knowledge_embeddings')
 export class KnowledgeEmbedding {
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: "text" })
+  @Column({ type: 'text' })
   content: string;
 
-  @Column({ type: "varchar" })
-  domain: "tricologia" | "capilar";
+  @Column({ type: 'varchar' })
+  domain: 'tricologia' | 'capilar';
 
-  @Column({ type: "varchar" })
-  language: "pt" | "en";
+  @Column({ type: 'varchar' })
+  language: 'pt' | 'en';
 
   // pgvector
-  @Column({ type: "vector", length: 1536 })
+  @Column({ type: 'vector', length: 1536 })
   embedding: number[];
 }

@@ -4,38 +4,27 @@ interface NivelBadgeProps {
   nivel: Nivel;
 }
 
-const estilos: Record<Nivel, { bg: string; color: string; label: string }> = {
+const estilos: Record<Nivel, { label: string; classes: string }> = {
   baixo: {
-    bg: "#DCFCE7",
-    color: "#166534",
     label: "Condição favorável",
+    classes: "bg-[color:var(--color-success-50)] text-[color:var(--color-success-700)]",
   },
   moderado: {
-    bg: "#FEF3C7",
-    color: "#92400E",
     label: "Atenção técnica",
+    classes: "bg-amber-50 text-amber-700",
   },
   elevado: {
-    bg: "#FEE2E2",
-    color: "#991B1B",
     label: "Atenção elevada",
+    classes: "bg-rose-50 text-rose-700",
   },
 };
 
 export default function NivelBadge({ nivel }: NivelBadgeProps) {
-  const { bg, color, label } = estilos[nivel];
+  const { label, classes } = estilos[nivel];
 
   return (
     <span
-      style={{
-        backgroundColor: bg,
-        color,
-        padding: "6px 12px",
-        borderRadius: "999px",
-        fontSize: "13px",
-        fontWeight: 600,
-        display: "inline-block",
-      }}
+      className={`inline-flex items-center rounded-full px-4 py-1 text-xs font-semibold ${classes}`}
     >
       {label}
     </span>

@@ -155,7 +155,14 @@ export function SalonBrandingThemeProvider({ children }: { children: React.React
 export function useSalonBrandingTheme() {
   const ctx = useContext(SalonBrandingThemeContext);
   if (!ctx) {
-    throw new Error("useSalonBrandingTheme must be used within SalonBrandingThemeProvider");
+    return {
+      salonName: DEFAULT_SALON_NAME,
+      branding: DEFAULT_BRANDING,
+      loading: false,
+      refreshBranding: async () => {
+        // no-op fallback for recovery mode
+      },
+    };
   }
   return ctx;
 }

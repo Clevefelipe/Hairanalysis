@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
-import { getAuditLogs, AuditLog } from "../services/audit.service";
-import Card from "../components/ui/Card";
-import Button from "../components/ui/Button";
-import { useAuth } from "../context/AuthContext";
-import AuditDetailsModal from "../components/audit/AuditDetailsModal";
+import { useEffect, useMemo, useState } from "react";
+import { ShieldCheck, Search, ShieldAlert } from "lucide-react";
+import { getAuditLogs, AuditLog } from "@/services/audit.service";
+import { useAuth } from "@/context/AuthContext";
+import Section from "@/components/ui/Section";
+import AuditDetailsModal from "@/components/audit/AuditDetailsModal";
 
 export default function AuditLogs() {
   const { role } = useAuth();
@@ -14,6 +14,7 @@ export default function AuditLogs() {
   const [action, setAction] = useState("");
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<AuditLog | null>(null);
+  const [reloadNonce, setReloadNonce] = useState(0);
 
   useEffect(() => {
     if (role !== "ADMIN") return;
@@ -21,102 +22,188 @@ export default function AuditLogs() {
     setLoading(true);
     getAuditLogs(page, 20, action || undefined)
       .then((res) => {
-        setLogs(res.items);
-        setTotal(res.total);
+        setLogs(Array.isArray(res.items) ? res.items : []);
+        setTotal(typeof res.total === "number" ? res.total : 0);
+      })
+      .catch(() => {
+        setLogs([]);
+        setTotal(0);
       })
       .finally(() => setLoading(false));
-  }, [page, action, role]);
+  }, [page, action, role, reloadNonce]);
+
+  const totalPages = useMemo(() => Math.ceil(total / 20) || 1, [total]);
 
   if (role !== "ADMIN") {
     return (
-      <p style={{ padding: 24, color: "#b91c1c" }}>
-        Acesso restrito a administradores.
-      </p>
+      <section className="section-stack animate-page-in w-full">
+        <Section className="flex items-center gap-3 text-sm" style={{ borderColor: "var(--color-error-100)", backgroundColor: "var(--color-error-50)", color: "var(--color-error-700)" }}>
+          <ShieldAlert size={20} />
+          <div>
+            <p className="text-sm font-semibold">Acesso restrito</p>
+            <p className="text-xs" style={{ color: "var(--color-error-600)" }}>
+              Somente administradores podem visualizar os registros de auditoria.
+            </p>
+          </div>
+        </Section>
+      </section>
     );
   }
 
   return (
-    <div style={{ padding: 24 }}>
-      <h1 style={{ fontSize: 22, fontWeight: 600 }}>
-        Audit Logs do Sistema
-      </h1>
+    <section className="section-stack animate-page-in w-full">
+      <Section className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="space-y-2">
+          <div
+            className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em]"
+            style={{ borderColor: "var(--color-border)", color: "var(--color-primary)", backgroundColor: "color-mix(in srgb, var(--color-primary) 6%, var(--color-surface))" }}
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-primary)]" />
+            Segurança e compliance
+          </div>
+          <div className="space-y-1">
+            <h1 className="text-2xl font-semibold" style={{ color: "var(--color-text)" }}>
+              Audit logs do sistema
+            </h1>
+            <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
+              Monitoramos todas as ações relevantes para garantir rastreabilidade e governança.
+            </p>
+          </div>
+        </div>
+        <div className="toolbar justify-end gap-2">
+          <button
+            className="btn-secondary"
+            disabled={loading || logs.length === 0}
+            title={logs.length === 0 ? "Sem registros para exportar" : "Exportar logs atuais"}
+          >
+            Exportar CSV
+          </button>
+          <button
+            className="inline-flex items-center gap-2 rounded-lg bg-[color:var(--color-success-600)] px-4 py-2 text-sm font-semibold text-white shadow-lg transition-shadow hover:bg-[color:var(--color-success-500)] hover:shadow-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--color-success-600)] disabled:cursor-not-allowed disabled:opacity-60"
+            onClick={() => setReloadNonce((value) => value + 1)}
+            disabled={loading}
+          >
+            {loading ? "Atualizando..." : "Atualizar"}
+          </button>
+        </div>
+      </Section>
 
-      <div style={{ margin: "16px 0", display: "flex", gap: 12 }}>
+      <Section className="space-y-3">
+        <label className="flex items-center gap-2 text-xs uppercase tracking-[0.3em]" style={{ color: "var(--color-text-muted)" }}>
+          <Search size={14} />
+          Filtro por ação
+        </label>
         <input
-          placeholder="Filtrar por ação (ex: LOGIN_SUCCESS)"
+          className="clientes-input mt-3 w-full"
+          placeholder="Ex: LOGIN_SUCCESS, HISTORY_DOWNLOAD"
           value={action}
           onChange={(e) => {
             setPage(1);
             setAction(e.target.value);
           }}
-          style={{ padding: 8, width: 320 }}
         />
-      </div>
+      </Section>
 
-      {loading ? (
-        <p>Carregando logs...</p>
-      ) : logs.length === 0 ? (
-        <p>Nenhum log encontrado.</p>
-      ) : (
-        <Card title={`Registros (${total})`}>
-          <table
-            style={{
-              width: "100%",
-              fontSize: 14,
-              borderCollapse: "collapse",
-            }}
+      <Section className="overflow-hidden p-0">
+        <div
+          className="flex items-center justify-between px-4 py-3 md:px-5 md:py-4"
+          style={{ borderBottom: "1px solid var(--color-border)" }}
+        >
+          <div>
+            <p className="text-xs uppercase tracking-[0.3em]" style={{ color: "var(--color-text-muted)" }}>
+              Registros
+            </p>
+            <p className="text-lg font-semibold" style={{ color: "var(--color-text)" }}>
+              {total} eventos monitorados
+            </p>
+          </div>
+          <span
+            className="rounded-full px-3 py-1 text-xs font-medium"
+            style={{ backgroundColor: "var(--color-text)", color: "white" }}
           >
-            <thead>
-              <tr style={{ textAlign: "left" }}>
-                <th>Data</th>
-                <th>Ação</th>
-                <th>Usuário</th>
-              </tr>
-            </thead>
-            <tbody>
-              {logs.map((log) => (
-                <tr
-                  key={log.id}
-                  onClick={() => setSelected(log)}
-                  style={{
-                    cursor: "pointer",
-                    borderTop: "1px solid #e5e7eb",
-                  }}
-                >
-                  <td>
-                    {new Date(log.createdAt).toLocaleString()}
-                  </td>
-                  <td>{log.action}</td>
-                  <td>{log.userId}</td>
+            Página {page} / {totalPages}
+          </span>
+        </div>
+
+        {loading ? (
+          <div className="space-y-3 px-4 py-4 md:px-5 md:py-5">
+            {Array.from({ length: 6 }).map((_, idx) => (
+              <div
+                key={idx}
+                className="h-4 animate-pulse rounded-full"
+                style={{ backgroundColor: "var(--color-bg-primary)" }}
+              />
+            ))}
+          </div>
+        ) : logs.length === 0 ? (
+          <div className="px-4 py-8 text-center text-sm md:px-5" style={{ color: "var(--color-text-muted)" }}>
+            <p className="text-base font-semibold" style={{ color: "var(--color-text)" }}>
+              Nenhum log encontrado
+            </p>
+            <p className="mt-2">
+              Ajuste o filtro por ação ou clique em <strong>Atualizar</strong> para consultar novamente.
+            </p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-sm" style={{ color: "var(--color-text-muted)" }}>
+              <thead
+                className="text-xs uppercase tracking-[0.25em]"
+                style={{ backgroundColor: "var(--bg-primary)", color: "var(--color-text-muted)" }}
+              >
+                <tr>
+                  <th className="px-4 py-3 text-left md:px-6">Data</th>
+                  <th className="px-4 py-3 text-left md:px-6">Ação</th>
+                  <th className="px-4 py-3 text-left md:px-6">Usuário</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </Card>
-      )}
+              </thead>
+              <tbody>
+                {logs.map((log) => (
+                  <tr
+                    key={log.id}
+                    className="cursor-pointer transition hover:bg-[var(--bg-primary)]"
+                    onClick={() => setSelected(log)}
+                  >
+                    <td className="px-4 py-4 font-medium md:px-6" style={{ color: "var(--color-text)" }}>
+                      {new Date(log.createdAt).toLocaleString()}
+                    </td>
+                    <td className="px-4 py-4 md:px-6">{log.action}</td>
+                    <td className="px-4 py-4 md:px-6">{log.userId}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Section>
 
-      <div style={{ marginTop: 16 }}>
-        <Button
-          onClick={() => setPage((p) => Math.max(1, p - 1))}
+      <Section className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="toolbar">
+          <button
+            className="btn-secondary"
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+          >
+            Anterior
+          </button>
+          <button
+            className="btn-secondary"
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page >= totalPages}
+          >
+            Próxima
+          </button>
+        </div>
+        <div
+          className="flex items-center gap-2 rounded-full px-4 py-1 text-xs"
+          style={{ backgroundColor: "var(--bg-primary)", color: "var(--color-text-muted)" }}
         >
-          Anterior
-        </Button>
-        <span style={{ margin: "0 12px" }}>
-          Página {page}
-        </span>
-        <Button
-          onClick={() => setPage((p) => p + 1)}
-          disabled={page * 20 >= total}
-        >
-          Próxima
-        </Button>
-      </div>
+          <ShieldCheck size={14} />
+          20 eventos por página
+        </div>
+      </Section>
 
-      <AuditDetailsModal
-        open={!!selected}
-        log={selected}
-        onClose={() => setSelected(null)}
-      />
-    </div>
+      <AuditDetailsModal open={!!selected} log={selected} onClose={() => setSelected(null)} />
+    </section>
   );
 }

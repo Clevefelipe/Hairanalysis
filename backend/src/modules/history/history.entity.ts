@@ -3,40 +3,36 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-} from "typeorm";
+} from 'typeorm';
 
-@Entity("analysis_history")
+@Entity('analysis_history')
 export class HistoryEntity {
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ nullable: true })
+  @Column()
   clientId: string;
 
-  @Column({ nullable: true })
-  professionalId: string;
-
-  // 🔐 MULTI-TENANT REAL
-  @Column({ nullable: true })
+  @Column({ type: 'uuid', nullable: true })
   salonId: string;
 
   @Column()
-  domain: "capilar" | "tricologia";
+  professionalId: string;
 
-  @Column("jsonb")
-  baseResult: any;
+  @Column('jsonb')
+  visionResult: any;
 
-  @Column("jsonb")
-  ragResult: any;
+  @Column('jsonb', { nullable: true })
+  aiExplanation: any;
 
-  @Column("jsonb", { nullable: true })
-  visionResult?: any;
+  @Column('jsonb', { nullable: true })
+  recommendations: any;
 
-  @Column("jsonb", { nullable: true })
-  aiExplanation?: any;
+  @Column('jsonb', { nullable: true })
+  chemicalProfile: any;
 
-  @Column("jsonb", { nullable: true })
-  recommendations?: any;
+  @Column({ nullable: true })
+  publicToken: string;
 
   @Column({ nullable: true })
   publicToken?: string;

@@ -2,6 +2,8 @@ export interface AnaliseCapilarRegistro {
   id: string;
   data: string;
   resumo: string;
+  score?: number;
+  nivel?: string;
   flags: string[];
   recomendacoes: string[];
 }

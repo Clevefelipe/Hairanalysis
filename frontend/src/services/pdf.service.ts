@@ -2,10 +2,18 @@ import jsPDF from "jspdf";
 
 interface PdfData {
   clientName: string;
+  clientCode?: string;
   professionalName: string;
   diagnosis: string;
   recommendation: string;
   createdAt: string;
+}
+
+function formatClientCode(value?: string | null) {
+  const clean = (value || "").replace(/[^a-zA-Z0-9]/g, "").slice(0, 8);
+  if (!clean) return "—";
+  if (clean.length <= 4) return clean;
+  return `${clean.slice(0, 4)}-${clean.slice(4)}`;
 }
 
 export function generateClinicalPdf(data: PdfData) {
@@ -24,21 +32,22 @@ export function generateClinicalPdf(data: PdfData) {
   /* ===== DADOS PRINCIPAIS ===== */
   doc.setFontSize(11);
   doc.text(`Cliente: ${data.clientName}`, 20, 45);
-  doc.text(`Profissional: ${data.professionalName}`, 20, 53);
-  doc.text(`Data da Análise: ${data.createdAt}`, 20, 61);
+  doc.text(`Cód cliente: ${formatClientCode(data.clientCode)}`, 20, 53);
+  doc.text(`Profissional: ${data.professionalName}`, 20, 61);
+  doc.text(`Data da Análise: ${data.createdAt}`, 20, 69);
 
-  doc.line(20, 66, 190, 66);
+  doc.line(20, 74, 190, 74);
 
   /* ===== DIAGNÓSTICO ===== */
   doc.setFontSize(14);
-  doc.text("Diagnóstico Capilar", 20, 80);
+  doc.text("Diagnóstico Capilar", 20, 88);
 
   doc.setFontSize(11);
-  doc.text(doc.splitTextToSize(data.diagnosis, 170), 20, 90);
+  doc.text(doc.splitTextToSize(data.diagnosis, 170), 20, 98);
 
   /* ===== RECOMENDAÇÕES ===== */
   const recommendationStartY =
-    90 + doc.splitTextToSize(data.diagnosis, 170).length * 6 + 10;
+    98 + doc.splitTextToSize(data.diagnosis, 170).length * 6 + 10;
 
   doc.setFontSize(14);
   doc.text("Recomendações Profissionais", 20, recommendationStartY);

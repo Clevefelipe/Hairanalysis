@@ -1,6 +1,11 @@
 import { useState } from "react";
-import { Cliente } from "./Layout";
 import "./DrawerCadastroCliente.css";
+
+type Cliente = {
+  nome: string;
+  telefone: string;
+  cpf?: string;
+};
 
 type Props = {
   aberto: boolean;

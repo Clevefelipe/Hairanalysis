@@ -180,12 +180,6 @@ export function aplicarValidacoesCompletas(analise, servicos) {
 
   const todosAlertas = resultAlisamento.warnings;
 
-  console.log('✅ [Validação] Validações aplicadas:', {
-    total_correcoes: todasCorrecoes.length,
-    total_alertas: todosAlertas.length,
-    tem_alertas_criticos: todosAlertas.some(a => a.tipo === 'CRITICO')
-  });
-
   return {
     analiseValidada: resultColoracao.analiseCorrigida,
     corrections: todasCorrecoes,

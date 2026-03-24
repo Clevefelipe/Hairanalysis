@@ -1,4 +1,5 @@
 import { AnalysisHistory } from "../../services/history.service";
+import { formatDateBr } from "@/utils/date";
 
 interface Props {
   item: AnalysisHistory;
@@ -13,11 +14,11 @@ export default function HistoryCard({
     <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm space-y-3">
       <div className="flex items-center justify-between">
         <span className="text-xs text-slate-500">
-          {new Date(item.createdAt).toLocaleString()}
+          {formatDateBr(item.createdAt)}
         </span>
 
-        <span className="text-xs px-2 py-1 rounded bg-slate-900 text-white">
-          {item.domain.toUpperCase()}
+        <span className="rounded border border-slate-200 bg-slate-50 px-2 py-1 text-xs text-slate-700">
+          {item.analysisType.toUpperCase()}
         </span>
       </div>
 
@@ -28,7 +29,7 @@ export default function HistoryCard({
       <div className="flex gap-2 pt-2">
         <button
           onClick={() => onDownloadPdf(item.id)}
-          className="text-xs px-3 py-1 rounded-md bg-slate-900 text-white hover:bg-slate-800"
+          className="rounded-md border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
         >
           Baixar PDF
         </button>

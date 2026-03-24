@@ -1,14 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { listarClientes } from "./cliente.service";
-
-export interface Cliente {
-  id: number;
-  nome: string;
-  telefone: string;
-  email?: string;
-  cpf?: string;
-  dataNascimento?: string;
-}
+import { listarClientes, type Cliente } from "./cliente.service";
 
 interface ClienteContextData {
   clientes: Cliente[];
@@ -27,7 +18,6 @@ export function ClienteProvider({ children }: { children: React.ReactNode }) {
       // ✅ GARANTIA ABSOLUTA DE ARRAY
       setClientes(Array.isArray(data) ? data : []);
     } catch (error) {
-      console.error("Erro ao carregar clientes", error);
       setClientes([]); // ✅ fallback seguro
     }
   }

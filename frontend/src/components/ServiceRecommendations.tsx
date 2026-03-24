@@ -42,39 +42,22 @@ export default function ServiceRecommendations({
   }
 
   return (
-    <div style={box}>
-      <h3>Serviços Recomendados SDM</h3>
+    <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
+      <h3 className="text-lg font-semibold text-slate-900">Serviços Recomendados SDM</h3>
 
-      <div style={grid}>
+      <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {services.map((s) => (
-          <div key={s.title} style={card}>
-            <strong>{s.title}</strong>
-            <p>{s.description}</p>
+          <div
+            key={s.title}
+            className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
+          >
+            <strong className="text-sm font-semibold text-slate-900">
+              {s.title}
+            </strong>
+            <p className="mt-2 text-sm text-slate-600">{s.description}</p>
           </div>
         ))}
       </div>
     </div>
   );
 }
-
-/* ===== STYLES ===== */
-
-const box: React.CSSProperties = {
-  background: "#ffffff",
-  borderRadius: 12,
-  padding: 24,
-  boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
-  marginBottom: 24,
-};
-
-const grid: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-  gap: 16,
-};
-
-const card: React.CSSProperties = {
-  border: "1px solid #eee",
-  borderRadius: 10,
-  padding: 16,
-};

@@ -7,6 +7,14 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        has: {
+          dark: "#020617",
+          card: "#0F172A",
+          primary: "#0D9488",
+          danger: "#E11D48",
+          warning: "#F59E0B",
+          success: "#10B981",
+        },
         primary: {
           DEFAULT: "#1E3A8A",
           light: "#3B82F6",

@@ -1,18 +1,26 @@
-import { Module } from "@nestjs/common";
-import { TypeOrmModule } from "@nestjs/typeorm";
-import { HistoryEntity } from "./history.entity";
-import { HistoryService } from "./history.service";
-import { HistoryController } from "./history.controller";
-import { KnowledgeModule } from "../knowledge/knowledge.module";
-import { AuthModule } from "../auth/auth.module";
-import { HistoryPublicController } from "./history.public.controller";
-import { HistoryAiService } from "./services/history-ai.service";
+import { Module, forwardRef } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { HistoryEntity } from './history.entity';
+import { HistoryService } from './history.service';
+import { HistoryController } from './history.controller';
+import { HistoryPublicController } from './history.public.controller';
+import { VisionModule } from '../vision/vision-ia.module';
+import { HistoryAiService } from './services/history-ai.service';
+import { SalonEntity } from '../salon/salon.entity';
+import { UserEntity } from '../auth/user.entity';
+import { Cliente } from '../../clientes/entities/cliente.entity';
+import { NotificationReadEntity } from './entities/notification-read.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([HistoryEntity]),
-    KnowledgeModule,
-    AuthModule,
+    TypeOrmModule.forFeature([
+      HistoryEntity,
+      SalonEntity,
+      UserEntity,
+      Cliente,
+      NotificationReadEntity,
+    ]),
+    forwardRef(() => VisionModule),
   ],
   controllers: [HistoryController, HistoryPublicController],
   providers: [HistoryService, HistoryAiService],

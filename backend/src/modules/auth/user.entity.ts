@@ -1,17 +1,15 @@
 import {
-  Entity,
-  PrimaryGeneratedColumn,
   Column,
-  ManyToOne,
+  Entity,
   JoinColumn,
-} from "typeorm";
-import { Salon } from "../salon/salon.entity";
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { SalonEntity } from '../salon/salon.entity';
 
-export type UserRole = "ADMIN" | "PROFESSIONAL";
-
-@Entity("users")
-export class User {
-  @PrimaryGeneratedColumn("uuid")
+@Entity('users')
+export class UserEntity {
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column({ unique: true })
@@ -20,31 +18,21 @@ export class User {
   @Column()
   password: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   fullName?: string;
 
-  // ✅ TIPO EXPLÍCITO PARA POSTGRES
-  @Column({
-    type: "varchar",
-    nullable: true,
-  })
-  refreshToken: string | null;
+  @Column({ type: 'varchar', nullable: true })
+  name?: string;
 
-  @Column({
-    type: "varchar",
-    default: "PROFESSIONAL",
-  })
-  role: UserRole;
+  @Column({ type: 'varchar', default: 'PROFESSIONAL' })
+  role: 'ADMIN' | 'PROFESSIONAL';
 
-  @Column({ nullable: true })
+  @Column({ type: 'uuid', nullable: true })
   salonId?: string;
 
-  @ManyToOne(() => Salon, (salon) => salon.users)
-  @JoinColumn({ name: "salon_id" })
-  salon: Salon;
+  @ManyToOne(() => SalonEntity, { nullable: true })
+  @JoinColumn({ name: 'salonId' })
+  salon?: SalonEntity;
 }
 
-export const UserEntity = User;
-export type UserEntity = User;
-
-
+export { UserEntity as User };

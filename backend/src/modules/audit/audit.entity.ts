@@ -3,11 +3,11 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-} from "typeorm";
+} from 'typeorm';
 
-@Entity("audit_logs")
+@Entity('audit_logs')
 export class AuditLog {
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column()
@@ -19,7 +19,7 @@ export class AuditLog {
   @Column({ nullable: true })
   salonId: string;
 
-  @Column("jsonb", { nullable: true })
+  @Column('jsonb', { nullable: true })
   metadata?: Record<string, any>;
 
   @CreateDateColumn()

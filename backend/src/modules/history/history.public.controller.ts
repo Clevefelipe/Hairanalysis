@@ -1,12 +1,12 @@
-import { Controller, Get, Param } from "@nestjs/common";
-import { HistoryService } from "./history.service";
+import { Controller, Get, Param } from '@nestjs/common';
+import { HistoryService } from './history.service';
 
-@Controller("history")
+@Controller('history/public')
 export class HistoryPublicController {
-  constructor(private readonly historyService: HistoryService) {}
+  constructor(private readonly service: HistoryService) {}
 
-  @Get("public/:token")
-  async getPublic(@Param("token") token: string) {
-    return this.historyService.getPublicReport(token);
+  @Get(':token')
+  getPublic(@Param('token') token: string) {
+    return this.service.findByPublicToken(token);
   }
 }

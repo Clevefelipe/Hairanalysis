@@ -1,65 +1,101 @@
-import { Injectable } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
-import { AuditLog } from "./audit.entity";
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { AuditLogEntity } from './audit-log.entity';
 
 @Injectable()
 export class AuditService {
   constructor(
-    @InjectRepository(AuditLog)
-    private readonly repo: Repository<AuditLog>,
+    @InjectRepository(AuditLogEntity)
+    private readonly auditLogRepository: Repository<AuditLogEntity>,
   ) {}
 
-  async log(params: {
+  // ➕ REGISTRAR LOG
+  async log(data: {
     action: string;
     userId?: string;
     salonId?: string;
     metadata?: Record<string, any>;
   }) {
-    const entry = this.repo.create({
-      action: params.action,
-      userId: params.userId,
-      salonId: params.salonId,
-      metadata: params.metadata,
-    });
-
-    await this.repo.save(entry);
+    try {
+      const log = this.auditLogRepository.create(data);
+      return await this.auditLogRepository.save(log);
+    } catch {
+      return null;
+    }
   }
 
-  async findAll(params: {
-    salonId: string;
-    action?: string;
+  // 📄 LISTAR LOGS (USADO PELO CONTROLLER)
+  async findAll(filters: {
+    salonId?: string;
     userId?: string;
-    page: number;
-    limit: number;
+    action?: string;
   }) {
-    const qb = this.repo
-      .createQueryBuilder("audit")
-      .where("audit.salonId = :salonId", {
-        salonId: params.salonId,
-      });
+    const query = this.auditLogRepository.createQueryBuilder('audit');
 
-    if (params.action) {
-      qb.andWhere("audit.action = :action", {
-        action: params.action,
+    if (filters.salonId) {
+      query.andWhere('audit.salonId = :salonId', {
+        salonId: filters.salonId,
       });
     }
 
-    if (params.userId) {
-      qb.andWhere("audit.userId = :userId", {
-        userId: params.userId,
+    if (filters.userId) {
+      query.andWhere('audit.userId = :userId', {
+        userId: filters.userId,
       });
     }
 
-    const [items, total] = await qb
-      .orderBy("audit.createdAt", "DESC")
-      .skip((params.page - 1) * params.limit)
-      .take(params.limit)
+    if (filters.action) {
+      query.andWhere('audit.action = :action', {
+        action: filters.action,
+      });
+    }
+
+    return query.orderBy('audit.createdAt', 'DESC').getMany();
+  }
+
+  async findPage(
+    filters: {
+      salonId?: string;
+      userId?: string;
+      action?: string;
+    },
+    page = 1,
+    limit = 20,
+  ) {
+    const query = this.auditLogRepository.createQueryBuilder('audit');
+
+    if (filters.salonId) {
+      query.andWhere('audit.salonId = :salonId', {
+        salonId: filters.salonId,
+      });
+    }
+
+    if (filters.userId) {
+      query.andWhere('audit.userId = :userId', {
+        userId: filters.userId,
+      });
+    }
+
+    if (filters.action) {
+      query.andWhere('audit.action = :action', {
+        action: filters.action,
+      });
+    }
+
+    const safePage = Number.isFinite(page) && page > 0 ? page : 1;
+    const safeLimit =
+      Number.isFinite(limit) && limit > 0 ? Math.min(limit, 100) : 20;
+
+    const [items, total] = await query
+      .orderBy('audit.createdAt', 'DESC')
+      .skip((safePage - 1) * safeLimit)
+      .take(safeLimit)
       .getManyAndCount();
 
     return {
-      page: params.page,
-      limit: params.limit,
+      page: safePage,
+      limit: safeLimit,
       total,
       items,
     };

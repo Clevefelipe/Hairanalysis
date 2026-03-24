@@ -1,0 +1,172 @@
+.container {
+  background: linear-gradient(180deg, rgba(248, 250, 252, 0.9), rgba(255, 255, 255, 0.95));
+  border-color: var(--color-border, #e5e7eb);
+}
+
+.modeBadge {
+  border-color: var(--color-border, #e5e7eb);
+  color: var(--color-text-muted, #6b7280);
+}
+
+.svgFilter {
+  filter: drop-shadow(0 18px 35px rgba(15, 23, 42, 0.08));
+}
+
+/* Animações de ondas de varredura */
+@keyframes scanWave {
+  0% {
+    r: 100px;
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.15;
+  }
+  100% {
+    r: 140px;
+    opacity: 0;
+  }
+}
+
+@keyframes scanWave2 {
+  0% {
+    r: 115px;
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 0.1;
+  }
+  100% {
+    r: 155px;
+    opacity: 0;
+  }
+}
+
+@keyframes scanWave3 {
+  0% {
+    r: 85px;
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 0.15;
+  }
+  100% {
+    r: 125px;
+    opacity: 0;
+  }
+}
+
+/* Animação dos fios de cabelo */
+@keyframes strandWave {
+  0%, 100% {
+    opacity: 0.6;
+    filter: blur(0);
+  }
+  50% {
+    opacity: 0.9;
+    filter: blur(0.5px);
+  }
+}
+
+/* Glow de conclusão */
+@keyframes completionGlowPulse {
+  0%, 100% {
+    r: 65px;
+    stroke-width: 2;
+    opacity: 0.3;
+  }
+  50% {
+    r: 75px;
+    stroke-width: 1;
+    opacity: 0.6;
+  }
+}
+
+.scanWave1 {
+  animation: scanWave 2s ease-out infinite;
+  animation-delay: 0s;
+}
+
+.scanWave2 {
+  animation: scanWave2 2s ease-out infinite;
+  animation-delay: 0.4s;
+}
+
+.scanWave3 {
+  animation: scanWave3 2s ease-out infinite;
+  animation-delay: 0.2s;
+}
+
+.hairStrands .strand {
+  animation: strandWave 1.5s ease-in-out infinite;
+  opacity: 0.6;
+}
+
+.hairStrands .strand:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.hairStrands .strand:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.hairStrands .strand:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+.hairStrands .strand:nth-child(4) {
+  animation-delay: 0.2s;
+}
+
+.hairStrands .strand:nth-child(5) {
+  animation-delay: 0s;
+}
+
+.hairProgressRing {
+  transition: stroke-dashoffset 0.35s ease;
+}
+
+.completionGlow {
+  animation: completionGlowPulse 1.5s ease-in-out infinite;
+}
+
+.networkLines {
+  opacity: 0.3;
+  animation: networkPulse 2s ease-in-out infinite;
+}
+
+@keyframes networkPulse {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.statusDot {
+  background: linear-gradient(135deg, var(--color-primary, #0a84ff), var(--color-primary-600, #2563eb));
+  box-shadow: 0 0 0 6px rgba(37, 99, 235, 0.15);
+}
+
+.progressBar {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  appearance: none;
+  background: transparent;
+}
+
+.progressBar::-webkit-progress-bar {
+  background: transparent;
+}
+
+.progressBar::-webkit-progress-value {
+  background: linear-gradient(90deg, var(--color-primary, #0a84ff), var(--color-primary-600, #2563eb));
+  transition: width 0.35s ease;
+}
+
+.progressBar::-moz-progress-bar {
+  background: linear-gradient(90deg, var(--color-primary, #0a84ff), var(--color-primary-600, #2563eb));
+  transition: width 0.35s ease;
+}

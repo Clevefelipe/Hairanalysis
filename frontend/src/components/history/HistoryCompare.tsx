@@ -24,7 +24,7 @@ export default function HistoryCompare({ data }: Props) {
             {item.before}
           </div>
 
-          <div className="text-sm text-emerald-700 font-medium">
+          <div className="text-sm text-[color:var(--color-success-700)] font-medium">
             {item.after}
           </div>
         </div>

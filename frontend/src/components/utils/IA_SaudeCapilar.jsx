@@ -23,7 +23,6 @@ class IASaudeCapilar {
    * 🔄 Comparar Análises (Antes x Depois)
    */
   async compararAnalises(analiseAnterior, analiseAtual) {
-    console.log(`🔄 [${this.nome}] Comparando análises tricológicas...`);
     
     try {
       const comparacao = {
@@ -85,11 +84,9 @@ class IASaudeCapilar {
       // Gerar resumo
       comparacao.resumo_evolucao = this.gerarResumoEvolucao(comparacao);
 
-      console.log('✅ [IA_SAUDE_CAPILAR] Comparação concluída');
       return comparacao;
 
     } catch (error) {
-      console.error(`❌ [${this.nome}] Erro na comparação:`, error);
       throw error;
     }
   }
@@ -201,8 +198,7 @@ class IASaudeCapilar {
 const iaSaudeCapilar = new IASaudeCapilar();
 
 export async function realizarAnaliseTricologica(imagemUrl, clienteInfo, analiseCapilarId = null) {
-  console.log('🔬 [IA_SAUDE_CAPILAR] Iniciando análise tricológica avançada...');
-
+  
   try {
     const prompt = `Você é uma IA especializada em TRICOLOGIA e SAÚDE CAPILAR do SDM Analyzer IA.
 
@@ -594,8 +590,6 @@ Analise a imagem com RIGOR TÉCNICO e forneça diagnóstico COMPLETO e PROFISSIO
       ]
     };
 
-    console.log('🧠 [IA_SAUDE_CAPILAR] Enviando imagem para backend (tricologia)...');
-
     // Chama o endpoint do backend que usa runAnalysisPipeline para análises tricológicas
     const payload = {
       media: [imagemUrl],
@@ -605,16 +599,12 @@ Analise a imagem com RIGOR TÉCNICO e forneça diagnóstico COMPLETO e PROFISSIO
 
     const start = Date.now();
     try {
-      console.log(`[IA_SAUDE_CAPILAR] POST /api/analysis/tricologia payload summary: media=${payload.media.length}`);
       const resp = await appApi.analysis.tricologia(payload);
       const duration = Date.now() - start;
-      console.log(`[IA_SAUDE_CAPILAR] resposta backend recebida em ${duration}ms`, resp && typeof resp === 'object' ? { keys: Object.keys(resp) } : resp);
       const response = resp?.analysis || resp;
 
       iaSaudeCapilar.metricas.totalAnalisesTricolicas++;
       iaSaudeCapilar.ultimaAnalise = new Date().toISOString();
-
-      console.log('✅ [IA_SAUDE_CAPILAR] Análise concluída com sucesso');
 
       // Montar resultado final
       const analiseCompleta = {
@@ -630,12 +620,10 @@ Analise a imagem com RIGOR TÉCNICO e forneça diagnóstico COMPLETO e PROFISSIO
       return analiseCompleta;
     } catch (err) {
       const duration = Date.now() - start;
-      console.error(`[IA_SAUDE_CAPILAR] Erro ao chamar backend após ${duration}ms:`, err);
       throw err;
     }
 
   } catch (error) {
-    console.error('❌ [IA_SAUDE_CAPILAR] Erro na análise:', error);
     throw error;
   }
 }
@@ -659,8 +647,7 @@ export function obterMetricasTricolicas() {
  * Análise avançada usando múltiplos frames de vídeo para diagnóstico completo
  */
 export async function realizarAnaliseTricologicaVideo(fileUrls, clienteInfo, analiseCapilarId = null) {
-  console.log(`🎥 [IA_SAUDE_CAPILAR] Iniciando análise tricológica por vídeo (${fileUrls.length} frames)...`);
-
+  
   try {
     const prompt = `Você é uma IA especialista em TRICOLOGIA e SAÚDE CAPILAR do SDM Analyzer IA.
 
@@ -988,8 +975,6 @@ Use terminologia técnica profissional e forneça diagnóstico COMPLETO baseado 
       ]
     };
 
-    console.log('🧠 [IA_SAUDE_CAPILAR] Enviando frames para backend (tricologia por vídeo)...');
-
     const payload = {
       media: fileUrls,
       metadata: { tipoAnalise: 'tricologia' },
@@ -1001,8 +986,6 @@ Use terminologia técnica profissional e forneça diagnóstico COMPLETO baseado 
 
     iaSaudeCapilar.metricas.totalAnalisesTricolicas++;
     iaSaudeCapilar.ultimaAnalise = new Date().toISOString();
-
-    console.log('✅ [IA_SAUDE_CAPILAR] Análise por vídeo concluída');
 
     const analiseCompleta = {
       cliente_id: clienteInfo?.id || null,
@@ -1017,7 +1000,6 @@ Use terminologia técnica profissional e forneça diagnóstico COMPLETO baseado 
     return analiseCompleta;
 
   } catch (error) {
-    console.error('❌ [IA_SAUDE_CAPILAR] Erro na análise por vídeo:', error);
     throw error;
   }
 }

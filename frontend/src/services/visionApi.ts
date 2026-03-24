@@ -1,22 +1,18 @@
-const API_URL = "http://localhost:3001";
+import api from "./api";
 
-export async function salvarVisionBackend(
-  salonId: string,
-  payload: any
-) {
-  const res = await fetch(`${API_URL}/vision`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      salonId,
+export async function salvarVisionBackend(clientId: string, payload: any) {
+  try {
+    const res = await api.post("/vision/process", {
+      clientId,
       ...payload,
-    }),
-  });
-
-  return res.json();
-}
-
-export async function listarVisionBackend(salonId: string) {
-  const res = await fetch(`${API_URL}/vision/${salonId}`);
-  return res.json();
+    });
+    return res.data;
+  } catch (err: any) {
+    const message =
+      err?.response?.data?.message ||
+      err?.response?.data?.error ||
+      err?.message ||
+      "Erro ao salvar no histórico";
+    throw new Error(message);
+  }
 }

@@ -1,3 +1,5 @@
+import { formatDateShortBr } from "@/utils/date";
+
 interface EvolutionItem {
   fromDate: string;
   toDate: string;
@@ -18,11 +20,10 @@ export default function HistoryEvolution({ data }: Props) {
         >
           <div className="flex justify-between items-center mb-2">
             <span className="text-xs text-slate-500">
-              {new Date(item.fromDate).toLocaleDateString()} →{" "}
-              {new Date(item.toDate).toLocaleDateString()}
+              {formatDateShortBr(item.fromDate)} → {formatDateShortBr(item.toDate)}
             </span>
 
-            <span className="text-xs px-2 py-1 rounded bg-emerald-600 text-white">
+            <span className="text-xs px-2 py-1 rounded bg-[color:var(--color-success-600)] text-white">
               Evolução
             </span>
           </div>

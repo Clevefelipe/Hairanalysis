@@ -3,29 +3,29 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-} from "typeorm";
+} from 'typeorm';
 
-@Entity("analysis_history")
+@Entity('analysis_history')
 export class AnalysisHistory {
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column()
   clientId: string;
 
   @Column()
-  analysisType: "tricologica" | "capilar";
+  analysisType: 'tricologica' | 'capilar';
 
-  @Column("jsonb")
+  @Column('jsonb')
   signals: Record<string, string>;
 
-  @Column("int")
+  @Column('int')
   score: number;
 
-  @Column("jsonb")
+  @Column('jsonb')
   flags: string[];
 
-  @Column("text")
+  @Column('text')
   interpretation: string;
 
   @CreateDateColumn()

@@ -1,9 +1,9 @@
 export function normalizePeriodText(value: string) {
   return (value || "")
-    .replace(/a cada\s+(\d+)\s*[\/-]\s*(\d+)\s+dias/gi, "a cada $1–$2 dias")
+    .replace(/a cada\s+(\d+)\s*[/-]\s*(\d+)\s+dias/gi, "a cada $1–$2 dias")
     .replace(/a cada\s+(\d+)\s+a\s+(\d+)\s+dias/gi, "a cada $1–$2 dias")
     .replace(/a cada\s+(\d+)\s+(\d+)\s+dias/gi, "a cada $1–$2 dias")
-    .replace(/(\d+)\s*[\/-]\s*(\d+)\s*dias/gi, "$1–$2 dias")
+    .replace(/(\d+)\s*[/-]\s*(\d+)\s*dias/gi, "$1–$2 dias")
     .replace(/(\d+)\s+a\s+(\d+)\s*dias/gi, "$1–$2 dias")
     .replace(/(\d+)\s+(\d+)\s*dias/gi, "$1–$2 dias")
     .trim();

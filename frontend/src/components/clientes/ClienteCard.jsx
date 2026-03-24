@@ -1,6 +1,6 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import Button from "@/components/ui/Button";
 import { Edit, Trash2, Phone, User } from "lucide-react";
 
 export default function ClienteCard({ cliente, onEdit, onDelete }) {
@@ -45,19 +45,16 @@ export default function ClienteCard({ cliente, onEdit, onDelete }) {
 
         <div className="flex gap-2">
           <Button
-            variant="outline"
-            size="sm"
+            variant="secondary"
             onClick={() => onEdit(cliente)}
-            className="flex-1 apple-outline"
+            className="flex-1"
           >
             <Edit className="w-4 h-4 mr-2" />
             Editar
           </Button>
           <Button
-            variant="outline"
-            size="sm"
+            variant="danger"
             onClick={() => onDelete(cliente.id)}
-            className="apple-outline text-red-600 hover:text-red-700"
           >
             <Trash2 className="w-4 h-4" />
           </Button>

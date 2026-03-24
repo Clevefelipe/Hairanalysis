@@ -1,4 +1,5 @@
 import { AnalysisHistory } from "../../services/history.service";
+import { formatDateBr } from "@/utils/date";
 
 interface Props {
   item: AnalysisHistory;
@@ -8,9 +9,7 @@ export default function HistoryCard({ item }: Props) {
   return (
     <div className="border rounded-lg p-4 bg-white shadow-sm">
       <div className="flex justify-between items-center">
-        <span className="text-sm text-gray-500">
-          {new Date(item.createdAt).toLocaleDateString()}
-        </span>
+        <span className="text-sm text-gray-500">{formatDateBr(item.createdAt)}</span>
         <span className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700">
           {item.analysisType === "tricologica"
             ? "Tricológica"

@@ -1,6 +1,6 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import Button from "@/components/ui/Button";
 import { Zap, Sparkles, Monitor, Smartphone } from "lucide-react";
 import { useDeviceDetection } from "../utils/deviceDetection";
 
@@ -31,19 +31,17 @@ export default function PerformanceModeSelector() {
             </p>
             <div className="flex gap-2 flex-wrap">
               <Button
-                size="sm"
-                variant="outline"
+                variant={shouldUseLiteMode ? "secondary" : "ghost"}
                 onClick={() => setPerformanceMode('lite')}
-                className={shouldUseLiteMode ? "bg-blue-100 border-blue-500" : ""}
+                className="h-10 px-3"
               >
                 <Zap className="w-4 h-4 mr-2" />
                 Modo Leve
               </Button>
               <Button
-                size="sm"
-                variant="outline"
+                variant={!shouldUseLiteMode ? "secondary" : "ghost"}
                 onClick={() => setPerformanceMode('full')}
-                className={!shouldUseLiteMode ? "bg-purple-100 border-purple-500" : ""}
+                className="h-10 px-3"
               >
                 <Sparkles className="w-4 h-4 mr-2" />
                 Modo Completo

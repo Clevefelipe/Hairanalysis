@@ -1,4 +1,6 @@
 // frontend/src/adapters/dashboardAdapter.ts
+import { formatDateShortBr } from '@/utils/date';
+
 export default function dashboardAdapter(raw: any) {
   return {
     kpis: {
@@ -14,7 +16,7 @@ export default function dashboardAdapter(raw: any) {
           clientName: r.clientName,
           analysisTypeLabel:
             r.analysisType === 'TRICOLOGICA' ? 'Tricológica' : 'Capilar',
-          dateLabel: new Date(r.createdAt).toLocaleDateString('pt-BR'),
+          dateLabel: formatDateShortBr(r.createdAt),
           status:
             r.status === 'ALERTA'
               ? 'danger'

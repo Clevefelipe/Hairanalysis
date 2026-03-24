@@ -1,8 +1,8 @@
 export interface KnowledgeEntry {
   id: string;
   content: string;
-  domain: "tricologia" | "capilar";
-  language: "pt" | "en";
+  domain: 'tricologia' | 'capilar';
+  language: 'pt' | 'en';
 }
 
 export class KnowledgeStore {
@@ -16,7 +16,7 @@ export class KnowledgeStore {
     return this.data;
   }
 
-  static findByDomain(domain: "tricologia" | "capilar") {
-    return this.data.filter(e => e.domain === domain);
+  static findByDomain(domain: 'tricologia' | 'capilar') {
+    return this.data.filter((e) => e.domain === domain);
   }
 }

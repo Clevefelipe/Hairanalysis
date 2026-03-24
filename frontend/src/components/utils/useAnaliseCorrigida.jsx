@@ -20,8 +20,6 @@ export const useAnaliseCorrigida = (analiseOriginal) => {
         return;
       }
 
-      console.log('🔄 [useAnaliseCorrigida] Aplicando correções em tempo real...');
-      
       // Força correção com validação inteligente
       const corrigida = await validarComInteligencia(analiseOriginal);
       
@@ -36,13 +34,6 @@ export const useAnaliseCorrigida = (analiseOriginal) => {
         nivel_dano: normalizarTexto(corrigida.nivel_dano || ''),
         brilho_natural: normalizarTexto(corrigida.brilho_natural || '')
       };
-      
-      console.log('✅ [useAnaliseCorrigida] Correções aplicadas:', {
-        tipo_fio_antes: analiseOriginal.tipo_fio,
-        tipo_fio_depois: forcado.tipo_fio,
-        necessidade_corte_antes: analiseOriginal.necessidade_corte,
-        necessidade_corte_depois: forcado.necessidade_corte
-      });
       
       setAnaliseCorrigida(forcado);
       setLoading(false);

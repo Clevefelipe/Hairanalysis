@@ -12,20 +12,8 @@ import { appApi } from "@/api/appClient";
  * @returns {Object} { score, justificativa, restricoes, detalhes }
  */
 export function calcularCompatibilidadeAvancada(analise, servico, historicoAprendizado = []) {
-  console.log("🔍 [RecomendacaoEngine] Analisando compatibilidade:", {
-    servico: servico.nome,
-    tipo: servico.tipo,
-    analise: {
-      tipo_fio: analise.tipo_fio,
-      estrutura: analise.estrutura_fio,
-      volume: analise.volume_capilar,
-      nivel_dano: analise.nivel_dano,
-      coloracao: analise.coloracao_cabelo
-    }
-  });
 
   if (!servico.indicacoes) {
-    console.warn("⚠️ [RecomendacaoEngine] Serviço sem indicações:", servico.nome);
     return { 
       score: 0, 
       justificativa: "Serviço sem indicações configuradas", 
@@ -47,35 +35,25 @@ export function calcularCompatibilidadeAvancada(analise, servico, historicoApren
   
   const indicacoes = servico.indicacoes;
   
-  console.log("📋 [RecomendacaoEngine] Indicações do serviço:", indicacoes);
-  
   // 1. VERIFICAÇÃO CRÍTICA DE OBSERVAÇÕES (RESTRIÇÕES)
   if (indicacoes.observacoes) {
     const obs = indicacoes.observacoes.toLowerCase();
     const coloracao = (analise.coloracao_cabelo || '').toLowerCase();
     
-    console.log("🔍 [RecomendacaoEngine] Verificando observações:", {
-      observacoes: obs,
-      coloracao_cliente: coloracao
-    });
-    
     // Verificar restrições de coloração
     if (obs.includes('não recomendado para cabelos loiros') && coloracao.includes('loiro')) {
       restricoes.push('❌ Não recomendado para cabelos loiros');
-      console.log("❌ [RecomendacaoEngine] RESTRIÇÃO: Cabelo loiro");
       return { score: 0, justificativa: 'Serviço possui contraindicação para coloração loira', restricoes, detalhes };
     }
     
     if (obs.includes('não recomendado para cabelos grisalhos') && (coloracao.includes('grisalho') || coloracao.includes('branco'))) {
       restricoes.push('❌ Não recomendado para cabelos grisalhos');
-      console.log("❌ [RecomendacaoEngine] RESTRIÇÃO: Cabelo grisalho");
       return { score: 0, justificativa: 'Serviço possui contraindicação para cabelos grisalhos', restricoes, detalhes };
     }
     
     if (obs.includes('não recomendado para cabelos descoloridos') && 
         (coloracao.includes('descolorido') || coloracao.includes('platinado'))) {
       restricoes.push('❌ Não recomendado para cabelos descoloridos/platinados');
-      console.log("❌ [RecomendacaoEngine] RESTRIÇÃO: Cabelo descolorido");
       return { score: 0, justificativa: 'Serviço possui contraindicação para cabelos descoloridos', restricoes, detalhes };
     }
   }
@@ -87,12 +65,6 @@ export function calcularCompatibilidadeAvancada(analise, servico, historicoApren
     const tipoMatch = indicacoes.tipo_cabelo.some(tipo => 
       tipoFioBasico.includes(tipo.toLowerCase())
     );
-    
-    console.log("🎯 [RecomendacaoEngine] Tipo de cabelo:", {
-      analise: tipoFioBasico,
-      indicacoes: indicacoes.tipo_cabelo,
-      match: tipoMatch
-    });
     
     if (tipoMatch) {
       score += 30;
@@ -109,12 +81,6 @@ export function calcularCompatibilidadeAvancada(analise, servico, historicoApren
     maxScore += 25;
     const estruturaMatch = indicacoes.estrutura.includes(analise.estrutura_fio);
     
-    console.log("🎯 [RecomendacaoEngine] Estrutura:", {
-      analise: analise.estrutura_fio,
-      indicacoes: indicacoes.estrutura,
-      match: estruturaMatch
-    });
-    
     if (estruturaMatch) {
       score += 25;
       justificativa.push(`✓ Estrutura ${analise.estrutura_fio} é ideal`);
@@ -130,12 +96,6 @@ export function calcularCompatibilidadeAvancada(analise, servico, historicoApren
     maxScore += 25;
     const volumeMatch = indicacoes.volume.includes(analise.volume_capilar);
     
-    console.log("🎯 [RecomendacaoEngine] Volume:", {
-      analise: analise.volume_capilar,
-      indicacoes: indicacoes.volume,
-      match: volumeMatch
-    });
-    
     if (volumeMatch) {
       score += 25;
       justificativa.push(`✓ Volume ${analise.volume_capilar} é adequado`);
@@ -150,12 +110,6 @@ export function calcularCompatibilidadeAvancada(analise, servico, historicoApren
   if (indicacoes.nivel_dano && indicacoes.nivel_dano.length > 0) {
     maxScore += 20;
     const danoMatch = indicacoes.nivel_dano.includes(analise.nivel_dano);
-    
-    console.log("🎯 [RecomendacaoEngine] Nível de dano:", {
-      analise: analise.nivel_dano,
-      indicacoes: indicacoes.nivel_dano,
-      match: danoMatch
-    });
     
     if (danoMatch) {
       score += 20;
@@ -183,14 +137,6 @@ export function calcularCompatibilidadeAvancada(analise, servico, historicoApren
   detalhes.score_bruto = score;
   detalhes.score_maximo = maxScore;
   
-  console.log("✅ [RecomendacaoEngine] Resultado:", {
-    servico: servico.nome,
-    score_final: Math.round(percentual),
-    score_bruto: score,
-    max_score: maxScore,
-    justificativa: justificativa.join(' • ')
-  });
-  
   return {
     score: Math.round(percentual),
     justificativa: justificativa.join(' • '),
@@ -214,12 +160,6 @@ function calcularBonusAprendizado(servico, analise, historicoAprendizado) {
     h.resultado_satisfatorio === true
   );
   
-  console.log("📚 [RecomendacaoEngine] Aprendizado:", {
-    servico: servico.nome,
-    casos_similares: casosSimilares.length,
-    bonus: Math.min(casosSimilares.length * 5, 15)
-  });
-  
   // Cada caso similar adiciona 5 pontos, máximo 15
   return Math.min(casosSimilares.length * 5, 15);
 }
@@ -229,15 +169,9 @@ function calcularBonusAprendizado(servico, analise, historicoAprendizado) {
  * IMPORTANTE: Filtra apenas serviços ATIVOS
  */
 export async function recomendarAlisamentosInteligente(analise, servicos) {
-  console.log("🚀 [RecomendacaoEngine] Iniciando recomendação de alisamentos");
-  console.log("📊 [RecomendacaoEngine] Total de serviços:", servicos.length);
-  
-  // FILTRAR APENAS SERVIÇOS ATIVOS
   const alisamentos = servicos.filter(s => s.tipo === 'alisamento' && s.ativo !== false);
-  console.log("✨ [RecomendacaoEngine] Alisamentos ativos:", alisamentos.length);
   
   if (alisamentos.length === 0) {
-    console.warn("⚠️ [RecomendacaoEngine] NENHUM ALISAMENTO ATIVO!");
     return { principal: null, alternativo: null, todosScores: [] };
   }
   
@@ -246,14 +180,12 @@ export async function recomendarAlisamentosInteligente(analise, servicos) {
   try {
     const metricas = await appApi.entities.AprendizadoMetrica.list('-created_date', 50);
     historicoAprendizado = metricas.filter(m => m.resultado_satisfatorio === true);
-    console.log("📚 [RecomendacaoEngine] Histórico carregado:", historicoAprendizado.length, "casos bem-sucedidos");
   } catch (error) {
-    console.log('⚠️ [RecomendacaoEngine] Não foi possível carregar histórico de aprendizado');
+    // Não foi possível carregar histórico de aprendizado
   }
   
   // Calcular score para cada alisamento
   const scoresAlisamentos = ensureArray(alisamentos).map(servico => {
-    console.log("\n🔍 [RecomendacaoEngine] Analisando:", servico.nome);
     const resultado = calcularCompatibilidadeAvancada(analise, servico, historicoAprendizado);
     return {
       servico,
@@ -266,14 +198,12 @@ export async function recomendarAlisamentosInteligente(analise, servicos) {
   
   // Filtrar serviços com restrições (score 0)
   const servicosValidos = scoresAlisamentos.filter(s => s.score > 0);
-  console.log("✅ [RecomendacaoEngine] Serviços válidos:", servicosValidos.length);
   
   // Ordenar por score
   servicosValidos.sort((a, b) => b.score - a.score);
   
-  console.log("🏆 [RecomendacaoEngine] Ranking final:");
   servicosValidos.forEach((s, i) => {
-    console.log(`${i + 1}. ${s.servico.nome} - ${s.score}% de compatibilidade`);
+    // Ranking logic removed
   });
   
   return {
@@ -288,14 +218,10 @@ export async function recomendarAlisamentosInteligente(analise, servicos) {
  * IMPORTANTE: Filtra apenas serviços ATIVOS
  */
 export async function recomendarTratamentoInteligente(analise, servicos) {
-  console.log("🚀 [RecomendacaoEngine] Iniciando recomendação de tratamento");
-  
   // FILTRAR APENAS SERVIÇOS ATIVOS
   const tratamentos = servicos.filter(s => s.tipo === 'tratamento' && s.ativo !== false);
-  console.log("💧 [RecomendacaoEngine] Tratamentos ativos:", tratamentos.length);
   
   if (tratamentos.length === 0) {
-    console.warn("⚠️ [RecomendacaoEngine] NENHUM TRATAMENTO ATIVO!");
     return null;
   }
   
@@ -305,7 +231,7 @@ export async function recomendarTratamentoInteligente(analise, servicos) {
     const metricas = await appApi.entities.AprendizadoMetrica.list('-created_date', 50);
     historicoAprendizado = metricas.filter(m => m.resultado_satisfatorio === true);
   } catch (error) {
-    console.log('⚠️ [RecomendacaoEngine] Não foi possível carregar histórico de aprendizado');
+    // Não foi possível carregar histórico de aprendizado
   }
   
   // Calcular score para cada tratamento
@@ -323,8 +249,6 @@ export async function recomendarTratamentoInteligente(analise, servicos) {
   // Filtrar válidos e ordenar
   const servicosValidos = scoresTratamentos.filter(s => s.score > 0);
   servicosValidos.sort((a, b) => b.score - a.score);
-  
-  console.log("🏆 [RecomendacaoEngine] Melhor tratamento:", servicosValidos[0]?.servico.nome, "-", servicosValidos[0]?.score, "%");
   
   return servicosValidos[0] || null;
 }
@@ -380,9 +304,7 @@ export async function registrarFeedbackAprendizado(analise, feedbackPositivo, co
       }
     }
     
-    console.log('✅ Feedback registrado no sistema de aprendizado');
   } catch (error) {
-    console.error('Erro ao registrar feedback:', error);
     // Não propagar o erro para não quebrar a experiência do usuário
   }
 }

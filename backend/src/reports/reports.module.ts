@@ -6,6 +6,7 @@ import { ObservabilityModule } from '../observability/observability.module';
 import { ReportsService } from './reports.service';
 import { ReportsController } from './reports.controller';
 import { ReportsWorker } from './reports.worker';
+import { ReportsHardeningWorker } from './reports.hardening.worker';
 import {
   REPORTS_STORAGE_PROVIDER,
   LocalStorageProvider,
@@ -24,6 +25,7 @@ import { SalonEntity } from '../modules/salon/salon.entity';
   providers: [
     ReportsService,
     ReportsWorker,
+    ReportsHardeningWorker,
     {
       provide: REPORTS_STORAGE_PROVIDER,
       useFactory: () => {
@@ -34,6 +36,6 @@ import { SalonEntity } from '../modules/salon/salon.entity';
     },
   ],
   controllers: [ReportsController],
-  exports: [ReportsService, ReportsWorker],
+  exports: [ReportsService, ReportsWorker, ReportsHardeningWorker],
 })
 export class ReportsModule {}

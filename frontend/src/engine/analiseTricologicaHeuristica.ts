@@ -33,11 +33,15 @@ function classificarNivel(score: number): NivelTricologico {
 export function avaliarAnaliseTricologica(
   input: AnaliseTricologicaInput
 ): AnaliseTricologicaOutput {
+  const oleosidade = Array.isArray(input?.oleosidade) ? input.oleosidade : [];
+  const condicoes = Array.isArray(input?.condicoes) ? input.condicoes : [];
+  const sensacoes = Array.isArray(input?.sensacoes) ? input.sensacoes : [];
+
   let score = 0;
   const flags: string[] = [];
   const recomendacoes: string[] = [];
 
-  [...input.oleosidade, ...input.condicoes, ...input.sensacoes].forEach(
+  [...oleosidade, ...condicoes, ...sensacoes].forEach(
     (item) => {
       const peso = PESOS[item] || 0;
       if (peso > 0) {
