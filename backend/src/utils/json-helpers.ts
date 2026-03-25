@@ -2,8 +2,18 @@
  * Helper utilities for handling JSON fields stored as text
  */
 
-export function parseJsonField<T = any>(field: string | null | undefined, defaultValue: T = {} as T): T {
-  if (!field) return defaultValue;
+export function parseJsonField<T = any>(
+  field: unknown,
+  defaultValue: T = {} as T,
+): T {
+  if (field === null || typeof field === 'undefined' || field === '') {
+    return defaultValue;
+  }
+
+  if (typeof field !== 'string') {
+    return field as T;
+  }
+
   try {
     return JSON.parse(field);
   } catch {
