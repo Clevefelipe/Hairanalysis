@@ -8,6 +8,6 @@ export class StraighteningPresetEntity {
   @Column({ nullable: false })
   salonId: string;
 
-  @Column({ type: 'jsonb', default: {} })
-  weights: Record<string, number>;
+  @Column({ type: 'text', default: '{}' })
+  weights: string;
 }

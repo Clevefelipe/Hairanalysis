@@ -19,20 +19,8 @@ export class StraighteningEntity {
   @Column({ type: 'text', nullable: true })
   description?: string;
 
-  @Column('jsonb', { nullable: true })
-  criteria?: {
-    hairTypes?: string[];
-    /**
-     * Estrutura da fibra (ex.: Fina, Média, Grossa) usada em recomendações da IA
-     */
-    structures?: string[];
-    /**
-     * Nível de volume (ex.: Baixo, Médio, Alto) para scoring de compatibilidade
-     */
-    volume?: string[];
-    damageLevel?: string[];
-    observations?: string;
-  };
+  @Column({ type: 'text', nullable: true })
+  criteria?: string;
 
   /* =====================================================
    * STATUS
@@ -66,15 +54,6 @@ export class StraighteningEntity {
   /* =====================================================
    * METADADOS
    * ===================================================== */
-
-  @Column({ type: 'float', nullable: true })
-  maxDamageTolerance?: number;
-
-  @Column({ type: 'float', nullable: true })
-  porositySupport?: number;
-
-  @Column({ type: 'float', nullable: true })
-  elasticitySupport?: number;
 
   @CreateDateColumn()
   createdAt: Date;

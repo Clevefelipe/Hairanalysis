@@ -15,6 +15,7 @@ import {
 } from '@nestjs/common';
 import { HistoryService } from './history.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { parseJsonField } from '../../utils/json-helpers';
 import { PDFDocument, StandardFonts, rgb, type RGB } from 'pdf-lib';
 import type { Response } from 'express';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -594,18 +595,9 @@ export class HistoryController {
         accent: hexToRgb(brandAccentHex),
       };
 
-      const vision =
-        history.visionResult && typeof history.visionResult === 'object'
-          ? history.visionResult
-          : {};
-      const premium =
-        history.aiExplanation && typeof history.aiExplanation === 'object'
-          ? history.aiExplanation
-          : {};
-      const recommendations =
-        history.recommendations && typeof history.recommendations === 'object'
-          ? history.recommendations
-          : {};
+      const vision = parseJsonField<any>(history.visionResult);
+      const premium = parseJsonField<any>(history.aiExplanation);
+      const recommendations = parseJsonField<any>(history.recommendations);
 
       const rawScore =
         toNumber(vision?.score) ?? toNumber(recommendations?.score);
@@ -845,7 +837,7 @@ export class HistoryController {
       const evolutionPoints = clientHistory
         .map((item) => {
           const createdAt = new Date(item.createdAt);
-          const pointScore = Number(item?.visionResult?.score);
+          const pointScore = Number(parseJsonField<any>(item?.visionResult)?.score);
           return {
             id: item.id,
             createdAt,

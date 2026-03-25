@@ -15,10 +15,18 @@ export class AuditService {
     action: string;
     userId?: string;
     salonId?: string;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, any> | string;
   }) {
     try {
-      const log = this.auditLogRepository.create(data);
+      const log = this.auditLogRepository.create({
+        ...data,
+        metadata:
+          typeof data.metadata === 'string'
+            ? data.metadata
+            : data.metadata
+              ? JSON.stringify(data.metadata)
+              : undefined,
+      });
       return await this.auditLogRepository.save(log);
     } catch {
       return null;

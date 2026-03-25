@@ -11,6 +11,7 @@ import { SalonEntity } from '../salon/salon.entity';
 import { UserEntity } from '../auth/user.entity';
 import { randomUUID } from 'crypto';
 import { Cliente } from '../../clientes/entities/cliente.entity';
+import { parseJsonField } from '../../utils/json-helpers';
 
 type DashboardHistory = {
   id: string;
@@ -525,7 +526,7 @@ export class HistoryService {
       throw new NotFoundException('Histórico não encontrado neste salão');
     }
 
-    const recommendations = { ...(history.recommendations || {}) };
+    const recommendations = parseJsonField(history.recommendations);
 
     if (payload.action === 'confirm') {
       recommendations.nextVisitConfirmedAt = new Date().toISOString();
@@ -580,24 +581,25 @@ export class HistoryService {
     clientNameMap?: Map<string, string>,
   ): DashboardHistory {
     const vision = this.normalizeVisionResultForDisplay(
-      item?.visionResult || {},
+      parseJsonField(item?.visionResult),
     );
     const analysisType = this.resolveDisplayAnalysisType(
       vision,
       item?.recommendations,
     );
+    const recommendationsData = parseJsonField(item?.recommendations);
     const normalizedRecommendations = this.normalizeRecommendationsForDisplay(
       analysisType === 'capilar'
-        ? { ...item?.recommendations, scalpTreatments: [] }
+        ? { ...recommendationsData, scalpTreatments: [] }
         : analysisType === 'tricologica'
           ? {
-              ...item?.recommendations,
+              ...recommendationsData,
               treatments: [],
               homeCare: [],
               treatmentProtocol: undefined,
               neutralization: undefined,
             }
-          : item?.recommendations,
+          : recommendationsData,
     );
     normalizedRecommendations.professionalAlert =
       this.filterProfessionalAlertByMode(
@@ -615,7 +617,7 @@ export class HistoryService {
       );
     }
     const normalizedAiExplanation =
-      this.normalizeAiExplanationForDisplay(item?.aiExplanation) || {};
+      this.normalizeAiExplanationForDisplay(parseJsonField(item?.aiExplanation)) || {};
     normalizedAiExplanation.professionalAlert =
       this.filterProfessionalAlertByMode(
         normalizedAiExplanation?.professionalAlert,
@@ -650,7 +652,7 @@ export class HistoryService {
 
     const score = this.normalizeScore(
       typeof vision?.score === 'undefined'
-        ? item?.recommendations?.score
+        ? recommendationsData?.score
         : vision?.score,
     );
     const flags = this.filterFlagsByMode(
@@ -732,19 +734,20 @@ export class HistoryService {
   ) {
     const clientName = clientNameMap.get(history.clientId);
     const normalizedVisionResult = this.normalizeVisionResultForDisplay(
-      history.visionResult,
+      parseJsonField(history.visionResult),
     );
     const normalizedAiExplanation = this.normalizeAiExplanationForDisplay(
-      history.aiExplanation,
+      parseJsonField(history.aiExplanation),
     );
     const analysisType = this.resolveDisplayAnalysisType(
       normalizedVisionResult,
       history.recommendations,
     );
+    const recommendationsData = parseJsonField(history.recommendations);
     const normalizedRecommendations = this.normalizeRecommendationsForDisplay(
       analysisType === 'capilar'
-        ? { ...history.recommendations, scalpTreatments: [] }
-        : history.recommendations,
+        ? { ...recommendationsData, scalpTreatments: [] }
+        : recommendationsData,
     );
     normalizedRecommendations.professionalAlert =
       this.filterProfessionalAlertByMode(

@@ -2,16 +2,16 @@ import { Controller, Get, Inject, Optional } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { promises as fs } from 'fs';
 import * as path from 'path';
-import { REPORTS_STORAGE_PROVIDER } from '../reports/reports.storage';
-import type { StorageProvider } from '../reports/reports.storage';
+// import { REPORTS_STORAGE_PROVIDER } from '../reports/reports.storage'; // Temporarily disabled
+// import type { StorageProvider } from '../reports/reports.storage'; // Temporarily disabled
 
 @Controller('health')
 export class HealthController {
   constructor(
     private readonly dataSource: DataSource,
-    @Optional()
-    @Inject(REPORTS_STORAGE_PROVIDER)
-    private readonly storage?: StorageProvider,
+    // @Optional()
+    // @Inject(REPORTS_STORAGE_PROVIDER)
+    // private readonly storage?: StorageProvider,
   ) {}
 
   @Get()
@@ -36,19 +36,19 @@ export class HealthController {
     const memoryRss = process.memoryUsage().rss;
     const memoryHeap = process.memoryUsage().heapUsed;
 
-    const storageStatus = await this.checkStorage();
+    // const storageStatus = await this.checkStorage();
 
     return {
       status:
         dbStatus.status === 'up' &&
         memoryRss < rssLimit &&
-        memoryHeap < heapLimit &&
-        storageStatus.status !== 'down'
+        memoryHeap < heapLimit
+        // && storageStatus.status !== 'down'
           ? 'ok'
           : 'degraded',
       checks: {
         database: dbStatus,
-        storage: storageStatus,
+        // storage: storageStatus,
         memory_rss: {
           status: memoryRss < rssLimit ? 'up' : 'down',
           value: memoryRss,
@@ -108,31 +108,31 @@ export class HealthController {
     }
   }
 
-  private async checkStorage(): Promise<{
-    status: 'up' | 'down' | 'unknown';
-    error?: string;
-    info?: Record<string, unknown>;
-  }> {
-    if (!this.storage)
-      return {
-        status: 'unknown',
-        error: 'storage provider not configured in ObservabilityModule',
-      };
-    try {
-      const providerName = this.storage.constructor?.name ?? 'unknown';
+  // private async checkStorage(): Promise<{
+//   status: 'up' | 'down' | 'unknown';
+//   error?: string;
+//   info?: Record<string, unknown>;
+// }> {
+//   if (!this.storage)
+//     return {
+//       status: 'unknown',
+//       error: 'storage provider not configured in ObservabilityModule',
+//     };
+//   try {
+//     const providerName = this.storage.constructor?.name ?? 'unknown';
 
-      if (typeof this.storage.getPath === 'function') {
-        const probePath = await this.storage.getPath('.health-check');
-        const dir = path.dirname(String(probePath));
-        await fs.mkdir(dir, { recursive: true });
-        await fs.access(dir);
-        return { status: 'up', info: { provider: providerName, dir } };
-      }
+//     if (typeof this.storage.getPath === 'function') {
+//       const probePath = await this.storage.getPath('.health-check');
+//       const dir = path.dirname(String(probePath));
+//       await fs.mkdir(dir, { recursive: true });
+//       await fs.access(dir);
+//       return { status: 'up', info: { provider: providerName, dir } };
+//     }
 
-      // Fallback para providers sem getPath (e.g. S3)
-      return { status: 'up', info: { provider: providerName } };
-    } catch (error) {
-      return { status: 'down', error: (error as Error).message };
-    }
-  }
+//     // Fallback para providers sem getPath (e.g. S3)
+//     return { status: 'up', info: { provider: providerName } };
+//   } catch (error) {
+//     return { status: 'down', error: (error as Error).message };
+//   }
+// }
 }

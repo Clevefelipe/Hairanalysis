@@ -3,6 +3,7 @@ import {
   PrimaryGeneratedColumn,
   Column,
   UpdateDateColumn,
+  CreateDateColumn,
 } from 'typeorm';
 
 @Entity('salons')
@@ -28,9 +29,12 @@ export class SalonEntity {
   @Column({ type: 'varchar', length: 64, nullable: true })
   brandFontFamily?: string;
 
-  @Column({ type: 'jsonb', nullable: true })
-  branding?: Record<string, any>;
+  @Column({ type: 'text', nullable: true })
+  branding?: string;
 
-  @UpdateDateColumn({ type: 'timestamp', nullable: true })
+  @Column({ type: 'datetime', nullable: true })
+  createdAt?: Date;
+
+  @Column({ type: 'datetime', nullable: true })
   updatedAt?: Date;
 }

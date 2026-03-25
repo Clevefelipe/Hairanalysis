@@ -66,6 +66,7 @@ export class AssistantService {
 
     const hits = await this.knowledge.semanticSearch(
       queryParts.join(' | '),
+      params.salonId,
       domain,
       4,
     );

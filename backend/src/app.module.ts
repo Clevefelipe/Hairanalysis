@@ -13,7 +13,7 @@ import { AuditModule } from './modules/audit/audit.module';
 import { KnowledgeModule } from './modules/knowledge/knowledge.module';
 import { ClientesModule } from './clientes/clientes.module';
 import { ObservabilityModule } from './observability/observability.module';
-import { ReportsModule } from './reports/reports.module';
+// import { ReportsModule } from './reports/reports.module'; // Temporarily disabled
 import { AppLogger } from './logger/app-logger.service';
 
 // Entities (para migrations)
@@ -22,7 +22,7 @@ import { SalonEntity } from './modules/salon/salon.entity';
 import { HistoryEntity } from './modules/history/history.entity';
 import { KnowledgeDocument } from './modules/knowledge/knowledge-document.entity';
 import { StraighteningEntity } from './modules/straightening/straightening.entity';
-import { ReportEntity } from './reports/report.entity';
+// import { ReportEntity } from './reports/report.entity'; // Temporarily disabled
 import { Cliente } from './clientes/entities/cliente.entity';
 import { AuditLogEntity } from './modules/audit/audit-log.entity';
 
@@ -44,9 +44,8 @@ import { env, getDatabaseConfig } from './config/env.config';
     ]),
 
     TypeOrmModule.forRoot({
-      type: 'postgres',
-      url: env.DATABASE_URL,
-      ...getDatabaseConfig(),
+      type: 'sqlite',
+      database: './database.sqlite',
       autoLoadEntities: true,
       entities: [
         UserEntity,
@@ -56,12 +55,10 @@ import { env, getDatabaseConfig } from './config/env.config';
         StraighteningEntity,
         Cliente,
         AuditLogEntity,
-        ReportEntity,
+        // ReportEntity, // Temporarily disabled
       ],
-      migrations: ['dist/migrations/*.js'],
-      migrationsRun: env.TYPEORM_MIGRATIONS_RUN,
-      synchronize: env.TYPEORM_SYNCHRONIZE && env.NODE_ENV !== 'production',
-      logging: env.NODE_ENV === 'development',
+      synchronize: true,
+      logging: true,
     }),
 
     AuthModule,
@@ -72,8 +69,7 @@ import { env, getDatabaseConfig } from './config/env.config';
     KnowledgeModule,
     ClientesModule,
     ObservabilityModule,
-    ReportsModule,
-  ],
+      ],
   controllers: [],
   providers: [
     AppLogger,

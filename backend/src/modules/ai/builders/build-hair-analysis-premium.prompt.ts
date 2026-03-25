@@ -36,7 +36,7 @@ export function buildHairAnalysisPremiumPrompt(
           typeof s?.description === 'string' && s.description.trim()
             ? s.description.trim()
             : 'Sem descrição técnica';
-        const criteria = s?.criteria || {};
+        const criteria = (s?.criteria || {}) as Record<string, any>;
         const obs =
           typeof criteria?.observations === 'string' &&
           criteria.observations.trim()

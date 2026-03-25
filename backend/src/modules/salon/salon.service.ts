@@ -116,7 +116,7 @@ export class SalonService {
     salon.brandSecondaryColor = next.secondaryColor;
     salon.brandAccentColor = next.accentColor;
     salon.brandFontFamily = next.fontFamily;
-    salon.branding = mergedBranding as Record<string, any>;
+    salon.branding = JSON.stringify(mergedBranding);
 
     const saved = await this.salonRepository.save(salon);
     return this.toBrandingResponse(saved);
@@ -153,7 +153,7 @@ export class SalonService {
     salon.brandSecondaryColor = next.secondaryColor;
     salon.brandAccentColor = next.accentColor;
     salon.brandFontFamily = next.fontFamily;
-    salon.branding = mergedBranding as Record<string, any>;
+    salon.branding = JSON.stringify(mergedBranding);
 
     const saved = await this.salonRepository.save(salon);
     return this.toBrandingResponse(saved);

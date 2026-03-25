@@ -19,20 +19,17 @@ export class HistoryEntity {
   @Column()
   professionalId: string;
 
-  @Column('jsonb')
-  visionResult: any;
+  @Column({ type: 'text', nullable: true })
+  visionResult?: string;
 
-  @Column('jsonb', { nullable: true })
-  aiExplanation: any;
+  @Column({ type: 'text', nullable: true })
+  aiExplanation?: string;
 
-  @Column('jsonb', { nullable: true })
-  recommendations: any;
+  @Column({ type: 'text', nullable: true })
+  recommendations?: string;
 
-  @Column('jsonb', { nullable: true })
-  chemicalProfile: any;
-
-  @Column({ nullable: true })
-  publicToken: string;
+  @Column({ type: 'text', nullable: true })
+  chemicalProfile?: string;
 
   @Column({ nullable: true })
   publicToken?: string;

@@ -21,5 +21,6 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false
-  }
+  },
+  "exclude": ["reports/**/*", "reports.disabled/**/*", "dist/**/*", "node_modules/**/*"]
 }
