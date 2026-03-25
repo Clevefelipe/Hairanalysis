@@ -2,9 +2,59 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import helmet from 'helmet';
+import * as bcrypt from 'bcrypt';
+import { getRepositoryToken } from '@nestjs/typeorm';
 import { AppModule } from './app.module';
 import { AppLogger } from './logger/app-logger.service';
 import { legalTermsSanitizerMiddleware } from './common/middleware/legal-terms-sanitizer.middleware';
+import { UserEntity } from './modules/auth/user.entity';
+import { SalonEntity } from './modules/salon/salon.entity';
+
+async function ensureDevAdmin(app: Awaited<ReturnType<typeof NestFactory.create>>) {
+  if (process.env.NODE_ENV === 'production') {
+    return;
+  }
+
+  const SALON_NAME = 'SDM Piraquara';
+  const ADMIN_EMAIL = 'admin@hairanalysis.com';
+  const ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD || 'admin1044';
+  const saltRounds = Number(process.env.BCRYPT_SALT_ROUNDS || 10);
+
+  const salonRepo = app.get(getRepositoryToken(SalonEntity));
+  const userRepo = app.get(getRepositoryToken(UserEntity));
+
+  let salon = await salonRepo.findOne({ where: { name: SALON_NAME } });
+  if (!salon) {
+    salon = salonRepo.create({ name: SALON_NAME });
+    await salonRepo.save(salon);
+  }
+
+  const hashedPassword = await bcrypt.hash(
+    ADMIN_PASSWORD,
+    Number.isFinite(saltRounds) && saltRounds > 0 ? saltRounds : 10,
+  );
+
+  const existingAdmin = await userRepo.findOne({ where: { email: ADMIN_EMAIL } });
+  if (!existingAdmin) {
+    const admin = userRepo.create({
+      email: ADMIN_EMAIL,
+      password: hashedPassword,
+      fullName: 'Administrador do Sistema',
+      name: 'Administrador do Sistema',
+      role: 'ADMIN',
+      salonId: salon.id,
+    });
+    await userRepo.save(admin);
+    return;
+  }
+
+  existingAdmin.password = hashedPassword;
+  existingAdmin.role = 'ADMIN';
+  existingAdmin.salonId = salon.id;
+  existingAdmin.fullName = existingAdmin.fullName || 'Administrador do Sistema';
+  existingAdmin.name = existingAdmin.name || 'Administrador do Sistema';
+  await userRepo.save(existingAdmin);
+}
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -73,6 +123,8 @@ async function bootstrap() {
     const document = SwaggerModule.createDocument(app, config);
     SwaggerModule.setup('docs', app, document);
   }
+
+  await ensureDevAdmin(app);
 
   const port = process.env.PORT || 3000;
   const host = process.env.HOST || '0.0.0.0';
