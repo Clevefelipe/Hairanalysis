@@ -9,6 +9,8 @@ type ChemicalProfileSummary = {
 } | null;
 
 export type AnalysisAesthetic = {
+  resumoTecnico?: string;
+  scoreIntegridade?: number;
   absorptionCoefficient?: { index: number; label: string };
   cuticleDiagnostic?: {
     ipt: number;
